@@ -3,16 +3,16 @@
     "pattern": "layered",
     "layers": [
       {
-        "name": "presentation",
+        "name": "cli",
         "can_depend_on": ["application", "core"]
       },
       {
-        "name": "application", 
+        "name": "application",
         "can_depend_on": ["core"]
       },
       {
         "name": "core",
-        "can_depend_on": []
+        "can_depend_on": ["core"]
       }
     ]
   },
