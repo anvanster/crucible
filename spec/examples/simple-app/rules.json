@@ -1,0 +1,36 @@
+{
+  "architecture": {
+    "pattern": "layered",
+    "layers": [
+      {
+        "name": "application",
+        "can_depend_on": ["infrastructure"]
+      },
+      {
+        "name": "infrastructure",
+        "can_depend_on": []
+      }
+    ]
+  },
+
+  "rules": [
+    {
+      "id": "no-circular-dependencies",
+      "enabled": true,
+      "severity": "error",
+      "description": "Modules must not have circular dependencies"
+    },
+    {
+      "id": "respect-layer-boundaries",
+      "enabled": true,
+      "severity": "error",
+      "description": "Modules can only depend on allowed layers"
+    },
+    {
+      "id": "all-types-must-exist",
+      "enabled": true,
+      "severity": "error",
+      "description": "All referenced types must be defined"
+    }
+  ]
+}

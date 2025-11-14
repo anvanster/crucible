@@ -1,0 +1,64 @@
+{
+  "module": "calculator",
+  "version": "1.0.0",
+  "layer": "application",
+  "description": "Calculator service orchestrating math operations and history",
+
+  "exports": {
+    "Calculator": {
+      "type": "class",
+      "methods": {
+        "calculate": {
+          "inputs": [
+            {"name": "operation", "type": "math.Operation"},
+            {"name": "a", "type": "number"},
+            {"name": "b", "type": "number"}
+          ],
+          "returns": {
+            "type": "number"
+          },
+          "throws": ["math.DivisionByZeroError"],
+          "calls": [
+            "math.add",
+            "math.subtract",
+            "math.multiply",
+            "math.divide",
+            "history.HistoryStore.add"
+          ],
+          "effects": []
+        },
+        "getHistory": {
+          "inputs": [],
+          "returns": {
+            "type": "Array<history.HistoryEntry>"
+          },
+          "throws": [],
+          "calls": [
+            "history.HistoryStore.getAll"
+          ],
+          "effects": []
+        },
+        "clearHistory": {
+          "inputs": [],
+          "returns": {
+            "type": "void"
+          },
+          "throws": [],
+          "calls": [
+            "history.HistoryStore.clear"
+          ],
+          "effects": []
+        }
+      },
+      "dependencies": [
+        {"module": "math", "imports": ["add", "subtract", "multiply", "divide", "Operation", "DivisionByZeroError"]},
+        {"module": "history", "imports": ["HistoryStore", "HistoryEntry"]}
+      ]
+    }
+  },
+
+  "dependencies": {
+    "math": "^1.0.0",
+    "history": "^1.0.0"
+  }
+}

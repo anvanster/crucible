@@ -1,0 +1,43 @@
+{
+  "module": "logger",
+  "version": "1.0.0",
+  "layer": "infrastructure",
+  "description": "Simple logging functionality",
+
+  "exports": {
+    "Logger": {
+      "type": "class",
+      "methods": {
+        "log": {
+          "inputs": [
+            {"name": "message", "type": "string"}
+          ],
+          "returns": {
+            "type": "void"
+          },
+          "throws": [],
+          "calls": [],
+          "effects": ["state.write"]
+        },
+        "error": {
+          "inputs": [
+            {"name": "message", "type": "string"}
+          ],
+          "returns": {
+            "type": "void"
+          },
+          "throws": [],
+          "calls": [],
+          "effects": ["state.write"]
+        }
+      }
+    },
+
+    "LogLevel": {
+      "type": "enum",
+      "values": ["info", "warn", "error", "debug"]
+    }
+  },
+
+  "dependencies": {}
+}

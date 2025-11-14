@@ -1,0 +1,19 @@
+{
+  "version": "0.1.0",
+  "project": {
+    "name": "calculator-app",
+    "language": "typescript",
+    "architecture_pattern": "layered"
+  },
+  "modules": [
+    "math",
+    "calculator",
+    "history"
+  ],
+  "strict_validation": true,
+  "metadata": {
+    "author": "Crucible Examples",
+    "description": "Calculator demonstrating interfaces, classes, and dependencies",
+    "created": "2025-11-14T00:00:00Z"
+  }
+}

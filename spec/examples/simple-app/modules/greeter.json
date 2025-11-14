@@ -1,0 +1,56 @@
+{
+  "module": "greeter",
+  "version": "1.0.0",
+  "layer": "application",
+  "description": "Greeting functionality with logging",
+
+  "exports": {
+    "Greeter": {
+      "type": "class",
+      "methods": {
+        "greet": {
+          "inputs": [
+            {"name": "name", "type": "string"}
+          ],
+          "returns": {
+            "type": "string"
+          },
+          "throws": [],
+          "calls": [
+            "logger.Logger.log"
+          ],
+          "effects": []
+        },
+        "greetMany": {
+          "inputs": [
+            {"name": "names", "type": "Array<string>"}
+          ],
+          "returns": {
+            "type": "Array<string>"
+          },
+          "throws": [],
+          "calls": [
+            "logger.Logger.log"
+          ],
+          "effects": []
+        }
+      },
+      "dependencies": [
+        {"module": "logger", "imports": ["Logger"]}
+      ]
+    },
+
+    "GreetingConfig": {
+      "type": "interface",
+      "properties": {
+        "prefix": {"type": "string", "required": false},
+        "suffix": {"type": "string", "required": false},
+        "uppercase": {"type": "boolean", "required": false}
+      }
+    }
+  },
+
+  "dependencies": {
+    "logger": "^1.0.0"
+  }
+}

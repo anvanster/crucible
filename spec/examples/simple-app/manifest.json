@@ -1,0 +1,18 @@
+{
+  "version": "0.1.0",
+  "project": {
+    "name": "simple-app",
+    "language": "typescript",
+    "architecture_pattern": "layered"
+  },
+  "modules": [
+    "greeter",
+    "logger"
+  ],
+  "strict_validation": true,
+  "metadata": {
+    "author": "Crucible Examples",
+    "description": "A simple example demonstrating Crucible basics",
+    "created": "2025-11-14T00:00:00Z"
+  }
+}

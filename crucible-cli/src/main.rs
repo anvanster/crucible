@@ -41,6 +41,10 @@ enum Commands {
 
     /// Generate code from architecture
     Generate {
+        /// Path to .crucible directory
+        #[arg(long, default_value = ".crucible")]
+        path: PathBuf,
+
         /// Target language
         #[arg(long)]
         lang: String,
@@ -68,8 +72,8 @@ fn main() -> Result<()> {
         Commands::Validate { path, strict } => {
             validate_project(&path, strict)?;
         }
-        Commands::Generate { lang, output } => {
-            generate_code(&lang, &output)?;
+        Commands::Generate { path, lang, output } => {
+            generate_code(&path, &lang, &output)?;
         }
         Commands::Graph { format } => {
             println!("Graph generation not yet implemented");
@@ -178,8 +182,8 @@ fn validate_project(path: &PathBuf, strict: bool) -> Result<()> {
     Ok(())
 }
 
-fn generate_code(lang: &str, output: &PathBuf) -> Result<()> {
-    let parser = CrucibleParser::new(".crucible");
+fn generate_code(path: &PathBuf, lang: &str, output: &PathBuf) -> Result<()> {
+    let parser = CrucibleParser::new(path);
     let project = parser.parse_project()?;
 
     match lang {
