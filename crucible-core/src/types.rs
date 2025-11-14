@@ -173,7 +173,7 @@ pub struct Rule {
     pub description: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "lowercase")]
 pub enum Severity {
     Error,
@@ -198,4 +198,266 @@ fn default_strict() -> bool {
 
 fn default_required() -> bool {
     true
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_manifest_serialization() {
+        let manifest = Manifest {
+            version: "0.1.0".to_string(),
+            project: ProjectConfig {
+                name: "test-project".to_string(),
+                language: Language::Rust,
+                architecture_pattern: Some(ArchitecturePattern::Layered),
+            },
+            modules: vec!["module1".to_string(), "module2".to_string()],
+            strict_validation: true,
+            metadata: Some(Metadata {
+                author: Some("Test Author".to_string()),
+                repository: Some("https://github.com/test/repo".to_string()),
+                created: Some("2025-01-01T00:00:00Z".to_string()),
+            }),
+        };
+
+        let json = serde_json::to_string(&manifest).unwrap();
+        let deserialized: Manifest = serde_json::from_str(&json).unwrap();
+
+        assert_eq!(manifest.version, deserialized.version);
+        assert_eq!(manifest.project.name, deserialized.project.name);
+        assert_eq!(manifest.modules.len(), deserialized.modules.len());
+    }
+
+    #[test]
+    fn test_manifest_default_strict_validation() {
+        let json = r#"{
+            "version": "0.1.0",
+            "project": {"name": "test", "language": "rust"},
+            "modules": []
+        }"#;
+
+        let manifest: Manifest = serde_json::from_str(json).unwrap();
+        assert!(manifest.strict_validation);
+    }
+
+    #[test]
+    fn test_language_serialization() {
+        assert_eq!(
+            serde_json::to_string(&Language::TypeScript).unwrap(),
+            r#""typescript""#
+        );
+        assert_eq!(
+            serde_json::to_string(&Language::Rust).unwrap(),
+            r#""rust""#
+        );
+        assert_eq!(
+            serde_json::to_string(&Language::Python).unwrap(),
+            r#""python""#
+        );
+        assert_eq!(
+            serde_json::to_string(&Language::Go).unwrap(),
+            r#""go""#
+        );
+        assert_eq!(
+            serde_json::to_string(&Language::Java).unwrap(),
+            r#""java""#
+        );
+    }
+
+    #[test]
+    fn test_architecture_pattern_serialization() {
+        assert_eq!(
+            serde_json::to_string(&ArchitecturePattern::Layered).unwrap(),
+            r#""layered""#
+        );
+        assert_eq!(
+            serde_json::to_string(&ArchitecturePattern::Hexagonal).unwrap(),
+            r#""hexagonal""#
+        );
+        assert_eq!(
+            serde_json::to_string(&ArchitecturePattern::Microservices).unwrap(),
+            r#""microservices""#
+        );
+        assert_eq!(
+            serde_json::to_string(&ArchitecturePattern::Modular).unwrap(),
+            r#""modular""#
+        );
+    }
+
+    #[test]
+    fn test_module_serialization() {
+        let mut exports = HashMap::new();
+        exports.insert(
+            "TestClass".to_string(),
+            Export {
+                export_type: ExportType::Class,
+                methods: None,
+                properties: None,
+                values: None,
+                dependencies: None,
+            },
+        );
+
+        let mut dependencies = HashMap::new();
+        dependencies.insert("other-module".to_string(), "^1.0.0".to_string());
+
+        let module = Module {
+            module: "test-module".to_string(),
+            version: "1.0.0".to_string(),
+            layer: Some("core".to_string()),
+            description: Some("Test module".to_string()),
+            exports,
+            dependencies,
+        };
+
+        let json = serde_json::to_string(&module).unwrap();
+        let deserialized: Module = serde_json::from_str(&json).unwrap();
+
+        assert_eq!(module.module, deserialized.module);
+        assert_eq!(module.version, deserialized.version);
+        assert_eq!(module.layer, deserialized.layer);
+    }
+
+    #[test]
+    fn test_export_type_serialization() {
+        assert_eq!(
+            serde_json::to_string(&ExportType::Class).unwrap(),
+            r#""class""#
+        );
+        assert_eq!(
+            serde_json::to_string(&ExportType::Interface).unwrap(),
+            r#""interface""#
+        );
+        assert_eq!(
+            serde_json::to_string(&ExportType::Function).unwrap(),
+            r#""function""#
+        );
+        assert_eq!(
+            serde_json::to_string(&ExportType::Type).unwrap(),
+            r#""type""#
+        );
+        assert_eq!(
+            serde_json::to_string(&ExportType::Enum).unwrap(),
+            r#""enum""#
+        );
+    }
+
+    #[test]
+    fn test_method_with_defaults() {
+        let json = r#"{
+            "inputs": [],
+            "returns": {"type": "void"}
+        }"#;
+
+        let method: Method = serde_json::from_str(json).unwrap();
+        assert!(method.throws.is_empty());
+        assert!(method.calls.is_empty());
+        assert!(method.effects.is_empty());
+    }
+
+    #[test]
+    fn test_parameter_optional_default() {
+        let json = r#"{
+            "name": "param1",
+            "type": "string"
+        }"#;
+
+        let param: Parameter = serde_json::from_str(json).unwrap();
+        assert!(!param.optional);
+    }
+
+    #[test]
+    fn test_property_required_default() {
+        let json = r#"{
+            "type": "string"
+        }"#;
+
+        let prop: Property = serde_json::from_str(json).unwrap();
+        assert!(prop.required);
+    }
+
+    #[test]
+    fn test_severity_serialization() {
+        assert_eq!(
+            serde_json::to_string(&Severity::Error).unwrap(),
+            r#""error""#
+        );
+        assert_eq!(
+            serde_json::to_string(&Severity::Warning).unwrap(),
+            r#""warning""#
+        );
+        assert_eq!(
+            serde_json::to_string(&Severity::Info).unwrap(),
+            r#""info""#
+        );
+    }
+
+    #[test]
+    fn test_rules_deserialization() {
+        let json = r#"{
+            "rules": [
+                {
+                    "id": "test-rule",
+                    "enabled": true,
+                    "severity": "error",
+                    "description": "Test rule"
+                }
+            ]
+        }"#;
+
+        let rules: Rules = serde_json::from_str(json).unwrap();
+        assert_eq!(rules.rules.len(), 1);
+        assert_eq!(rules.rules[0].id, "test-rule");
+        assert!(rules.custom_rules.is_empty());
+    }
+
+    #[test]
+    fn test_layer_deserialization() {
+        let json = r#"{
+            "name": "core",
+            "can_depend_on": ["utils"]
+        }"#;
+
+        let layer: Layer = serde_json::from_str(json).unwrap();
+        assert_eq!(layer.name, "core");
+        assert_eq!(layer.can_depend_on.len(), 1);
+        assert_eq!(layer.can_depend_on[0], "utils");
+    }
+
+    #[test]
+    fn test_complete_export_with_methods() {
+        let json = r#"{
+            "type": "class",
+            "methods": {
+                "testMethod": {
+                    "inputs": [{"name": "arg", "type": "string"}],
+                    "returns": {"type": "boolean"},
+                    "throws": ["Error"],
+                    "calls": ["someFunction"],
+                    "effects": ["io.write"]
+                }
+            }
+        }"#;
+
+        let export: Export = serde_json::from_str(json).unwrap();
+        assert!(matches!(export.export_type, ExportType::Class));
+        assert!(export.methods.is_some());
+        let methods = export.methods.unwrap();
+        assert!(methods.contains_key("testMethod"));
+    }
+
+    #[test]
+    fn test_module_without_layer() {
+        let json = r#"{
+            "module": "test",
+            "version": "1.0.0",
+            "exports": {}
+        }"#;
+
+        let module: Module = serde_json::from_str(json).unwrap();
+        assert!(module.layer.is_none());
+        assert!(module.dependencies.is_empty());
+    }
 }
