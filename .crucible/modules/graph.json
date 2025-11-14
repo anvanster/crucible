@@ -1,0 +1,33 @@
+{
+  "module": "graph",
+  "version": "0.1.0",
+  "layer": "core",
+  "description": "Dependency graph analysis",
+  
+  "exports": {
+    "build_dependency_graph": {
+      "type": "function",
+      "inputs": [
+        {"name": "modules", "type": "Vec<types.Module>"}
+      ],
+      "returns": {
+        "type": "DiGraph"
+      },
+      "effects": []
+    },
+    "detect_cycles": {
+      "type": "function",
+      "inputs": [
+        {"name": "graph", "type": "DiGraph"}
+      ],
+      "returns": {
+        "type": "boolean"
+      },
+      "effects": []
+    }
+  },
+  
+  "dependencies": {
+    "types": "^0.1.0"
+  }
+}

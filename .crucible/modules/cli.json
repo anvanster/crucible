@@ -1,0 +1,31 @@
+{
+  "module": "cli",
+  "version": "0.1.0",
+  "layer": "presentation",
+  "description": "Command-line interface for Crucible",
+  
+  "exports": {
+    "run": {
+      "type": "function",
+      "inputs": [],
+      "returns": {
+        "type": "Result",
+        "inner": "void, error.CrucibleError"
+      },
+      "calls": [
+        "parser.Parser.parse_project",
+        "validator.Validator.validate",
+        "generator.Generator.generate"
+      ],
+      "effects": ["file.read", "file.write"]
+    }
+  },
+  
+  "dependencies": {
+    "parser": "^0.1.0",
+    "validator": "^0.1.0",
+    "generator": "^0.1.0",
+    "types": "^0.1.0",
+    "error": "^0.1.0"
+  }
+}

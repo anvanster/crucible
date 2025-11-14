@@ -1,0 +1,43 @@
+{
+  "module": "generator",
+  "version": "0.1.0",
+  "layer": "application",
+  "description": "Code generation from Crucible definitions",
+  
+  "exports": {
+    "Generator": {
+      "type": "class",
+      "methods": {
+        "generate": {
+          "inputs": [
+            {"name": "project", "type": "types.Project"},
+            {"name": "language", "type": "Language"},
+            {"name": "output_dir", "type": "string"}
+          ],
+          "returns": {
+            "type": "Result",
+            "inner": "void, error.CrucibleError"
+          },
+          "calls": [
+            "generator.generate_typescript",
+            "generator.generate_rust"
+          ],
+          "effects": ["file.write"]
+        }
+      },
+      "dependencies": [
+        {"module": "types", "imports": ["Project", "Module"]},
+        {"module": "error", "imports": ["CrucibleError"]}
+      ]
+    },
+    "Language": {
+      "type": "enum",
+      "values": ["TypeScript", "Rust", "Python", "Go", "Java"]
+    }
+  },
+  
+  "dependencies": {
+    "types": "^0.1.0",
+    "error": "^0.1.0"
+  }
+}

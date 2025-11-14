@@ -1,0 +1,56 @@
+{
+  "module": "parser",
+  "version": "0.1.0",
+  "layer": "core",
+  "description": "Parses Crucible JSON files into internal representations",
+  
+  "exports": {
+    "Parser": {
+      "type": "class",
+      "methods": {
+        "parse_project": {
+          "inputs": [],
+          "returns": {
+            "type": "Result",
+            "inner": "types.Project, error.CrucibleError"
+          },
+          "calls": [
+            "parser.parse_manifest",
+            "parser.parse_modules",
+            "parser.parse_rules"
+          ],
+          "effects": ["file.read"]
+        },
+        "parse_manifest": {
+          "inputs": [],
+          "returns": {
+            "type": "Result",
+            "inner": "types.Manifest, error.CrucibleError"
+          },
+          "calls": [],
+          "effects": ["file.read"]
+        },
+        "parse_module": {
+          "inputs": [
+            {"name": "name", "type": "string"}
+          ],
+          "returns": {
+            "type": "Result",
+            "inner": "types.Module, error.CrucibleError"
+          },
+          "calls": [],
+          "effects": ["file.read"]
+        }
+      },
+      "dependencies": [
+        {"module": "types", "imports": ["Manifest", "Module", "Project"]},
+        {"module": "error", "imports": ["CrucibleError"]}
+      ]
+    }
+  },
+  
+  "dependencies": {
+    "types": "^0.1.0",
+    "error": "^0.1.0"
+  }
+}

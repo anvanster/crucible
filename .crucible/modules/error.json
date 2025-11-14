@@ -1,0 +1,28 @@
+{
+  "module": "error",
+  "version": "0.1.0",
+  "layer": "core",
+  "description": "Error types for Crucible",
+  
+  "exports": {
+    "CrucibleError": {
+      "type": "enum",
+      "values": [
+        "FileRead",
+        "ParseError",
+        "ModuleNotFound",
+        "ExportNotFound",
+        "CircularDependency",
+        "LayerViolation",
+        "TypeNotFound",
+        "ValidationFailed"
+      ]
+    },
+    "Result": {
+      "type": "type",
+      "definition": "std::result::Result<T, CrucibleError>"
+    }
+  },
+  
+  "dependencies": {}
+}

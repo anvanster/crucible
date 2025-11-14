@@ -1,0 +1,23 @@
+{
+  "version": "0.1.0",
+  "project": {
+    "name": "crucible",
+    "language": "rust",
+    "architecture_pattern": "layered"
+  },
+  "modules": [
+    "types",
+    "error",
+    "parser",
+    "validator",
+    "graph",
+    "generator",
+    "cli"
+  ],
+  "strict_validation": true,
+  "metadata": {
+    "author": "Crucible Contributors",
+    "repository": "https://github.com/crucible-spec/crucible",
+    "created": "2025-11-14T00:00:00Z"
+  }
+}

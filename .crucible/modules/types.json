@@ -1,0 +1,46 @@
+{
+  "module": "types",
+  "version": "0.1.0",
+  "layer": "core",
+  "description": "Core type definitions for Crucible",
+  
+  "exports": {
+    "Manifest": {
+      "type": "interface",
+      "properties": {
+        "version": {"type": "string", "required": true},
+        "project": {"type": "ProjectConfig", "required": true},
+        "modules": {"type": "Vec<string>", "required": true},
+        "strict_validation": {"type": "boolean", "required": false}
+      }
+    },
+    "Module": {
+      "type": "interface",
+      "properties": {
+        "module": {"type": "string", "required": true},
+        "version": {"type": "string", "required": true},
+        "layer": {"type": "string", "required": false},
+        "exports": {"type": "HashMap<string, Export>", "required": true},
+        "dependencies": {"type": "HashMap<string, string>", "required": false}
+      }
+    },
+    "Export": {
+      "type": "interface",
+      "properties": {
+        "export_type": {"type": "ExportType", "required": true},
+        "methods": {"type": "HashMap<string, Method>", "required": false},
+        "properties": {"type": "HashMap<string, Property>", "required": false}
+      }
+    },
+    "Project": {
+      "type": "interface",
+      "properties": {
+        "manifest": {"type": "Manifest", "required": true},
+        "modules": {"type": "Vec<Module>", "required": true},
+        "rules": {"type": "Rules", "required": false}
+      }
+    }
+  },
+  
+  "dependencies": {}
+}

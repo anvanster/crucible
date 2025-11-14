@@ -1,0 +1,56 @@
+{
+  "module": "validator",
+  "version": "0.1.0",
+  "layer": "core",
+  "description": "Validates Crucible architectures against rules",
+  
+  "exports": {
+    "Validator": {
+      "type": "class",
+      "methods": {
+        "validate": {
+          "inputs": [],
+          "returns": {
+            "type": "ValidationResult"
+          },
+          "calls": [
+            "validator.check_circular_dependencies",
+            "validator.check_layer_boundaries",
+            "validator.check_type_existence"
+          ],
+          "effects": []
+        },
+        "check_circular_dependencies": {
+          "inputs": [],
+          "returns": {
+            "type": "Option<Vec<ValidationIssue>>"
+          },
+          "calls": [
+            "graph.build_dependency_graph",
+            "graph.detect_cycles"
+          ],
+          "effects": []
+        }
+      },
+      "dependencies": [
+        {"module": "types", "imports": ["Project", "Module", "Rules"]},
+        {"module": "error", "imports": ["ValidationError"]},
+        {"module": "graph", "imports": ["build_dependency_graph"]}
+      ]
+    },
+    "ValidationResult": {
+      "type": "interface",
+      "properties": {
+        "valid": {"type": "boolean", "required": true},
+        "errors": {"type": "Vec<ValidationIssue>", "required": true},
+        "warnings": {"type": "Vec<ValidationIssue>", "required": true}
+      }
+    }
+  },
+  
+  "dependencies": {
+    "types": "^0.1.0",
+    "error": "^0.1.0",
+    "graph": "^0.1.0"
+  }
+}
