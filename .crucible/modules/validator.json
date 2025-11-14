@@ -30,6 +30,46 @@
             "graph.detect_cycles"
           ],
           "effects": []
+        },
+        "check_layer_boundaries": {
+          "inputs": [],
+          "returns": {
+            "type": "Option<Vec<ValidationIssue>>"
+          },
+          "calls": [],
+          "effects": []
+        },
+        "check_type_existence": {
+          "inputs": [],
+          "returns": {
+            "type": "Option<Vec<ValidationIssue>>"
+          },
+          "calls": [],
+          "effects": []
+        },
+        "check_call_targets": {
+          "inputs": [],
+          "returns": {
+            "type": "Option<Vec<ValidationIssue>>"
+          },
+          "calls": [],
+          "effects": []
+        },
+        "check_used_dependencies": {
+          "inputs": [],
+          "returns": {
+            "type": "Option<Vec<ValidationIssue>>"
+          },
+          "calls": [],
+          "effects": []
+        },
+        "check_declared_dependencies": {
+          "inputs": [],
+          "returns": {
+            "type": "Option<Vec<ValidationIssue>>"
+          },
+          "calls": [],
+          "effects": []
         }
       },
       "dependencies": [

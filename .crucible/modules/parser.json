@@ -40,6 +40,26 @@
           },
           "calls": [],
           "effects": ["file.read"]
+        },
+        "parse_modules": {
+          "inputs": [
+            {"name": "module_names", "type": "Vec<string>"}
+          ],
+          "returns": {
+            "type": "Result",
+            "inner": "Vec<types.Module>, error.CrucibleError"
+          },
+          "calls": ["parser.parse_module"],
+          "effects": ["file.read"]
+        },
+        "parse_rules": {
+          "inputs": [],
+          "returns": {
+            "type": "Result",
+            "inner": "types.Rules, error.CrucibleError"
+          },
+          "calls": [],
+          "effects": ["file.read"]
         }
       },
       "dependencies": [
