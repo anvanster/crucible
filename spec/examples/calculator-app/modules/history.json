@@ -1,0 +1,56 @@
+{
+  "module": "history",
+  "version": "1.0.0",
+  "layer": "infrastructure",
+  "description": "Calculation history tracking",
+
+  "exports": {
+    "HistoryStore": {
+      "type": "class",
+      "methods": {
+        "add": {
+          "inputs": [
+            {"name": "entry", "type": "HistoryEntry"}
+          ],
+          "returns": {
+            "type": "void"
+          },
+          "throws": [],
+          "calls": [],
+          "effects": ["state.write"]
+        },
+        "getAll": {
+          "inputs": [],
+          "returns": {
+            "type": "Array<HistoryEntry>"
+          },
+          "throws": [],
+          "calls": [],
+          "effects": ["state.read"]
+        },
+        "clear": {
+          "inputs": [],
+          "returns": {
+            "type": "void"
+          },
+          "throws": [],
+          "calls": [],
+          "effects": ["state.write"]
+        }
+      }
+    },
+
+    "HistoryEntry": {
+      "type": "interface",
+      "properties": {
+        "operation": {"type": "string", "required": true},
+        "operandA": {"type": "number", "required": true},
+        "operandB": {"type": "number", "required": true},
+        "result": {"type": "number", "required": true},
+        "timestamp": {"type": "number", "required": true}
+      }
+    }
+  },
+
+  "dependencies": {}
+}

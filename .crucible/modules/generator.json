@@ -23,6 +23,28 @@
             "generator.generate_rust"
           ],
           "effects": ["file.write"]
+        },
+        "generate_typescript": {
+          "inputs": [
+            {"name": "output_dir", "type": "string"}
+          ],
+          "returns": {
+            "type": "Result",
+            "inner": "void, error.CrucibleError"
+          },
+          "calls": [],
+          "effects": ["file.write"]
+        },
+        "generate_rust": {
+          "inputs": [
+            {"name": "output_dir", "type": "string"}
+          ],
+          "returns": {
+            "type": "Result",
+            "inner": "void, error.CrucibleError"
+          },
+          "calls": [],
+          "effects": ["file.write"]
         }
       },
       "dependencies": [

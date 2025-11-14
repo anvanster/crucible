@@ -3,20 +3,16 @@
     "pattern": "layered",
     "layers": [
       {
-        "name": "cli",
-        "can_depend_on": ["application", "core"]
-      },
-      {
         "name": "application",
-        "can_depend_on": ["core"]
+        "can_depend_on": ["infrastructure"]
       },
       {
-        "name": "core",
-        "can_depend_on": ["core"]
+        "name": "infrastructure",
+        "can_depend_on": []
       }
     ]
   },
-  
+
   "rules": [
     {
       "id": "no-circular-dependencies",
@@ -31,21 +27,10 @@
       "description": "Modules can only depend on allowed layers"
     },
     {
-      "id": "all-calls-must-exist",
+      "id": "all-types-must-exist",
       "enabled": true,
       "severity": "error",
-      "description": "All function calls must reference exported functions"
-    }
-  ],
-  
-  "custom_rules": [
-    {
-      "id": "error-suffix",
-      "type": "naming-convention",
-      "target": "export",
-      "pattern": "^[A-Z][a-zA-Z]*Error$",
-      "severity": "warning",
-      "description": "Error types should end with 'Error'"
+      "description": "All referenced types must be defined"
     }
   ]
 }

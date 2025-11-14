@@ -1,0 +1,95 @@
+{
+  "module": "math",
+  "version": "1.0.0",
+  "layer": "domain",
+  "description": "Core mathematical operations",
+
+  "exports": {
+    "add": {
+      "type": "function",
+      "methods": {
+        "add": {
+          "inputs": [
+            {"name": "a", "type": "number"},
+            {"name": "b", "type": "number"}
+          ],
+          "returns": {
+            "type": "number"
+          },
+          "throws": [],
+          "calls": [],
+          "effects": []
+        }
+      }
+    },
+
+    "subtract": {
+      "type": "function",
+      "methods": {
+        "subtract": {
+          "inputs": [
+            {"name": "a", "type": "number"},
+            {"name": "b", "type": "number"}
+          ],
+          "returns": {
+            "type": "number"
+          },
+          "throws": [],
+          "calls": [],
+          "effects": []
+        }
+      }
+    },
+
+    "multiply": {
+      "type": "function",
+      "methods": {
+        "multiply": {
+          "inputs": [
+            {"name": "a", "type": "number"},
+            {"name": "b", "type": "number"}
+          ],
+          "returns": {
+            "type": "number"
+          },
+          "throws": [],
+          "calls": [],
+          "effects": []
+        }
+      }
+    },
+
+    "divide": {
+      "type": "function",
+      "methods": {
+        "divide": {
+          "inputs": [
+            {"name": "a", "type": "number"},
+            {"name": "b", "type": "number"}
+          ],
+          "returns": {
+            "type": "number"
+          },
+          "throws": ["DivisionByZeroError"],
+          "calls": [],
+          "effects": []
+        }
+      }
+    },
+
+    "DivisionByZeroError": {
+      "type": "class",
+      "properties": {
+        "message": {"type": "string", "required": true},
+        "code": {"type": "string", "required": true}
+      }
+    },
+
+    "Operation": {
+      "type": "enum",
+      "values": ["add", "subtract", "multiply", "divide"]
+    }
+  },
+
+  "dependencies": {}
+}
