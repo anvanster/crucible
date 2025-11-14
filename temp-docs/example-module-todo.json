@@ -1,0 +1,267 @@
+{
+  "module": "todo",
+  "version": "1.0.0",
+  "layer": "application",
+  "description": "Todo item management and business logic",
+  
+  "exports": {
+    "TodoService": {
+      "type": "class",
+      "methods": {
+        "createTodo": {
+          "inputs": [
+            {"name": "userId", "type": "string"},
+            {"name": "title", "type": "string"},
+            {"name": "description", "type": "string", "optional": true}
+          ],
+          "returns": {
+            "type": "Promise",
+            "inner": "Todo"
+          },
+          "throws": [
+            "ValidationError",
+            "DatabaseError"
+          ],
+          "calls": [
+            "todo.TodoRepository.create",
+            "user.UserRepository.findById"
+          ],
+          "effects": ["database.write", "database.read"]
+        },
+        "getTodo": {
+          "inputs": [
+            {"name": "id", "type": "string"},
+            {"name": "userId", "type": "string"}
+          ],
+          "returns": {
+            "type": "Promise",
+            "inner": "Todo"
+          },
+          "throws": [
+            "TodoNotFoundError",
+            "UnauthorizedError"
+          ],
+          "calls": [
+            "todo.TodoRepository.findById"
+          ],
+          "effects": ["database.read"]
+        },
+        "listTodos": {
+          "inputs": [
+            {"name": "userId", "type": "string"},
+            {"name": "filter", "type": "TodoFilter", "optional": true}
+          ],
+          "returns": {
+            "type": "Promise",
+            "inner": "Array<Todo>"
+          },
+          "throws": ["DatabaseError"],
+          "calls": [
+            "todo.TodoRepository.findByUserId"
+          ],
+          "effects": ["database.read"]
+        },
+        "updateTodo": {
+          "inputs": [
+            {"name": "id", "type": "string"},
+            {"name": "userId", "type": "string"},
+            {"name": "updates", "type": "TodoUpdate"}
+          ],
+          "returns": {
+            "type": "Promise",
+            "inner": "Todo"
+          },
+          "throws": [
+            "TodoNotFoundError",
+            "UnauthorizedError",
+            "ValidationError"
+          ],
+          "calls": [
+            "todo.TodoRepository.findById",
+            "todo.TodoRepository.update"
+          ],
+          "effects": ["database.read", "database.write"]
+        },
+        "deleteTodo": {
+          "inputs": [
+            {"name": "id", "type": "string"},
+            {"name": "userId", "type": "string"}
+          ],
+          "returns": {
+            "type": "Promise",
+            "inner": "void"
+          },
+          "throws": [
+            "TodoNotFoundError",
+            "UnauthorizedError"
+          ],
+          "calls": [
+            "todo.TodoRepository.findById",
+            "todo.TodoRepository.delete"
+          ],
+          "effects": ["database.read", "database.write"]
+        },
+        "completeTodo": {
+          "inputs": [
+            {"name": "id", "type": "string"},
+            {"name": "userId", "type": "string"}
+          ],
+          "returns": {
+            "type": "Promise",
+            "inner": "Todo"
+          },
+          "throws": [
+            "TodoNotFoundError",
+            "UnauthorizedError"
+          ],
+          "calls": [
+            "todo.TodoRepository.findById",
+            "todo.TodoRepository.update"
+          ],
+          "effects": ["database.read", "database.write"]
+        }
+      },
+      "dependencies": [
+        {"module": "todo", "imports": ["TodoRepository"]},
+        {"module": "user", "imports": ["UserRepository"]}
+      ]
+    },
+    
+    "TodoRepository": {
+      "type": "class",
+      "methods": {
+        "create": {
+          "inputs": [
+            {"name": "data", "type": "CreateTodoData"}
+          ],
+          "returns": {
+            "type": "Promise",
+            "inner": "Todo"
+          },
+          "throws": ["DatabaseError"],
+          "calls": ["database.Database.insert"],
+          "effects": ["database.write"]
+        },
+        "findById": {
+          "inputs": [
+            {"name": "id", "type": "string"}
+          ],
+          "returns": {
+            "type": "Promise",
+            "inner": "Optional<Todo>"
+          },
+          "throws": ["DatabaseError"],
+          "calls": ["database.Database.query"],
+          "effects": ["database.read"]
+        },
+        "findByUserId": {
+          "inputs": [
+            {"name": "userId", "type": "string"},
+            {"name": "filter", "type": "TodoFilter", "optional": true}
+          ],
+          "returns": {
+            "type": "Promise",
+            "inner": "Array<Todo>"
+          },
+          "throws": ["DatabaseError"],
+          "calls": ["database.Database.query"],
+          "effects": ["database.read"]
+        },
+        "update": {
+          "inputs": [
+            {"name": "id", "type": "string"},
+            {"name": "updates", "type": "TodoUpdate"}
+          ],
+          "returns": {
+            "type": "Promise",
+            "inner": "Todo"
+          },
+          "throws": ["DatabaseError"],
+          "calls": ["database.Database.update"],
+          "effects": ["database.write"]
+        },
+        "delete": {
+          "inputs": [
+            {"name": "id", "type": "string"}
+          ],
+          "returns": {
+            "type": "Promise",
+            "inner": "void"
+          },
+          "throws": ["DatabaseError"],
+          "calls": ["database.Database.delete"],
+          "effects": ["database.write"]
+        }
+      },
+      "dependencies": [
+        {"module": "database", "imports": ["Database"]}
+      ]
+    },
+    
+    "Todo": {
+      "type": "interface",
+      "properties": {
+        "id": {"type": "string", "required": true},
+        "userId": {"type": "string", "required": true},
+        "title": {"type": "string", "required": true},
+        "description": {"type": "string", "required": false},
+        "completed": {"type": "boolean", "required": true},
+        "createdAt": {"type": "Date", "required": true},
+        "updatedAt": {"type": "Date", "required": true},
+        "completedAt": {"type": "Date", "required": false}
+      }
+    },
+    
+    "CreateTodoData": {
+      "type": "interface",
+      "properties": {
+        "userId": {"type": "string", "required": true},
+        "title": {"type": "string", "required": true},
+        "description": {"type": "string", "required": false}
+      }
+    },
+    
+    "TodoUpdate": {
+      "type": "interface",
+      "properties": {
+        "title": {"type": "string", "required": false},
+        "description": {"type": "string", "required": false},
+        "completed": {"type": "boolean", "required": false}
+      }
+    },
+    
+    "TodoFilter": {
+      "type": "interface",
+      "properties": {
+        "completed": {"type": "boolean", "required": false},
+        "searchQuery": {"type": "string", "required": false},
+        "sortBy": {"type": "TodoSortField", "required": false},
+        "sortOrder": {"type": "SortOrder", "required": false}
+      }
+    },
+    
+    "TodoSortField": {
+      "type": "enum",
+      "values": ["createdAt", "updatedAt", "title", "completedAt"]
+    },
+    
+    "SortOrder": {
+      "type": "enum",
+      "values": ["asc", "desc"]
+    },
+    
+    "TodoNotFoundError": {
+      "type": "class",
+      "properties": {
+        "message": {"type": "string", "required": true},
+        "code": {"type": "string", "required": true},
+        "todoId": {"type": "string", "required": true}
+      }
+    }
+  },
+  
+  "dependencies": {
+    "database": "^1.0.0",
+    "user": "^1.0.0"
+  }
+}

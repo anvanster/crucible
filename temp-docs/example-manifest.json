@@ -1,0 +1,21 @@
+{
+  "version": "0.1.0",
+  "project": {
+    "name": "todo-app",
+    "language": "typescript",
+    "architecture_pattern": "layered"
+  },
+  "modules": [
+    "api",
+    "todo",
+    "user",
+    "database",
+    "auth"
+  ],
+  "strict_validation": true,
+  "metadata": {
+    "author": "Crucible Examples",
+    "repository": "https://github.com/crucible-spec/examples",
+    "created": "2025-11-13T00:00:00Z"
+  }
+}

@@ -1,0 +1,130 @@
+{
+  "module": "auth",
+  "version": "1.0.0",
+  "layer": "application",
+  "description": "Authentication and authorization services",
+  
+  "exports": {
+    "AuthService": {
+      "type": "class",
+      "methods": {
+        "login": {
+          "inputs": [
+            {"name": "email", "type": "string"},
+            {"name": "password", "type": "string"}
+          ],
+          "returns": {
+            "type": "Promise",
+            "inner": "AuthToken"
+          },
+          "throws": [
+            "InvalidCredentialsError",
+            "DatabaseError"
+          ],
+          "calls": [
+            "user.UserRepository.findByEmail",
+            "crypto.HashService.compare"
+          ],
+          "effects": ["database.read", "session.create"]
+        },
+        "logout": {
+          "inputs": [
+            {"name": "token", "type": "string"}
+          ],
+          "returns": {
+            "type": "Promise",
+            "inner": "void"
+          },
+          "throws": ["SessionNotFoundError"],
+          "calls": ["session.SessionStore.delete"],
+          "effects": ["session.delete"]
+        },
+        "verifyToken": {
+          "inputs": [
+            {"name": "token", "type": "string"}
+          ],
+          "returns": {
+            "type": "Promise",
+            "inner": "user.User"
+          },
+          "throws": [
+            "InvalidTokenError",
+            "TokenExpiredError"
+          ],
+          "calls": [
+            "session.SessionStore.get",
+            "user.UserRepository.findById"
+          ],
+          "effects": ["session.read", "database.read"]
+        },
+        "register": {
+          "inputs": [
+            {"name": "email", "type": "string"},
+            {"name": "password", "type": "string"},
+            {"name": "name", "type": "string"}
+          ],
+          "returns": {
+            "type": "Promise",
+            "inner": "user.User"
+          },
+          "throws": [
+            "EmailAlreadyExistsError",
+            "WeakPasswordError",
+            "DatabaseError"
+          ],
+          "calls": [
+            "user.UserRepository.findByEmail",
+            "crypto.HashService.hash",
+            "user.UserRepository.create"
+          ],
+          "effects": ["database.read", "database.write"]
+        }
+      },
+      "dependencies": [
+        {"module": "user", "imports": ["UserRepository", "User"]},
+        {"module": "crypto", "imports": ["HashService"]},
+        {"module": "session", "imports": ["SessionStore"]}
+      ]
+    },
+    
+    "AuthToken": {
+      "type": "interface",
+      "properties": {
+        "token": {"type": "string", "required": true},
+        "expiresAt": {"type": "Date", "required": true},
+        "userId": {"type": "string", "required": true}
+      }
+    },
+    
+    "InvalidCredentialsError": {
+      "type": "class",
+      "properties": {
+        "message": {"type": "string", "required": true},
+        "code": {"type": "string", "required": true}
+      }
+    },
+    
+    "InvalidTokenError": {
+      "type": "class",
+      "properties": {
+        "message": {"type": "string", "required": true},
+        "code": {"type": "string", "required": true}
+      }
+    },
+    
+    "TokenExpiredError": {
+      "type": "class",
+      "properties": {
+        "message": {"type": "string", "required": true},
+        "code": {"type": "string", "required": true},
+        "expiredAt": {"type": "Date", "required": true}
+      }
+    }
+  },
+  
+  "dependencies": {
+    "user": "^1.0.0",
+    "crypto": "^1.0.0",
+    "session": "^1.0.0"
+  }
+}
