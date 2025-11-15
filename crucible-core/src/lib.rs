@@ -3,6 +3,7 @@
 //! This library implements the Crucible specification for
 //! AI-native application architecture.
 
+pub mod claude;
 pub mod error;
 pub mod generator;
 pub mod graph;

@@ -1,0 +1,68 @@
+{
+  "dependencies": {
+    "claude": "^0.1.0",
+    "error": "^0.1.0",
+    "types": "^0.1.0"
+  },
+  "description": "Auto-generated module definition for context",
+  "exports": {
+    "ContextGenerator": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
+    },
+    "ContextSummary": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
+    },
+    "LayerInfo": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
+    },
+    "ModuleCompact": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
+    },
+    "NamingPatterns": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
+    },
+    "OptimizationInfo": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
+    },
+    "QuickReference": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
+    },
+    "SummaryInfo": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
+    },
+    "generate_context_json": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "function"
+    },
+    "generate_instructions": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "function"
+    },
+    "new": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "function"
+    }
+  },
+  "layer": "core",
+  "module": "context",
+  "version": "0.1.0"
+}

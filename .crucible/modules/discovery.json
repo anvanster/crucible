@@ -1,0 +1,32 @@
+{
+  "dependencies": {
+    "error": "^0.1.0",
+    "types": "^0.1.0"
+  },
+  "description": "Auto-generated module definition for discovery",
+  "exports": {
+    "ArchitectureDiscovery": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
+    },
+    "discover": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "function"
+    },
+    "new": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "function"
+    },
+    "suggest_architecture": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "function"
+    }
+  },
+  "layer": "core",
+  "module": "discovery",
+  "version": "0.1.0"
+}

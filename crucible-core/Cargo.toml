@@ -11,6 +11,9 @@ serde_json.workspace = true
 thiserror.workspace = true
 petgraph.workspace = true
 semver.workspace = true
+handlebars.workspace = true
+walkdir.workspace = true
+ignore.workspace = true
 
 [dev-dependencies]
 tempfile = "3.0"

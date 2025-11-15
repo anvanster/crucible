@@ -1,46 +1,169 @@
 {
-  "module": "types",
-  "version": "0.1.0",
-  "layer": "core",
+  "dependencies": {},
   "description": "Core type definitions for Crucible",
-  
   "exports": {
-    "Manifest": {
-      "type": "interface",
-      "properties": {
-        "version": {"type": "string", "required": true},
-        "project": {"type": "ProjectConfig", "required": true},
-        "modules": {"type": "Vec<string>", "required": true},
-        "strict_validation": {"type": "boolean", "required": false}
-      }
+    "Architecture": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
     },
-    "Module": {
-      "type": "interface",
-      "properties": {
-        "module": {"type": "string", "required": true},
-        "version": {"type": "string", "required": true},
-        "layer": {"type": "string", "required": false},
-        "exports": {"type": "HashMap<string, Export>", "required": true},
-        "dependencies": {"type": "HashMap<string, string>", "required": false}
-      }
+    "ArchitecturePattern": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
+    },
+    "CustomRule": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
+    },
+    "Dependency": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
     },
     "Export": {
-      "type": "interface",
       "properties": {
-        "export_type": {"type": "ExportType", "required": true},
-        "methods": {"type": "HashMap<string, Method>", "required": false},
-        "properties": {"type": "HashMap<string, Property>", "required": false}
-      }
+        "export_type": {
+          "required": true,
+          "type": "ExportType"
+        },
+        "methods": {
+          "required": false,
+          "type": "HashMap<string, Method>"
+        },
+        "properties": {
+          "required": false,
+          "type": "HashMap<string, Property>"
+        }
+      },
+      "type": "interface"
+    },
+    "ExportType": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
+    },
+    "Language": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
+    },
+    "Layer": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
+    },
+    "Manifest": {
+      "properties": {
+        "modules": {
+          "required": true,
+          "type": "Vec<string>"
+        },
+        "project": {
+          "required": true,
+          "type": "ProjectConfig"
+        },
+        "strict_validation": {
+          "required": false,
+          "type": "boolean"
+        },
+        "version": {
+          "required": true,
+          "type": "string"
+        }
+      },
+      "type": "interface"
+    },
+    "Metadata": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
+    },
+    "Method": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
+    },
+    "Module": {
+      "properties": {
+        "dependencies": {
+          "required": false,
+          "type": "HashMap<string, string>"
+        },
+        "exports": {
+          "required": true,
+          "type": "HashMap<string, Export>"
+        },
+        "layer": {
+          "required": false,
+          "type": "string"
+        },
+        "module": {
+          "required": true,
+          "type": "string"
+        },
+        "version": {
+          "required": true,
+          "type": "string"
+        }
+      },
+      "type": "interface"
+    },
+    "Parameter": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
     },
     "Project": {
-      "type": "interface",
       "properties": {
-        "manifest": {"type": "Manifest", "required": true},
-        "modules": {"type": "Vec<Module>", "required": true},
-        "rules": {"type": "Rules", "required": false}
-      }
+        "manifest": {
+          "required": true,
+          "type": "Manifest"
+        },
+        "modules": {
+          "required": true,
+          "type": "Vec<Module>"
+        },
+        "rules": {
+          "required": false,
+          "type": "Rules"
+        }
+      },
+      "type": "interface"
+    },
+    "ProjectConfig": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
+    },
+    "Property": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
+    },
+    "ReturnType": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
+    },
+    "Rule": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
+    },
+    "Rules": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
+    },
+    "Severity": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
     }
   },
-  
-  "dependencies": {}
+  "layer": "core",
+  "module": "types",
+  "version": "0.1.0"
 }

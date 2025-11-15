@@ -1,0 +1,181 @@
+{
+  "module": "claude",
+  "version": "0.1.0",
+  "layer": "core",
+  "description": "Claude Code integration for architecture-aware AI development",
+
+  "exports": {
+    "IntegrationMode": {
+      "type": "enum",
+      "values": ["Basic", "Enhanced", "Strict"]
+    },
+    "ValidationLevel": {
+      "type": "enum",
+      "values": ["Error", "Warning", "Info"]
+    },
+    "IntegrationConfig": {
+      "type": "class",
+      "methods": {}
+    },
+    "ContextGenerator": {
+      "type": "class",
+      "methods": {
+        "generate_instructions": {
+          "inputs": [],
+          "returns": {"type": "string"},
+          "calls": [],
+          "effects": []
+        },
+        "generate_context_json": {
+          "inputs": [],
+          "returns": {
+            "type": "Result",
+            "inner": "string, error.CrucibleError"
+          },
+          "calls": [],
+          "effects": []
+        }
+      },
+      "dependencies": [
+        {"module": "types", "imports": ["Project", "Module"]},
+        {"module": "error", "imports": ["CrucibleError", "Result"]}
+      ]
+    },
+    "ValidationSuggestion": {
+      "type": "type",
+      "description": "Architecture-aware suggestion for fixing validation issues"
+    },
+    "ValidationHooks": {
+      "type": "class",
+      "methods": {
+        "format_validation_errors": {
+          "inputs": [
+            {"name": "result", "type": "validator.ValidationResult"}
+          ],
+          "returns": {"type": "string"},
+          "calls": [],
+          "effects": [],
+          "description": "Format validation errors for Claude with suggestions"
+        },
+        "generate_suggestions": {
+          "inputs": [
+            {"name": "issue", "type": "validator.ValidationIssue"}
+          ],
+          "returns": {"type": "Vec<ValidationSuggestion>"},
+          "calls": [],
+          "effects": [],
+          "description": "Generate architecture-aware suggestions for an issue"
+        },
+        "format_with_context": {
+          "inputs": [
+            {"name": "result", "type": "validator.ValidationResult"}
+          ],
+          "returns": {"type": "string"},
+          "calls": [],
+          "effects": [],
+          "description": "Format validation with architectural context and examples"
+        }
+      },
+      "dependencies": [
+        {"module": "types", "imports": ["Project", "Module"]},
+        {"module": "validator", "imports": ["ValidationResult", "ValidationIssue"]}
+      ]
+    },
+    "ModuleDefinition": {
+      "type": "type",
+      "description": "Generated module definition for auto-update"
+    },
+    "SyncReport": {
+      "type": "interface",
+      "properties": {
+        "modules_discovered": {"type": "number", "required": true},
+        "new_modules": {"type": "Vec<string>", "required": true},
+        "updated_modules": {"type": "Vec<string>", "required": true},
+        "new_exports": {"type": "HashMap<string, Vec<string>>", "required": true},
+        "new_dependencies": {"type": "HashMap<string, Vec<string>>", "required": true}
+      },
+      "description": "Report of sync analysis results with updated modules tracking"
+    },
+    "DiscoveredModule": {
+      "type": "interface",
+      "properties": {
+        "name": {"type": "string", "required": true},
+        "file_path": {"type": "string", "required": true},
+        "exports": {"type": "Vec<string>", "required": true},
+        "imports": {"type": "Vec<string>", "required": true}
+      },
+      "description": "Discovered module from code parsing"
+    },
+    "SyncManager": {
+      "type": "class",
+      "methods": {
+        "sync_from_code": {
+          "inputs": [],
+          "returns": {"type": "Result<SyncReport>"},
+          "calls": [],
+          "effects": [],
+          "description": "Sync architecture from code changes"
+        },
+        "generate_module_definition": {
+          "inputs": [
+            {"name": "module_name", "type": "string"},
+            {"name": "discovered", "type": "DiscoveredModule"}
+          ],
+          "returns": {"type": "ModuleDefinition"},
+          "calls": [],
+          "effects": [],
+          "description": "Generate JSON module definition from discovered code"
+        },
+        "update_existing_module": {
+          "inputs": [
+            {"name": "module_path", "type": "string"},
+            {"name": "new_exports", "type": "Vec<string>"},
+            {"name": "new_dependencies", "type": "Vec<string>"},
+            {"name": "discovered", "type": "DiscoveredModule"}
+          ],
+          "returns": {"type": "Result<string>"},
+          "calls": [],
+          "effects": ["reads .crucible/modules/*.json"],
+          "description": "Merge new exports and dependencies into existing module JSON, returns updated JSON string"
+        },
+        "apply_sync_updates": {
+          "inputs": [
+            {"name": "report", "type": "SyncReport"},
+            {"name": "interactive", "type": "boolean"}
+          ],
+          "returns": {"type": "Result<usize>"},
+          "calls": [],
+          "effects": ["writes .crucible/modules/*.json files"],
+          "description": "Apply sync updates to architecture with optional prompting"
+        },
+        "format_sync_prompt": {
+          "inputs": [
+            {"name": "report", "type": "SyncReport"}
+          ],
+          "returns": {"type": "string"},
+          "calls": [],
+          "effects": [],
+          "description": "Format interactive sync prompt for user"
+        }
+      },
+      "dependencies": [
+        {"module": "types", "imports": ["Project", "Module"]},
+        {"module": "error", "imports": ["Result"]}
+      ]
+    },
+    "ArchitectureDiscovery": {
+      "type": "class",
+      "methods": {}
+    },
+    "TemplateEngine": {
+      "type": "class",
+      "methods": {}
+    }
+  },
+
+  "dependencies": {
+    "types": "^0.1.0",
+    "error": "^0.1.0",
+    "validator": "^0.1.0"
+  }
+}

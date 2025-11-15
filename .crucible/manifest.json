@@ -12,7 +12,8 @@
     "validator",
     "graph",
     "generator",
-    "cli"
+    "cli",
+    "claude"
   ],
   "strict_validation": true,
   "metadata": {

@@ -1,0 +1,41 @@
+{
+  "dependencies": {
+    "error": "^0.1.0"
+  },
+  "description": "Auto-generated module definition for templates",
+  "exports": {
+    "TemplateEngine": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
+    },
+    "new": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "function"
+    },
+    "register_defaults": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "function"
+    },
+    "register_template": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "function"
+    },
+    "register_template_file": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "function"
+    },
+    "render": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "function"
+    }
+  },
+  "layer": "core",
+  "module": "templates",
+  "version": "0.1.0"
+}

@@ -1,0 +1,62 @@
+{
+  "version": "0.1.0",
+  "mode": "enhanced",
+  "project": {
+    "name": "crucible",
+    "root": "/Users/anvanster/projects/crucible",
+    "crucible_dir": "/Users/anvanster/projects/crucible/.crucible"
+  },
+  "features": {
+    "auto_validation": true,
+    "sync_on_change": true,
+    "suggest_improvements": true,
+    "track_violations": true,
+    "generate_types": true
+  },
+  "validation": {
+    "pre_commit": true,
+    "on_save": false,
+    "on_generate": true,
+    "severity": "warning",
+    "rules": {
+      "layer_boundaries": "error",
+      "undeclared_dependencies": "warning",
+      "missing_exports": "warning",
+      "type_mismatches": "error",
+      "circular_dependencies": "error"
+    }
+  },
+  "sync": {
+    "strategy": "bidirectional",
+    "auto_sync": true,
+    "conflict_resolution": "prompt",
+    "ignore_patterns": [
+      "*.test.ts",
+      "*.spec.ts",
+      "__tests__/**"
+    ]
+  },
+  "templates": {
+    "service": "templates/service.hbs",
+    "controller": "templates/controller.hbs",
+    "repository": "templates/repository.hbs",
+    "module": "templates/module.hbs"
+  },
+  "context": {
+    "max_tokens": 4000,
+    "include_descriptions": true,
+    "include_examples": false,
+    "focus_mode": "auto",
+    "optimization": "aggressive"
+  },
+  "commands": {
+    "validate": "crucible validate",
+    "sync": "crucible claude sync",
+    "generate": "crucible generate"
+  },
+  "ui": {
+    "show_hints": true,
+    "inline_validation": true,
+    "highlight_violations": true
+  }
+}

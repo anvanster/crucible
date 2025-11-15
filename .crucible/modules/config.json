@@ -1,0 +1,81 @@
+{
+  "dependencies": {
+    "error": "^0.1.0"
+  },
+  "description": "Auto-generated module definition for config",
+  "exports": {
+    "ContextConfig": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
+    },
+    "Features": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
+    },
+    "IntegrationConfig": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
+    },
+    "IntegrationMode": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
+    },
+    "OutputFormat": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
+    },
+    "ProjectInfo": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
+    },
+    "SyncConfig": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
+    },
+    "UiConfig": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
+    },
+    "ValidationConfig": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
+    },
+    "ValidationLevel": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
+    },
+    "load": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "function"
+    },
+    "new": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "function"
+    },
+    "save": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "function"
+    },
+    "write_claude_files": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "function"
+    }
+  },
+  "layer": "core",
+  "module": "config",
+  "version": "0.1.0"
+}

@@ -1,96 +1,151 @@
 {
-  "module": "validator",
-  "version": "0.1.0",
-  "layer": "core",
+  "dependencies": {
+    "error": "^0.1.0",
+    "graph": "^0.1.0",
+    "types": "^0.1.0"
+  },
   "description": "Validates Crucible architectures against rules",
-  
   "exports": {
+    "ValidationIssue": {
+      "properties": {
+        "location": {
+          "required": false,
+          "type": "Option<string>"
+        },
+        "message": {
+          "required": true,
+          "type": "string"
+        },
+        "rule": {
+          "required": true,
+          "type": "string"
+        },
+        "severity": {
+          "required": true,
+          "type": "types.Severity"
+        }
+      },
+      "type": "interface"
+    },
+    "ValidationResult": {
+      "properties": {
+        "errors": {
+          "required": true,
+          "type": "Vec<ValidationIssue>"
+        },
+        "valid": {
+          "required": true,
+          "type": "boolean"
+        },
+        "warnings": {
+          "required": true,
+          "type": "Vec<ValidationIssue>"
+        }
+      },
+      "type": "interface"
+    },
     "Validator": {
-      "type": "class",
+      "dependencies": [
+        {
+          "imports": [
+            "Project",
+            "Module",
+            "Rules"
+          ],
+          "module": "types"
+        },
+        {
+          "imports": [
+            "ValidationError"
+          ],
+          "module": "error"
+        },
+        {
+          "imports": [
+            "build_dependency_graph"
+          ],
+          "module": "graph"
+        }
+      ],
       "methods": {
-        "validate": {
+        "check_call_targets": {
+          "calls": [],
+          "effects": [],
           "inputs": [],
           "returns": {
-            "type": "ValidationResult"
-          },
+            "type": "Option<Vec<ValidationIssue>>"
+          }
+        },
+        "check_circular_dependencies": {
+          "calls": [
+            "graph.build_dependency_graph",
+            "graph.detect_cycles"
+          ],
+          "effects": [],
+          "inputs": [],
+          "returns": {
+            "type": "Option<Vec<ValidationIssue>>"
+          }
+        },
+        "check_declared_dependencies": {
+          "calls": [],
+          "effects": [],
+          "inputs": [],
+          "returns": {
+            "type": "Option<Vec<ValidationIssue>>"
+          }
+        },
+        "check_layer_boundaries": {
+          "calls": [],
+          "effects": [],
+          "inputs": [],
+          "returns": {
+            "type": "Option<Vec<ValidationIssue>>"
+          }
+        },
+        "check_type_existence": {
+          "calls": [],
+          "effects": [],
+          "inputs": [],
+          "returns": {
+            "type": "Option<Vec<ValidationIssue>>"
+          }
+        },
+        "check_used_dependencies": {
+          "calls": [],
+          "effects": [],
+          "inputs": [],
+          "returns": {
+            "type": "Option<Vec<ValidationIssue>>"
+          }
+        },
+        "validate": {
           "calls": [
             "validator.check_circular_dependencies",
             "validator.check_layer_boundaries",
             "validator.check_type_existence"
           ],
-          "effects": []
-        },
-        "check_circular_dependencies": {
+          "effects": [],
           "inputs": [],
           "returns": {
-            "type": "Option<Vec<ValidationIssue>>"
-          },
-          "calls": [
-            "graph.build_dependency_graph",
-            "graph.detect_cycles"
-          ],
-          "effects": []
-        },
-        "check_layer_boundaries": {
-          "inputs": [],
-          "returns": {
-            "type": "Option<Vec<ValidationIssue>>"
-          },
-          "calls": [],
-          "effects": []
-        },
-        "check_type_existence": {
-          "inputs": [],
-          "returns": {
-            "type": "Option<Vec<ValidationIssue>>"
-          },
-          "calls": [],
-          "effects": []
-        },
-        "check_call_targets": {
-          "inputs": [],
-          "returns": {
-            "type": "Option<Vec<ValidationIssue>>"
-          },
-          "calls": [],
-          "effects": []
-        },
-        "check_used_dependencies": {
-          "inputs": [],
-          "returns": {
-            "type": "Option<Vec<ValidationIssue>>"
-          },
-          "calls": [],
-          "effects": []
-        },
-        "check_declared_dependencies": {
-          "inputs": [],
-          "returns": {
-            "type": "Option<Vec<ValidationIssue>>"
-          },
-          "calls": [],
-          "effects": []
+            "type": "ValidationResult"
+          }
         }
       },
-      "dependencies": [
-        {"module": "types", "imports": ["Project", "Module", "Rules"]},
-        {"module": "error", "imports": ["ValidationError"]},
-        {"module": "graph", "imports": ["build_dependency_graph"]}
-      ]
+      "type": "class"
     },
-    "ValidationResult": {
-      "type": "interface",
-      "properties": {
-        "valid": {"type": "boolean", "required": true},
-        "errors": {"type": "Vec<ValidationIssue>", "required": true},
-        "warnings": {"type": "Vec<ValidationIssue>", "required": true}
-      }
+    "new": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "function"
+    },
+    "validate": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "function"
     }
   },
-  
-  "dependencies": {
-    "types": "^0.1.0",
-    "error": "^0.1.0",
-    "graph": "^0.1.0"
-  }
+  "layer": "core",
+  "module": "validator",
+  "version": "0.1.0"
 }

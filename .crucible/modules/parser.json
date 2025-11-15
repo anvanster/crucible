@@ -1,76 +1,134 @@
 {
-  "module": "parser",
-  "version": "0.1.0",
-  "layer": "core",
+  "dependencies": {
+    "error": "^0.1.0",
+    "types": "^0.1.0"
+  },
   "description": "Parses Crucible JSON files into internal representations",
-  
   "exports": {
     "Parser": {
-      "type": "class",
+      "dependencies": [
+        {
+          "imports": [
+            "Manifest",
+            "Module",
+            "Project"
+          ],
+          "module": "types"
+        },
+        {
+          "imports": [
+            "CrucibleError"
+          ],
+          "module": "error"
+        }
+      ],
       "methods": {
-        "parse_project": {
+        "parse_manifest": {
+          "calls": [],
+          "effects": [
+            "file.read"
+          ],
           "inputs": [],
           "returns": {
-            "type": "Result",
-            "inner": "types.Project, error.CrucibleError"
-          },
+            "inner": "types.Manifest, error.CrucibleError",
+            "type": "Result"
+          }
+        },
+        "parse_module": {
+          "calls": [],
+          "effects": [
+            "file.read"
+          ],
+          "inputs": [
+            {
+              "name": "name",
+              "type": "string"
+            }
+          ],
+          "returns": {
+            "inner": "types.Module, error.CrucibleError",
+            "type": "Result"
+          }
+        },
+        "parse_modules": {
+          "calls": [
+            "parser.parse_module"
+          ],
+          "effects": [
+            "file.read"
+          ],
+          "inputs": [
+            {
+              "name": "module_names",
+              "type": "Vec<string>"
+            }
+          ],
+          "returns": {
+            "inner": "Vec<types.Module>, error.CrucibleError",
+            "type": "Result"
+          }
+        },
+        "parse_project": {
           "calls": [
             "parser.parse_manifest",
             "parser.parse_modules",
             "parser.parse_rules"
           ],
-          "effects": ["file.read"]
-        },
-        "parse_manifest": {
+          "effects": [
+            "file.read"
+          ],
           "inputs": [],
           "returns": {
-            "type": "Result",
-            "inner": "types.Manifest, error.CrucibleError"
-          },
-          "calls": [],
-          "effects": ["file.read"]
-        },
-        "parse_module": {
-          "inputs": [
-            {"name": "name", "type": "string"}
-          ],
-          "returns": {
-            "type": "Result",
-            "inner": "types.Module, error.CrucibleError"
-          },
-          "calls": [],
-          "effects": ["file.read"]
-        },
-        "parse_modules": {
-          "inputs": [
-            {"name": "module_names", "type": "Vec<string>"}
-          ],
-          "returns": {
-            "type": "Result",
-            "inner": "Vec<types.Module>, error.CrucibleError"
-          },
-          "calls": ["parser.parse_module"],
-          "effects": ["file.read"]
+            "inner": "types.Project, error.CrucibleError",
+            "type": "Result"
+          }
         },
         "parse_rules": {
+          "calls": [],
+          "effects": [
+            "file.read"
+          ],
           "inputs": [],
           "returns": {
-            "type": "Result",
-            "inner": "types.Rules, error.CrucibleError"
-          },
-          "calls": [],
-          "effects": ["file.read"]
+            "inner": "types.Rules, error.CrucibleError",
+            "type": "Result"
+          }
         }
       },
-      "dependencies": [
-        {"module": "types", "imports": ["Manifest", "Module", "Project"]},
-        {"module": "error", "imports": ["CrucibleError"]}
-      ]
+      "type": "class"
+    },
+    "new<P: AsRef<Path>>": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "function"
+    },
+    "parse_manifest": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "function"
+    },
+    "parse_module": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "function"
+    },
+    "parse_modules": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "function"
+    },
+    "parse_project": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "function"
+    },
+    "parse_rules": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "function"
     }
   },
-  
-  "dependencies": {
-    "types": "^0.1.0",
-    "error": "^0.1.0"
-  }
+  "layer": "core",
+  "module": "parser",
+  "version": "0.1.0"
 }

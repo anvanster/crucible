@@ -1,0 +1,149 @@
+{
+  "summary": {
+    "pattern": "layered",
+    "modules": 7,
+    "layers": 3,
+    "total_exports": 14,
+    "validation_mode": "enhanced"
+  },
+  "current_focus": null,
+  "layers": {
+    "core": {
+      "modules": [
+        "types",
+        "error",
+        "parser",
+        "validator",
+        "graph"
+      ],
+      "can_use": [],
+      "forbidden": []
+    },
+    "application": {
+      "modules": [
+        "generator"
+      ],
+      "can_use": [],
+      "forbidden": []
+    },
+    "presentation": {
+      "modules": [
+        "cli"
+      ],
+      "can_use": [],
+      "forbidden": []
+    }
+  },
+  "modules_compact": {
+    "types": {
+      "layer": "core",
+      "deps": [],
+      "exports": [
+        "Manifest",
+        "Project",
+        "Export",
+        "Module"
+      ],
+      "main_purpose": "Core type definitions for Crucible"
+    },
+    "error": {
+      "layer": "core",
+      "deps": [],
+      "exports": [
+        "CrucibleError",
+        "Result"
+      ],
+      "main_purpose": "Error types for Crucible"
+    },
+    "validator": {
+      "layer": "core",
+      "deps": [
+        "graph",
+        "error",
+        "types"
+      ],
+      "exports": [
+        "Validator",
+        "ValidationResult"
+      ],
+      "main_purpose": "Validates Crucible architectures against rules"
+    },
+    "graph": {
+      "layer": "core",
+      "deps": [
+        "types"
+      ],
+      "exports": [
+        "build_dependency_graph",
+        "detect_cycles"
+      ],
+      "main_purpose": "Dependency graph analysis"
+    },
+    "generator": {
+      "layer": "application",
+      "deps": [
+        "error",
+        "types"
+      ],
+      "exports": [
+        "Language",
+        "Generator"
+      ],
+      "main_purpose": "Code generation from Crucible definitions"
+    },
+    "parser": {
+      "layer": "core",
+      "deps": [
+        "error",
+        "types"
+      ],
+      "exports": [
+        "Parser"
+      ],
+      "main_purpose": "Parses Crucible JSON files into internal representations"
+    },
+    "cli": {
+      "layer": "presentation",
+      "deps": [
+        "validator",
+        "parser",
+        "types",
+        "error",
+        "generator"
+      ],
+      "exports": [
+        "run"
+      ],
+      "main_purpose": "Command-line interface for Crucible"
+    }
+  },
+  "key_rules": [
+    "no_circular_dependencies",
+    "respect_layer_boundaries",
+    "declare_all_dependencies",
+    "match_function_signatures",
+    "follow_naming_conventions"
+  ],
+  "naming_patterns": {
+    "services": "*Service",
+    "repositories": "*Repository",
+    "controllers": "*Controller",
+    "types": "PascalCase",
+    "functions": "camelCase"
+  },
+  "quick_reference": {
+    "validate": "crucible validate",
+    "sync": "crucible claude sync --from-code",
+    "check_module": "crucible validate <module>"
+  },
+  "optimization": {
+    "token_count": 0,
+    "compression_ratio": 0.73,
+    "excluded": [
+      "internal_functions",
+      "implementation_details",
+      "test_code"
+    ],
+    "focus_modules": []
+  }
+}

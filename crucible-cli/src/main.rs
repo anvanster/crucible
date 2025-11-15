@@ -1,6 +1,10 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 use colored::Colorize;
+use crucible_core::claude::{
+    ContextGenerator, IntegrationConfig, IntegrationMode, SyncManager, ValidationHooks,
+    ValidationLevel,
+};
 use crucible_core::{Generator, Parser as CrucibleParser, Validator};
 use std::path::PathBuf;
 
@@ -60,6 +64,58 @@ enum Commands {
         #[arg(long, default_value = "text")]
         format: String,
     },
+
+    /// Claude Code integration commands
+    Claude {
+        #[command(subcommand)]
+        command: ClaudeCommands,
+    },
+}
+
+#[derive(Subcommand)]
+enum ClaudeCommands {
+    /// Initialize Claude Code integration
+    Init {
+        /// Integration mode
+        #[arg(long, default_value = "enhanced")]
+        mode: String,
+
+        /// Enable globally
+        #[arg(long)]
+        global: bool,
+
+        /// Validation level
+        #[arg(long, default_value = "warning")]
+        validation: String,
+    },
+
+    /// Sync architecture with code
+    Sync {
+        /// Sync from code to architecture
+        #[arg(long)]
+        from_code: bool,
+
+        /// Sync from architecture to code
+        #[arg(long)]
+        from_architecture: bool,
+
+        /// Interactive mode with prompts
+        #[arg(long, short)]
+        interactive: bool,
+    },
+
+    /// Validate with Claude-friendly output
+    Validate {
+        /// Specific module to validate
+        module: Option<String>,
+    },
+
+    /// Generate Claude context files
+    Context {
+        /// Output format
+        #[arg(long, default_value = "json")]
+        format: String,
+    },
 }
 
 fn main() -> Result<()> {
@@ -83,6 +139,28 @@ fn main() -> Result<()> {
             println!("Graph generation not yet implemented");
             println!("Format: {}", format);
         }
+        Commands::Claude { command } => match command {
+            ClaudeCommands::Init {
+                mode,
+                global,
+                validation,
+            } => {
+                claude_init(&mode, &global, &validation)?;
+            }
+            ClaudeCommands::Sync {
+                from_code,
+                from_architecture,
+                interactive,
+            } => {
+                claude_sync(&from_code, &from_architecture, &interactive)?;
+            }
+            ClaudeCommands::Validate { module } => {
+                claude_validate(module.as_deref())?;
+            }
+            ClaudeCommands::Context { format } => {
+                claude_context(&format)?;
+            }
+        },
     }
 
     Ok(())
@@ -209,6 +287,233 @@ fn generate_code(path: &PathBuf, lang: &str, output: &PathBuf) -> Result<()> {
             println!("Language '{}' not yet supported", lang);
         }
     }
+
+    Ok(())
+}
+
+fn claude_init(mode_str: &str, _global: &bool, validation_str: &str) -> Result<()> {
+    println!(
+        "{}  Claude Code integration...",
+        "Initializing".cyan().bold()
+    );
+
+    // Parse mode
+    let mode = match mode_str.to_lowercase().as_str() {
+        "basic" => IntegrationMode::Basic,
+        "enhanced" => IntegrationMode::Enhanced,
+        "strict" => IntegrationMode::Strict,
+        _ => {
+            println!("{} Invalid mode: {}", "✗".red(), mode_str);
+            return Ok(());
+        }
+    };
+
+    // Parse validation level
+    let _validation = match validation_str.to_lowercase().as_str() {
+        "error" => ValidationLevel::Error,
+        "warning" => ValidationLevel::Warning,
+        "info" => ValidationLevel::Info,
+        _ => {
+            println!("{} Invalid validation level: {}", "✗".red(), validation_str);
+            return Ok(());
+        }
+    };
+
+    // Get current directory
+    let project_root = std::env::current_dir()?;
+    let crucible_path = project_root.join(".crucible");
+
+    // Check if .crucible exists
+    if !crucible_path.exists() {
+        println!(
+            "{} No .crucible directory found. Run {} first.",
+            "✗".red(),
+            "crucible init".cyan()
+        );
+        return Ok(());
+    }
+
+    // Parse existing project
+    let parser = CrucibleParser::new(&crucible_path);
+    let project = parser.parse_project()?;
+
+    // Create config
+    let config = IntegrationConfig::new(mode, &project.manifest.project.name, &project_root);
+
+    // Create .claude directory structure
+    let claude_dir = project_root.join(".claude");
+    let crucible_claude_dir = claude_dir.join("crucible");
+    std::fs::create_dir_all(&crucible_claude_dir)?;
+
+    // Generate and write files
+    let context_gen = ContextGenerator::new(project, config.clone());
+
+    // Write instructions.md
+    let instructions = context_gen.generate_instructions();
+    std::fs::write(claude_dir.join("instructions.md"), instructions)?;
+    println!("{} Created .claude/instructions.md", "✓".green());
+
+    // Write context.json
+    let context_json = context_gen.generate_context_json()?;
+    std::fs::write(crucible_claude_dir.join("context.json"), context_json)?;
+    println!("{} Created .claude/crucible/context.json", "✓".green());
+
+    // Write hooks.md - need to re-parse project
+    let parser2 = CrucibleParser::new(&crucible_path);
+    let project_for_hooks = parser2.parse_project()?;
+    let validation_hooks = ValidationHooks::new(project_for_hooks);
+    let hooks = validation_hooks.generate_hooks();
+    std::fs::write(crucible_claude_dir.join("hooks.md"), hooks)?;
+    println!("{} Created .claude/crucible/hooks.md", "✓".green());
+
+    // Write config.json
+    config.write_claude_files(&project_root)?;
+    println!("{} Created .claude/crucible/config.json", "✓".green());
+
+    println!();
+    println!(
+        "{} Claude Code integration initialized!",
+        "✓".green().bold()
+    );
+    println!();
+    println!("Next steps:");
+    println!("  1. Start Claude Code in this directory");
+    println!(
+        "  2. Claude will automatically read the architecture from {}",
+        ".claude/instructions.md".cyan()
+    );
+    println!("  3. Run {} to sync changes", "crucible claude sync".cyan());
+
+    Ok(())
+}
+
+fn claude_sync(from_code: &bool, from_architecture: &bool, interactive: &bool) -> Result<()> {
+    if *from_architecture {
+        println!(
+            "{}",
+            "Architecture → Code sync not yet implemented".yellow()
+        );
+        return Ok(());
+    }
+
+    if *from_code || (!from_code && !from_architecture) {
+        println!("{}  code with architecture...", "Syncing".cyan().bold());
+
+        // Parse current architecture
+        let parser = CrucibleParser::new(&PathBuf::from(".crucible"));
+        let project = parser.parse_project()?;
+
+        // Create sync manager
+        let sync_manager = SyncManager::new(project);
+
+        // Sync from code (assuming crucible-core/src for now)
+        let source_dir = PathBuf::from("crucible-core/src");
+        let (report, discovered) = sync_manager.sync_from_code(&source_dir)?;
+
+        if !interactive {
+            // Non-interactive mode - just show the report
+            println!();
+            println!("{}  Analysis Results", "Sync".green().bold());
+            println!("  Modules discovered: {}", report.modules_discovered);
+            println!();
+
+            if !report.new_modules.is_empty() {
+                println!("{}  New Modules Found:", "⚠".yellow());
+                for module in &report.new_modules {
+                    println!("  - {}", module.cyan());
+                }
+                println!();
+            }
+
+            if !report.new_exports.is_empty() {
+                println!("{}  New Exports Found:", "⚠".yellow());
+                for (module, exports) in &report.new_exports {
+                    println!("  {} ({} new):", module.cyan(), exports.len());
+                    for export in exports {
+                        println!("    - {}", export);
+                    }
+                }
+                println!();
+            }
+
+            if !report.new_dependencies.is_empty() {
+                println!("{}  New Dependencies Found:", "⚠".yellow());
+                for (module, deps) in &report.new_dependencies {
+                    println!("  {} depends on:", module.cyan());
+                    for dep in deps {
+                        println!("    - {}", dep);
+                    }
+                }
+                println!();
+            }
+
+            if report.new_modules.is_empty()
+                && report.new_exports.is_empty()
+                && report.new_dependencies.is_empty()
+            {
+                println!("{}", "✓ Architecture is in sync with code!".green().bold());
+            } else {
+                println!("{}", "⚠ Architecture needs updates".yellow().bold());
+                println!();
+                println!("Next steps:");
+                println!("  1. Review the changes above");
+                println!(
+                    "  2. Run {} to auto-update",
+                    "crucible claude sync --interactive".cyan()
+                );
+                println!("  3. Or manually update module definitions in .crucible/modules/");
+                println!("  4. Run {} to verify", "crucible validate".cyan());
+            }
+        } else {
+            // Interactive mode - prompt to apply changes
+            let updates = sync_manager.apply_sync_updates(&report, &discovered, true)?;
+
+            if updates == 0 {
+                println!("\n{}", "✓ No updates needed!".green().bold());
+            }
+        }
+    }
+
+    Ok(())
+}
+
+fn claude_validate(_module: Option<&str>) -> Result<()> {
+    println!(
+        "{}  architecture with Claude output...",
+        "Validating".cyan().bold()
+    );
+
+    let parser = CrucibleParser::new(&PathBuf::from(".crucible"));
+    let project = parser.parse_project()?;
+
+    let validator = Validator::new(project);
+    let result = validator.validate();
+
+    // Format for Claude with enhanced suggestions - re-parse project
+    let parser2 = CrucibleParser::new(&PathBuf::from(".crucible"));
+    let project2 = parser2.parse_project()?;
+    let hooks = ValidationHooks::new(project2);
+    let formatted = hooks.format_with_context(&result);
+
+    println!();
+    println!("{}", formatted);
+
+    Ok(())
+}
+
+fn claude_context(_format: &str) -> Result<()> {
+    let parser = CrucibleParser::new(&PathBuf::from(".crucible"));
+    let project = parser.parse_project()?;
+
+    let config = IntegrationConfig::new(
+        IntegrationMode::Enhanced,
+        &project.manifest.project.name,
+        &std::env::current_dir()?,
+    );
+    let context_gen = ContextGenerator::new(project, config);
+
+    let context = context_gen.generate_context_json()?;
+    println!("{}", context);
 
     Ok(())
 }

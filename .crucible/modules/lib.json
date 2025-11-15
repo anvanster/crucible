@@ -1,0 +1,8 @@
+{
+  "dependencies": {},
+  "description": "Auto-generated module definition for lib",
+  "exports": {},
+  "layer": "core",
+  "module": "lib",
+  "version": "0.1.0"
+}

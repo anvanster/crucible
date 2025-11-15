@@ -1,0 +1,59 @@
+{
+  "version": "{{version}}",
+  "mode": "{{mode}}",
+  "project": {
+    "name": "{{project.name}}",
+    "root": "{{project.root}}",
+    "crucible_dir": "{{project.crucible_dir}}"
+  },
+  "features": {
+    "auto_validation": {{features.auto_validation}},
+    "sync_on_change": {{features.sync_on_change}},
+    "suggest_improvements": {{features.suggest_improvements}},
+    "track_violations": {{features.track_violations}},
+    "generate_types": {{features.generate_types}}
+  },
+  "validation": {
+    "pre_commit": {{validation.pre_commit}},
+    "on_save": {{validation.on_save}},
+    "on_generate": {{validation.on_generate}},
+    "severity": "{{validation.severity}}",
+    "rules": {
+      {{#each validation.rules}}
+      "{{@key}}": "{{this}}"{{#unless @last}},{{/unless}}
+      {{/each}}
+    }
+  },
+  "sync": {
+    "strategy": "{{sync.strategy}}",
+    "auto_sync": {{sync.auto_sync}},
+    "conflict_resolution": "{{sync.conflict_resolution}}",
+    "ignore_patterns": [
+      {{#each sync.ignore_patterns}}
+      "{{this}}"{{#unless @last}},{{/unless}}
+      {{/each}}
+    ]
+  },
+  "templates": {
+    {{#each templates}}
+    "{{@key}}": "{{this}}"{{#unless @last}},{{/unless}}
+    {{/each}}
+  },
+  "context": {
+    "max_tokens": {{context.max_tokens}},
+    "include_descriptions": {{context.include_descriptions}},
+    "include_examples": {{context.include_examples}},
+    "focus_mode": "{{context.focus_mode}}",
+    "optimization": "{{context.optimization}}"
+  },
+  "commands": {
+    {{#each commands}}
+    "{{@key}}": "{{this}}"{{#unless @last}},{{/unless}}
+    {{/each}}
+  },
+  "ui": {
+    "show_hints": {{ui.show_hints}},
+    "inline_validation": {{ui.inline_validation}},
+    "highlight_violations": {{ui.highlight_violations}}
+  }
+}

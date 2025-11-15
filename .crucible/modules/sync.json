@@ -1,0 +1,63 @@
+{
+  "dependencies": {
+    "claude": "^0.1.0",
+    "error": "^0.1.0",
+    "types": "^0.1.0"
+  },
+  "description": "Auto-generated module definition for sync",
+  "exports": {
+    "SyncManager": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
+    },
+    "SyncReport": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
+    },
+    "apply_sync_updates": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "function"
+    },
+    "detect_conflicts": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "function"
+    },
+    "format_sync_prompt": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "function"
+    },
+    "generate_module_definition": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "function"
+    },
+    "new": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "function"
+    },
+    "sync_from_architecture": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "function"
+    },
+    "sync_from_code": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "function"
+    },
+    "update_existing_module": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "function"
+    }
+  },
+  "layer": "core",
+  "module": "sync",
+  "version": "0.1.0"
+}

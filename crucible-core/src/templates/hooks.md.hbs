@@ -1,0 +1,138 @@
+# Crucible Validation Hooks
+
+These prompts help maintain architectural integrity during development.
+
+## 🎯 Pre-Change Validation
+
+Before implementing any feature or fix, validate your approach:
+
+### Checklist for New Features
+
+- [ ] Have I identified which module this belongs to?
+- [ ] Is this module in the correct architectural layer?
+- [ ] Are all required dependencies already declared?
+- [ ] Will this create any circular dependencies?
+- [ ] Do the types I need exist in accessible modules?
+- [ ] Am I following the naming conventions?
+
+### Checklist for Module Modifications
+
+- [ ] Am I only using exported functions from other modules?
+- [ ] Are my new exports properly documented?
+- [ ] Do my function signatures match the architecture?
+- [ ] Have I checked layer boundary constraints?
+- [ ] Will my changes break existing contracts?
+
+### Questions to Ask
+
+1. **Module Placement**: "Should this functionality go in `<module>` or would another module be more appropriate?"
+2. **Dependency Check**: "Can `<module-a>` depend on `<module-b>` according to our architecture?"
+3. **Interface Design**: "What's the minimal interface needed to expose this functionality?"
+4. **Layer Respect**: "Is this logic appropriate for the `<layer>` layer?"
+
+## 🔄 Post-Change Sync
+
+After implementing changes, ensure architecture stays synchronized:
+
+### What to Update
+
+1. **New Functions/Classes Added**
+   ```json
+   // In .crucible/modules/<module>.json
+   "exports": {
+     "NewFunction": {
+       "type": "function",
+       "inputs": [...],
+       "returns": "...",
+       "calls": [...],
+       "effects": [...]
+     }
+   }
+   ```
+
+2. **New Dependencies Used**
+   ```json
+   // In .crucible/modules/<module>.json
+   "dependencies": ["existing", "newly-added"]
+   ```
+
+3. **Type Definitions Created**
+   ```json
+   // In .crucible/modules/<module>.json
+   "types": {
+     "NewType": {
+       "type": "struct",
+       "fields": {...}
+     }
+   }
+   ```
+
+### Validation Commands
+
+```bash
+# After adding new code
+crucible validate <module>
+
+# After refactoring
+crucible validate --all
+
+# To sync architecture with code
+crucible claude sync --from-code
+
+# To check specific rules
+crucible validate --rule layer_boundaries
+```
+
+## ⚠️ Common Violations to Avoid
+
+### 1. Layer Violations
+❌ **Wrong**: Domain layer importing from Presentation layer
+✅ **Right**: Presentation layer importing from Domain layer
+
+### 2. Circular Dependencies
+❌ **Wrong**: Module A → Module B → Module A
+✅ **Right**: Module A → Module B → Module C
+
+### 3. Undeclared Dependencies
+❌ **Wrong**: Using a module without declaring it in dependencies
+✅ **Right**: First declare dependency, then use the module
+
+### 4. Private Function Access
+❌ **Wrong**: Calling internal functions not in exports
+✅ **Right**: Only call functions listed in module exports
+
+### 5. Type Mismatches
+❌ **Wrong**: Passing different types than declared
+✅ **Right**: Match exact types from architecture definition
+
+## 💭 Architectural Thinking
+
+When adding new functionality, think architecturally:
+
+1. **Single Responsibility**: Does this module have a clear, single purpose?
+2. **Dependency Direction**: Are dependencies flowing in the right direction?
+3. **Interface Segregation**: Are we exposing only what's necessary?
+4. **Abstraction Level**: Is this the right level of abstraction for this layer?
+5. **Future Flexibility**: Will this design accommodate likely changes?
+
+## 🔍 Quick Reference
+
+### Finding Architecture Info
+
+- **Module capabilities**: `.crucible/modules/<module>.json` → `exports`
+- **Module dependencies**: `.crucible/modules/<module>.json` → `dependencies`
+- **Layer rules**: `.crucible/rules.json` → `layers`
+- **Validation rules**: `.crucible/rules.json` → `validation`
+- **Type definitions**: `.crucible/modules/<module>.json` → `types`
+
+### Key Questions for Every Change
+
+1. "Which module owns this functionality?"
+2. "What layer should this be in?"
+3. "What dependencies does this require?"
+4. "What should be exposed vs. internal?"
+5. "How does this affect other modules?"
+
+---
+
+**Remember**: Good architecture is invisible when it's working well. These hooks help maintain that invisibility by catching issues early.

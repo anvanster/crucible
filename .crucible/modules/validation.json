@@ -1,0 +1,62 @@
+{
+  "dependencies": {
+    "types": "^0.1.0",
+    "validator": "^0.1.0"
+  },
+  "description": "Auto-generated module definition for validation",
+  "exports": {
+    "SuggestionType": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
+    },
+    "ValidationHooks": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
+    },
+    "ValidationSuggestion": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
+    },
+    "format_validation_errors": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "function"
+    },
+    "format_with_context": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "function"
+    },
+    "generate_hooks": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "function"
+    },
+    "generate_post_change_checklist": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "function"
+    },
+    "generate_pre_change_prompt": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "function"
+    },
+    "generate_suggestions": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "function"
+    },
+    "new": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "function"
+    }
+  },
+  "layer": "core",
+  "module": "validation",
+  "version": "0.1.0"
+}

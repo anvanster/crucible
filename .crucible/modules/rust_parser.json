@@ -1,0 +1,58 @@
+{
+  "dependencies": {
+    "error": "^0.1.0",
+    "parser": "^0.1.0",
+    "types": "^0.1.0"
+  },
+  "description": "Auto-generated module definition for rust_parser",
+  "exports": {
+    "DiscoveredModule": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
+    },
+    "MyEnum": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
+    },
+    "MyStruct": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
+    },
+    "MyType": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
+    },
+    "RustParser;": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "class"
+    },
+    "build_dependency_map": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "function"
+    },
+    "discover_modules": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "function"
+    },
+    "is_test_file": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "function"
+    },
+    "my_function": {
+      "description": "Auto-generated from code",
+      "methods": {},
+      "type": "function"
+    }
+  },
+  "layer": "core",
+  "module": "rust_parser",
+  "version": "0.1.0"
+}
