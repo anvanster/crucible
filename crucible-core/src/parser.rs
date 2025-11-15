@@ -33,33 +33,32 @@ impl Parser {
     /// Parse the manifest.json file
     pub fn parse_manifest(&self) -> Result<Manifest> {
         let manifest_path = self.root_path.join("manifest.json");
-        let content = fs::read_to_string(&manifest_path)
-            .map_err(|e| CrucibleError::FileRead {
-                path: manifest_path.display().to_string(),
-                source: e,
-            })?;
+        let content = fs::read_to_string(&manifest_path).map_err(|e| CrucibleError::FileRead {
+            path: manifest_path.display().to_string(),
+            source: e,
+        })?;
 
-        serde_json::from_str(&content)
-            .map_err(|e| CrucibleError::ParseError {
-                file: "manifest.json".to_string(),
-                message: e.to_string(),
-            })
+        serde_json::from_str(&content).map_err(|e| CrucibleError::ParseError {
+            file: "manifest.json".to_string(),
+            message: e.to_string(),
+        })
     }
 
     /// Parse a module definition file
     pub fn parse_module(&self, name: &str) -> Result<Module> {
-        let module_path = self.root_path.join("modules").join(format!("{}.json", name));
-        let content = fs::read_to_string(&module_path)
-            .map_err(|e| CrucibleError::FileRead {
-                path: module_path.display().to_string(),
-                source: e,
-            })?;
+        let module_path = self
+            .root_path
+            .join("modules")
+            .join(format!("{}.json", name));
+        let content = fs::read_to_string(&module_path).map_err(|e| CrucibleError::FileRead {
+            path: module_path.display().to_string(),
+            source: e,
+        })?;
 
-        serde_json::from_str(&content)
-            .map_err(|e| CrucibleError::ParseError {
-                file: format!("{}.json", name),
-                message: e.to_string(),
-            })
+        serde_json::from_str(&content).map_err(|e| CrucibleError::ParseError {
+            file: format!("{}.json", name),
+            message: e.to_string(),
+        })
     }
 
     /// Parse all modules listed in the manifest
@@ -73,17 +72,15 @@ impl Parser {
     /// Parse the rules.json file
     pub fn parse_rules(&self) -> Result<Rules> {
         let rules_path = self.root_path.join("rules.json");
-        let content = fs::read_to_string(&rules_path)
-            .map_err(|e| CrucibleError::FileRead {
-                path: rules_path.display().to_string(),
-                source: e,
-            })?;
+        let content = fs::read_to_string(&rules_path).map_err(|e| CrucibleError::FileRead {
+            path: rules_path.display().to_string(),
+            source: e,
+        })?;
 
-        serde_json::from_str(&content)
-            .map_err(|e| CrucibleError::ParseError {
-                file: "rules.json".to_string(),
-                message: e.to_string(),
-            })
+        serde_json::from_str(&content).map_err(|e| CrucibleError::ParseError {
+            file: "rules.json".to_string(),
+            message: e.to_string(),
+        })
     }
 }
 
@@ -170,11 +167,7 @@ mod tests {
             "dependencies": {}
         }"#;
 
-        fs::write(
-            dir.path().join("modules/test-module.json"),
-            module_content,
-        )
-        .unwrap();
+        fs::write(dir.path().join("modules/test-module.json"), module_content).unwrap();
 
         let parser = Parser::new(dir.path());
         let module = parser.parse_module("test-module").unwrap();

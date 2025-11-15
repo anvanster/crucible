@@ -1,7 +1,7 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 use colored::Colorize;
-use crucible_core::{Parser as CrucibleParser, Validator, Generator};
+use crucible_core::{Generator, Parser as CrucibleParser, Validator};
 use std::path::PathBuf;
 
 #[derive(Parser)]
@@ -66,7 +66,11 @@ fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Init { name, language, pattern } => {
+        Commands::Init {
+            name,
+            language,
+            pattern,
+        } => {
             init_project(&name, &language, &pattern)?;
         }
         Commands::Validate { path, strict } => {
@@ -85,7 +89,11 @@ fn main() -> Result<()> {
 }
 
 fn init_project(name: &str, language: &str, pattern: &str) -> Result<()> {
-    println!("{}  Crucible project: {}", "Initializing".green().bold(), name);
+    println!(
+        "{}  Crucible project: {}",
+        "Initializing".green().bold(),
+        name
+    );
 
     // Create .crucible directory
     std::fs::create_dir_all(".crucible/modules")?;
@@ -164,7 +172,12 @@ fn validate_project(path: &PathBuf, strict: bool) -> Result<()> {
 
     for warning in &result.warnings {
         if strict {
-            println!("{} {}: {}", "⚠".yellow(), warning.rule.bold(), warning.message);
+            println!(
+                "{} {}: {}",
+                "⚠".yellow(),
+                warning.rule.bold(),
+                warning.message
+            );
             if let Some(location) = &warning.location {
                 println!("    at {}", location.dimmed());
             }

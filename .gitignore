@@ -1,3 +1,6 @@
+.codemender/
+logs/
+
 # Rust
 target/
 Cargo.lock

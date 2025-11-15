@@ -109,7 +109,10 @@ fn test_validate_circular_deps() {
 
     assert!(!result.valid);
     assert!(!result.errors.is_empty());
-    assert!(result.errors.iter().any(|e| e.rule == "no-circular-dependencies"));
+    assert!(result
+        .errors
+        .iter()
+        .any(|e| e.rule == "no-circular-dependencies"));
 }
 
 #[test]
@@ -190,7 +193,10 @@ fn test_layer_boundary_violation() {
     let result = validator.validate();
     assert!(!result.valid);
     assert!(!result.errors.is_empty());
-    assert!(result.errors.iter().any(|e| e.rule == "respect-layer-boundaries"));
+    assert!(result
+        .errors
+        .iter()
+        .any(|e| e.rule == "respect-layer-boundaries"));
 }
 
 #[test]
@@ -207,7 +213,10 @@ fn test_type_existence_validation() {
     let result = validator.validate();
     assert!(!result.valid);
     assert!(!result.errors.is_empty());
-    assert!(result.errors.iter().any(|e| e.rule == "all-types-must-exist"));
+    assert!(result
+        .errors
+        .iter()
+        .any(|e| e.rule == "all-types-must-exist"));
 }
 
 #[test]
@@ -247,7 +256,8 @@ fn test_validation_with_cross_module_types() {
 #[test]
 fn test_empty_project_validation() {
     let dir = tempdir().unwrap();
-    let manifest = r#"{"version": "0.1.0", "project": {"name": "empty", "language": "rust"}, "modules": []}"#;
+    let manifest =
+        r#"{"version": "0.1.0", "project": {"name": "empty", "language": "rust"}, "modules": []}"#;
     fs::write(dir.path().join("manifest.json"), manifest).unwrap();
     fs::create_dir(dir.path().join("modules")).unwrap();
     let parser = Parser::new(dir.path());

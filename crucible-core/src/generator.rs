@@ -1,7 +1,7 @@
 //! Code generator for Crucible architectures
 
 use crate::error::{CrucibleError, Result};
-use crate::types::{Module, Project, ExportType};
+use crate::types::{ExportType, Module, Project};
 use std::fs;
 use std::path::Path;
 
@@ -15,22 +15,18 @@ impl Generator {
     }
 
     pub fn generate_typescript(&self, output_dir: &Path) -> Result<()> {
-        fs::create_dir_all(output_dir).map_err(|e| {
-            CrucibleError::FileRead {
-                path: output_dir.display().to_string(),
-                source: e,
-            }
+        fs::create_dir_all(output_dir).map_err(|e| CrucibleError::FileRead {
+            path: output_dir.display().to_string(),
+            source: e,
         })?;
 
         for module in &self.project.modules {
             let content = self.generate_typescript_module(module)?;
             let file_path = output_dir.join(format!("{}.ts", module.module));
 
-            fs::write(&file_path, content).map_err(|e| {
-                CrucibleError::FileRead {
-                    path: file_path.display().to_string(),
-                    source: e,
-                }
+            fs::write(&file_path, content).map_err(|e| CrucibleError::FileRead {
+                path: file_path.display().to_string(),
+                source: e,
             })?;
         }
 
@@ -70,7 +66,9 @@ impl Generator {
                             output.push_str(&format!("  {}(", method_name));
 
                             // Parameters
-                            let params: Vec<String> = method.inputs.iter()
+                            let params: Vec<String> = method
+                                .inputs
+                                .iter()
                                 .map(|p| format!("{}: {}", p.name, p.param_type))
                                 .collect();
                             output.push_str(&params.join(", "));
@@ -90,7 +88,9 @@ impl Generator {
                             output.push_str(&format!("export function {}(", name));
 
                             // Parameters
-                            let params: Vec<String> = method.inputs.iter()
+                            let params: Vec<String> = method
+                                .inputs
+                                .iter()
                                 .map(|p| format!("{}: {}", p.name, p.param_type))
                                 .collect();
                             output.push_str(&params.join(", "));

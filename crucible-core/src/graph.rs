@@ -1,8 +1,8 @@
 //! Dependency graph operations
 
 use crate::types::Module;
-use petgraph::graph::DiGraph;
 use petgraph::algo::is_cyclic_directed;
+use petgraph::graph::DiGraph;
 use std::collections::HashMap;
 
 /// Build a dependency graph from modules
@@ -170,7 +170,10 @@ mod tests {
         let modules = vec![
             create_module("api", vec![("service", "1.0.0"), ("types", "1.0.0")]),
             create_module("service", vec![("repository", "1.0.0"), ("types", "1.0.0")]),
-            create_module("repository", vec![("database", "1.0.0"), ("types", "1.0.0")]),
+            create_module(
+                "repository",
+                vec![("database", "1.0.0"), ("types", "1.0.0")],
+            ),
             create_module("database", vec![("types", "1.0.0")]),
             create_module("types", vec![]),
         ];

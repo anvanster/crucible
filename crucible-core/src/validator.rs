@@ -228,10 +228,7 @@ impl Validator {
         let mut available_types = HashMap::new();
         for module in &self.project.modules {
             for (export_name, _) in &module.exports {
-                available_types.insert(
-                    format!("{}.{}", module.module, export_name),
-                    true,
-                );
+                available_types.insert(format!("{}.{}", module.module, export_name), true);
                 available_types.insert(export_name.clone(), true);
             }
         }
@@ -366,7 +363,10 @@ impl Validator {
                             }
 
                             // Check if calling own export's method with full format
-                            if target_module == module.module && parts.len() == 3 && target_export == export_name {
+                            if target_module == module.module
+                                && parts.len() == 3
+                                && target_export == export_name
+                            {
                                 // Full format: "module.Export.method" calling same export
                                 let target_method = parts[2];
                                 if let Some(self_methods) = &export.methods {
@@ -534,10 +534,7 @@ impl Validator {
                     issues.push(ValidationIssue {
                         rule: "declared-dependencies-must-be-used".to_string(),
                         severity: Severity::Warning,
-                        message: format!(
-                            "Dependency '{}' is declared but not used",
-                            dep_name
-                        ),
+                        message: format!("Dependency '{}' is declared but not used", dep_name),
                         location: Some(module.module.clone()),
                     });
                 }

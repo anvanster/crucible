@@ -93,7 +93,10 @@ fn test_all_calls_must_exist_invalid() {
     let result = validator.validate();
 
     assert!(!result.valid);
-    assert!(result.errors.iter().any(|e| e.rule == "all-calls-must-exist"));
+    assert!(result
+        .errors
+        .iter()
+        .any(|e| e.rule == "all-calls-must-exist"));
 }
 
 #[test]
@@ -137,7 +140,10 @@ fn test_used_dependencies_declared_invalid() {
     let result = validator.validate();
 
     assert!(!result.valid);
-    assert!(result.errors.iter().any(|e| e.rule == "used-dependencies-declared"));
+    assert!(result
+        .errors
+        .iter()
+        .any(|e| e.rule == "used-dependencies-declared"));
 }
 
 #[test]
@@ -159,7 +165,10 @@ fn test_declared_dependencies_must_be_used_warning() {
     let result = validator.validate();
 
     assert!(result.valid); // Should be valid (only warning)
-    assert!(result.warnings.iter().any(|w| w.rule == "declared-dependencies-must-be-used"));
+    assert!(result
+        .warnings
+        .iter()
+        .any(|w| w.rule == "declared-dependencies-must-be-used"));
 }
 
 #[test]

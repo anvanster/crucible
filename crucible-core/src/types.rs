@@ -248,22 +248,13 @@ mod tests {
             serde_json::to_string(&Language::TypeScript).unwrap(),
             r#""typescript""#
         );
-        assert_eq!(
-            serde_json::to_string(&Language::Rust).unwrap(),
-            r#""rust""#
-        );
+        assert_eq!(serde_json::to_string(&Language::Rust).unwrap(), r#""rust""#);
         assert_eq!(
             serde_json::to_string(&Language::Python).unwrap(),
             r#""python""#
         );
-        assert_eq!(
-            serde_json::to_string(&Language::Go).unwrap(),
-            r#""go""#
-        );
-        assert_eq!(
-            serde_json::to_string(&Language::Java).unwrap(),
-            r#""java""#
-        );
+        assert_eq!(serde_json::to_string(&Language::Go).unwrap(), r#""go""#);
+        assert_eq!(serde_json::to_string(&Language::Java).unwrap(), r#""java""#);
     }
 
     #[test]
@@ -388,10 +379,7 @@ mod tests {
             serde_json::to_string(&Severity::Warning).unwrap(),
             r#""warning""#
         );
-        assert_eq!(
-            serde_json::to_string(&Severity::Info).unwrap(),
-            r#""info""#
-        );
+        assert_eq!(serde_json::to_string(&Severity::Info).unwrap(), r#""info""#);
     }
 
     #[test]
