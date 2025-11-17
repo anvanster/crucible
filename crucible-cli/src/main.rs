@@ -881,14 +881,14 @@ fn create_claude_commands(project_path: &Path) -> Result<()> {
     std::fs::create_dir_all(project_path.join(".claude/commands"))?;
 
     // Include command files from embedded resources
-    let crucible_validate = include_str!("../../.claude/commands/crucible-validate.md");
-    let crucible_architecture = include_str!("../../.claude/commands/crucible-architecture.md");
-    let crucible_init = include_str!("../../.claude/commands/crucible-init.md");
-    let crucible_module = include_str!("../../.claude/commands/crucible-module.md");
-    let crucible_review = include_str!("../../.claude/commands/crucible-review.md");
-    let crucible_sync = include_str!("../../.claude/commands/crucible-sync.md");
-    let crucible_analyze = include_str!("../../.claude/commands/crucible-analyze.md");
-    let crucible_diff = include_str!("../../.claude/commands/crucible-diff.md");
+    let crucible_validate = include_str!("../.claude/commands/crucible-validate.md");
+    let crucible_architecture = include_str!("../.claude/commands/crucible-architecture.md");
+    let crucible_init = include_str!("../.claude/commands/crucible-init.md");
+    let crucible_module = include_str!("../.claude/commands/crucible-module.md");
+    let crucible_review = include_str!("../.claude/commands/crucible-review.md");
+    let crucible_sync = include_str!("../.claude/commands/crucible-sync.md");
+    let crucible_analyze = include_str!("../.claude/commands/crucible-analyze.md");
+    let crucible_diff = include_str!("../.claude/commands/crucible-diff.md");
 
     // Write command files
     std::fs::write(

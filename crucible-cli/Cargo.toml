@@ -14,7 +14,7 @@ readme.workspace = true
 include = [
     "src/**/*",
     "Cargo.toml",
-    "../.claude/commands/*.md",
+    ".claude/commands/*.md",
 ]
 
 [[bin]]
