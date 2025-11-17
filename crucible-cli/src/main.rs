@@ -173,9 +173,13 @@ fn init_project(name: &str, language: &str, pattern: &str) -> Result<()> {
         name
     );
 
-    // Create .crucible directory
-    std::fs::create_dir_all(".crucible/modules")?;
-    std::fs::create_dir_all(".crucible/types")?;
+    // Create project directory
+    std::fs::create_dir_all(name)?;
+
+    // Create .crucible directory inside project
+    let project_path = std::path::Path::new(name);
+    std::fs::create_dir_all(project_path.join(".crucible/modules"))?;
+    std::fs::create_dir_all(project_path.join(".crucible/types"))?;
 
     // Create manifest.json
     let manifest = format!(
@@ -192,7 +196,7 @@ fn init_project(name: &str, language: &str, pattern: &str) -> Result<()> {
         name, language, pattern
     );
 
-    std::fs::write(".crucible/manifest.json", manifest)?;
+    std::fs::write(project_path.join(".crucible/manifest.json"), manifest)?;
 
     // Create rules.json
     let rules = r#"{
@@ -213,18 +217,20 @@ fn init_project(name: &str, language: &str, pattern: &str) -> Result<()> {
   ]
 }"#;
 
-    std::fs::write(".crucible/rules.json", rules)?;
+    std::fs::write(project_path.join(".crucible/rules.json"), rules)?;
 
-    println!("{} Created .crucible/manifest.json", "✓".green());
-    println!("{} Created .crucible/rules.json", "✓".green());
-    println!("{} Created .crucible/modules/", "✓".green());
-    println!("{} Created .crucible/types/", "✓".green());
+    println!("{} Created {}/", "✓".green(), name);
+    println!("{} Created {}/.crucible/manifest.json", "✓".green(), name);
+    println!("{} Created {}/.crucible/rules.json", "✓".green(), name);
+    println!("{} Created {}/.crucible/modules/", "✓".green(), name);
+    println!("{} Created {}/.crucible/types/", "✓".green(), name);
     println!();
     println!("{}", "Project initialized successfully!".green().bold());
     println!();
     println!("Next steps:");
-    println!("  1. Create module definitions in .crucible/modules/");
-    println!("  2. Run {} to validate", "crucible validate".cyan());
+    println!("  1. {}", format!("cd {}", name).cyan());
+    println!("  2. Create module definitions in .crucible/modules/");
+    println!("  3. Run {} to validate", "crucible validate".cyan());
 
     Ok(())
 }
