@@ -181,7 +181,7 @@ fn init_project(name: &str, language: &str, pattern: &str) -> Result<()> {
     std::fs::create_dir_all(project_path.join(".crucible/modules"))?;
     std::fs::create_dir_all(project_path.join(".crucible/types"))?;
 
-    // Create manifest.json
+    // Create manifest.json with example modules
     let manifest = format!(
         r#"{{
   "version": "0.1.0",
@@ -190,7 +190,11 @@ fn init_project(name: &str, language: &str, pattern: &str) -> Result<()> {
     "language": "{language}",
     "architecture_pattern": "{pattern}"
   }},
-  "modules": [],
+  "modules": [
+    "user",
+    "user-service",
+    "user-controller"
+  ],
   "strict_validation": true
 }}"#
     );
@@ -218,18 +222,422 @@ fn init_project(name: &str, language: &str, pattern: &str) -> Result<()> {
 
     std::fs::write(project_path.join(".crucible/rules.json"), rules)?;
 
+    // Create example modules
+    create_example_modules(project_path)?;
+
+    // Create README in modules directory
+    create_modules_readme(project_path)?;
+
     println!("{} Created {}/", "✓".green(), name);
     println!("{} Created {}/.crucible/manifest.json", "✓".green(), name);
     println!("{} Created {}/.crucible/rules.json", "✓".green(), name);
     println!("{} Created {}/.crucible/modules/", "✓".green(), name);
-    println!("{} Created {}/.crucible/types/", "✓".green(), name);
+    println!(
+        "{} Created {} example modules (user, user-service, user-controller)",
+        "✓".green(),
+        name
+    );
     println!();
     println!("{}", "Project initialized successfully!".green().bold());
     println!();
     println!("Next steps:");
     println!("  1. {}", format!("cd {name}").cyan());
-    println!("  2. Create module definitions in .crucible/modules/");
-    println!("  3. Run {} to validate", "crucible validate".cyan());
+    println!("  2. Review example modules in .crucible/modules/");
+    println!(
+        "  3. Read {} for guidance",
+        ".crucible/modules/README.md".cyan()
+    );
+    println!("  4. Run {} to validate", "crucible validate".cyan());
+    println!("  5. Customize modules or add your own");
+
+    Ok(())
+}
+
+fn create_example_modules(project_path: &Path) -> Result<()> {
+    // Domain layer: User entity
+    let user_module = r#"{
+  "module": "user",
+  "version": "1.0.0",
+  "layer": "domain",
+  "description": "User domain entity - core business model",
+  "exports": {
+    "User": {
+      "type": "type",
+      "description": "User entity with business rules",
+      "properties": {
+        "id": {"type": "string", "required": true},
+        "email": {"type": "string", "required": true},
+        "name": {"type": "string", "required": true},
+        "createdAt": {"type": "Date", "required": true},
+        "isActive": {"type": "boolean", "required": true}
+      }
+    },
+    "UserRole": {
+      "type": "enum",
+      "description": "User role enumeration",
+      "values": ["admin", "user", "guest"]
+    },
+    "validateEmail": {
+      "type": "function",
+      "description": "Validates email format",
+      "inputs": [
+        {"name": "email", "type": "string", "optional": false}
+      ],
+      "returns": {"type": "boolean"},
+      "throws": [],
+      "calls": [],
+      "effects": []
+    }
+  },
+  "dependencies": {}
+}"#;
+
+    std::fs::write(
+        project_path.join(".crucible/modules/user.json"),
+        user_module,
+    )?;
+
+    // Application layer: User service
+    let user_service_module = r#"{
+  "module": "user-service",
+  "version": "1.0.0",
+  "layer": "application",
+  "description": "User service - application logic and use cases",
+  "exports": {
+    "UserService": {
+      "type": "class",
+      "description": "Handles user-related business operations",
+      "methods": {
+        "createUser": {
+          "inputs": [
+            {"name": "email", "type": "string", "optional": false},
+            {"name": "name", "type": "string", "optional": false}
+          ],
+          "returns": {"type": "user.User"},
+          "throws": ["InvalidEmailError", "UserAlreadyExistsError"],
+          "calls": ["user.validateEmail"],
+          "effects": ["creates user in database"]
+        },
+        "getUserById": {
+          "inputs": [
+            {"name": "id", "type": "string", "optional": false}
+          ],
+          "returns": {"type": "user.User"},
+          "throws": ["UserNotFoundError"],
+          "calls": [],
+          "effects": []
+        },
+        "updateUser": {
+          "inputs": [
+            {"name": "id", "type": "string", "optional": false},
+            {"name": "name", "type": "string", "optional": true},
+            {"name": "email", "type": "string", "optional": true}
+          ],
+          "returns": {"type": "user.User"},
+          "throws": ["UserNotFoundError"],
+          "calls": [],
+          "effects": ["updates user in database"]
+        },
+        "deleteUser": {
+          "inputs": [
+            {"name": "id", "type": "string", "optional": false}
+          ],
+          "returns": {"type": "void"},
+          "throws": ["UserNotFoundError"],
+          "calls": [],
+          "effects": ["deletes user from database"]
+        }
+      }
+    },
+    "InvalidEmailError": {
+      "type": "class",
+      "description": "Error thrown when email is invalid"
+    },
+    "UserAlreadyExistsError": {
+      "type": "class",
+      "description": "Error thrown when user already exists"
+    },
+    "UserNotFoundError": {
+      "type": "class",
+      "description": "Error thrown when user is not found"
+    }
+  },
+  "dependencies": {
+    "user": "1.0.0"
+  }
+}"#;
+
+    std::fs::write(
+        project_path.join(".crucible/modules/user-service.json"),
+        user_service_module,
+    )?;
+
+    // Presentation layer: User controller
+    let user_controller_module = r#"{
+  "module": "user-controller",
+  "version": "1.0.0",
+  "layer": "presentation",
+  "description": "User HTTP/API controller - handles HTTP requests",
+  "exports": {
+    "HttpRequest": {
+      "type": "type",
+      "description": "HTTP request object",
+      "properties": {
+        "body": {"type": "object", "required": true},
+        "params": {"type": "object", "required": true}
+      }
+    },
+    "HttpResponse": {
+      "type": "type",
+      "description": "HTTP response object",
+      "properties": {
+        "status": {"type": "number", "required": true},
+        "body": {"type": "object", "required": true}
+      }
+    },
+    "UserController": {
+      "type": "class",
+      "description": "RESTful API endpoints for user management",
+      "methods": {
+        "createUser": {
+          "inputs": [
+            {"name": "request", "type": "HttpRequest", "optional": false}
+          ],
+          "returns": {"type": "HttpResponse"},
+          "throws": [],
+          "calls": ["user-service.UserService.createUser"],
+          "effects": ["sends HTTP response"]
+        },
+        "getUser": {
+          "inputs": [
+            {"name": "request", "type": "HttpRequest", "optional": false}
+          ],
+          "returns": {"type": "HttpResponse"},
+          "throws": [],
+          "calls": ["user-service.UserService.getUserById"],
+          "effects": ["sends HTTP response"]
+        },
+        "updateUser": {
+          "inputs": [
+            {"name": "request", "type": "HttpRequest", "optional": false}
+          ],
+          "returns": {"type": "HttpResponse"},
+          "throws": [],
+          "calls": ["user-service.UserService.updateUser"],
+          "effects": ["sends HTTP response"]
+        },
+        "deleteUser": {
+          "inputs": [
+            {"name": "request", "type": "HttpRequest", "optional": false}
+          ],
+          "returns": {"type": "HttpResponse"},
+          "throws": [],
+          "calls": ["user-service.UserService.deleteUser"],
+          "effects": ["sends HTTP response"]
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "user-service": "1.0.0"
+  }
+}"#;
+
+    std::fs::write(
+        project_path.join(".crucible/modules/user-controller.json"),
+        user_controller_module,
+    )?;
+
+    Ok(())
+}
+
+fn create_modules_readme(project_path: &Path) -> Result<()> {
+    let readme = r#"# Crucible Modules
+
+This directory contains your architecture module definitions. Each `.json` file describes a module's interface, dependencies, and layer.
+
+## Example Modules
+
+Three example modules are provided to demonstrate the layered architecture pattern:
+
+### 1. `user.json` - Domain Layer
+
+The **domain layer** contains core business entities and rules with no dependencies.
+
+**Key concepts:**
+- Pure business logic
+- Types and entities (User, UserRole)
+- Business rules (validateEmail)
+- No dependencies on other layers
+
+**When to use:**
+- Defining core business entities
+- Business validation rules
+- Domain-specific types and enums
+
+### 2. `user-service.json` - Application Layer
+
+The **application layer** implements use cases and coordinates domain entities.
+
+**Key concepts:**
+- Use case implementations (CRUD operations)
+- Coordinates domain entities
+- Can depend on domain layer only
+- Contains application-specific errors
+
+**When to use:**
+- Implementing business use cases
+- Orchestrating domain logic
+- Managing transactions
+- Application-level validation
+
+### 3. `user-controller.json` - Presentation Layer
+
+The **presentation layer** handles external interfaces (HTTP, CLI, etc.).
+
+**Key concepts:**
+- API endpoints / UI handlers
+- HTTP request/response handling
+- Can depend on application layer
+- Adapts external input to application layer
+
+**When to use:**
+- REST API endpoints
+- GraphQL resolvers
+- CLI commands
+- WebSocket handlers
+
+## Module Structure
+
+Each module JSON file contains:
+
+```json
+{
+  "module": "module-name",
+  "version": "1.0.0",
+  "layer": "domain|application|presentation",
+  "description": "What this module does",
+  "exports": {
+    "ExportName": {
+      "type": "class|function|type|enum",
+      "description": "What this export does",
+      "methods": { /* for classes */ },
+      "properties": { /* for types */ },
+      "values": [ /* for enums */ ]
+    }
+  },
+  "dependencies": {
+    "other-module": "1.0.0"
+  }
+}
+```
+
+## Layer Rules
+
+**Dependency flow (one direction only):**
+```
+presentation → application → domain
+```
+
+- ✅ Presentation can import from application
+- ✅ Application can import from domain
+- ❌ Domain cannot import from application or presentation
+- ❌ Application cannot import from presentation
+
+## Creating Your Own Modules
+
+1. **Copy an example:**
+   ```bash
+   cp user.json my-module.json
+   ```
+
+2. **Edit the file:**
+   - Change module name
+   - Update layer (domain/application/presentation)
+   - Define your exports
+   - Declare dependencies
+
+3. **Add to manifest.json:**
+   ```json
+   "modules": ["user", "user-service", "user-controller", "my-module"]
+   ```
+
+4. **Validate:**
+   ```bash
+   crucible validate
+   ```
+
+## Common Export Types
+
+### Class Export
+```json
+"MyService": {
+  "type": "class",
+  "description": "Service description",
+  "methods": {
+    "methodName": {
+      "inputs": [{"name": "param", "type": "string"}],
+      "returns": {"type": "void"},
+      "throws": ["ErrorType"],
+      "calls": ["other-module.function"],
+      "effects": ["description of side effect"]
+    }
+  }
+}
+```
+
+### Function Export
+```json
+"myFunction": {
+  "type": "function",
+  "inputs": [{"name": "x", "type": "number"}],
+  "returns": {"type": "number"},
+  "throws": [],
+  "calls": [],
+  "effects": []
+}
+```
+
+### Type Export
+```json
+"MyType": {
+  "type": "type",
+  "properties": {
+    "id": {"type": "string", "required": true},
+    "name": {"type": "string", "required": false}
+  }
+}
+```
+
+### Enum Export
+```json
+"MyEnum": {
+  "type": "enum",
+  "values": ["option1", "option2", "option3"]
+}
+```
+
+## Tips
+
+1. **Start simple:** Begin with one module per layer
+2. **Follow examples:** Copy and modify the provided examples
+3. **Validate often:** Run `crucible validate` after each change
+4. **Think dependencies:** Domain should have none, application depends on domain
+5. **Document effects:** List side effects (database writes, API calls, etc.)
+
+## Next Steps
+
+1. Customize the example modules for your use case
+2. Add more modules as needed
+3. Run `crucible validate` to check architecture
+4. Run `crucible claude init` to generate Claude Code integration
+5. Start implementing your code following the architecture
+
+For more examples, see:
+https://github.com/anvanster/crucible/tree/main/spec/examples/calculator-app/modules
+"#;
+
+    std::fs::write(project_path.join(".crucible/modules/README.md"), readme)?;
 
     Ok(())
 }
