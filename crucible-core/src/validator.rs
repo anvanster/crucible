@@ -472,7 +472,9 @@ impl Validator {
 
                         // Check return type (including array items if present)
                         if !self.is_return_type_available(&method.returns, &available_types) {
-                            let type_desc = if method.returns.return_type == "array" && method.returns.inner.is_some() {
+                            let type_desc = if method.returns.return_type == "array"
+                                && method.returns.inner.is_some()
+                            {
                                 format!("array<{}>", method.returns.inner.as_ref().unwrap())
                             } else {
                                 method.returns.return_type.clone()
@@ -480,7 +482,7 @@ impl Validator {
                             issues.push(ValidationIssue {
                                 rule: "all-types-must-exist".to_string(),
                                 severity: Severity::Error,
-                                message: format!("Type '{}' not found", type_desc),
+                                message: format!("Type '{type_desc}' not found"),
                                 location: Some(format!(
                                     "{}.{}.{}",
                                     module.module, export_name, method_name
@@ -511,7 +513,11 @@ impl Validator {
     }
 
     /// Check if a return type is available (handles array items)
-    fn is_return_type_available(&self, return_type: &ReturnType, _available_types: &HashMap<String, bool>) -> bool {
+    fn is_return_type_available(
+        &self,
+        return_type: &ReturnType,
+        _available_types: &HashMap<String, bool>,
+    ) -> bool {
         use crate::type_system::{TypeParser, TypeValidator};
 
         let parser = TypeParser::new();

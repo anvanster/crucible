@@ -49,12 +49,61 @@ crucible --version
 # Create a new project with architecture
 crucible init --name my-app
 
+# Or initialize in an existing project
+cd my-existing-project
+crucible init --here
+
+# Reinitialize existing project (requires confirmation)
+crucible init --here --force
+
 # Validate architecture
 crucible validate
 
-# Initialize Claude Code integration
+# Initialize Claude Code integration (optional - init does this automatically)
 crucible claude init --mode enhanced
 ```
+
+## Claude Code Integration
+
+Crucible includes 8 native slash commands for Claude Code, automatically generated on `crucible init`:
+
+**Essential Commands**:
+- `/crucible:validate` - Run architecture validation with actionable fixes
+- `/crucible:architecture` - Design architecture for new features (architecture-first TDD)
+- `/crucible:init` - Initialize Crucible in current project
+
+**Module Management**:
+- `/crucible:module` - Create or update module definitions interactively
+- `/crucible:review` - Comprehensive architecture review with health scoring
+
+**Sync & Analysis**:
+- `/crucible:sync` - Sync architecture ↔ code bidirectionally
+- `/crucible:analyze` - Deep dive into module dependencies and usage
+- `/crucible:diff` - Show git-style differences between architecture and code
+
+### Example Workflow
+
+```bash
+# 1. Initialize project (auto-creates slash commands)
+crucible init --name healthcare-app
+
+# 2. In Claude Code, design architecture
+/crucible:architecture "Patient management service"
+
+# 3. Write tests (TDD approach)
+# [Write failing tests based on architecture]
+
+# 4. Implement feature
+# [Implement to make tests pass]
+
+# 5. Validate compliance
+/crucible:validate
+
+# 6. Keep architecture in sync
+/crucible:sync
+```
+
+See [docs/CLAUDE_CODE_INTEGRATION.md](docs/CLAUDE_CODE_INTEGRATION.md) for complete documentation.
 
 ## Project Structure
 

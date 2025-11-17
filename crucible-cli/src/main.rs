@@ -6,6 +6,7 @@ use crucible_core::claude::{
     ValidationLevel,
 };
 use crucible_core::{Generator, Parser as CrucibleParser, Validator};
+use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 
 #[derive(Parser)]
@@ -19,9 +20,17 @@ struct Cli {
 enum Commands {
     /// Initialize a new Crucible project
     Init {
-        /// Project name
+        /// Project name (required unless --here is used)
         #[arg(long)]
-        name: String,
+        name: Option<String>,
+
+        /// Initialize in current directory
+        #[arg(long)]
+        here: bool,
+
+        /// Force overwrite if .crucible/ already exists
+        #[arg(long)]
+        force: bool,
 
         /// Programming language
         #[arg(long, default_value = "typescript")]
@@ -124,10 +133,21 @@ fn main() -> Result<()> {
     match cli.command {
         Commands::Init {
             name,
+            here,
+            force,
             language,
             pattern,
         } => {
-            init_project(&name, &language, &pattern)?;
+            if !here && name.is_none() {
+                eprintln!(
+                    "{} Either --name or --here must be specified",
+                    "Error:".red().bold()
+                );
+                eprintln!("  {}", "crucible init --name my-project".cyan());
+                eprintln!("  {}", "crucible init --here".cyan());
+                std::process::exit(1);
+            }
+            init_project(name.as_deref(), here, force, &language, &pattern)?;
         }
         Commands::Validate { path, strict } => {
             validate_project(&path, strict)?;
@@ -166,18 +186,146 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn init_project(name: &str, language: &str, pattern: &str) -> Result<()> {
-    println!(
-        "{}  Crucible project: {}",
-        "Initializing".green().bold(),
-        name
+fn confirm_overwrite(path_description: &str) -> Result<bool> {
+    eprintln!(
+        "{} Replacing existing .crucible/ directory{}",
+        "Warning:".yellow().bold(),
+        if !path_description.is_empty() {
+            format!(" in '{path_description}'")
+        } else {
+            String::new()
+        }
     );
+    eprintln!(
+        "  {} This will delete all existing architecture definitions!",
+        "⚠️ ".yellow()
+    );
+    eprintln!();
+    eprint!("  Type 'yes' to continue: ");
+    io::stderr().flush()?;
 
-    // Create project directory
-    std::fs::create_dir_all(name)?;
+    let mut input = String::new();
+    io::stdin().read_line(&mut input)?;
+
+    let confirmed = input.trim().eq_ignore_ascii_case("yes");
+    if !confirmed {
+        eprintln!();
+        eprintln!("{} Operation cancelled", "Aborted:".red().bold());
+    }
+    eprintln!();
+
+    Ok(confirmed)
+}
+
+fn init_project(
+    name: Option<&str>,
+    here: bool,
+    force: bool,
+    language: &str,
+    pattern: &str,
+) -> Result<()> {
+    let (project_path, project_name) = if here {
+        // Initialize in current directory
+        let current_dir = std::env::current_dir()?;
+        let dir_name = current_dir
+            .file_name()
+            .and_then(|n| n.to_str())
+            .unwrap_or("project")
+            .to_string();
+
+        // Check if .crucible/ already exists
+        let crucible_path = current_dir.join(".crucible");
+        if crucible_path.exists() {
+            if !force {
+                eprintln!(
+                    "{} .crucible/ directory already exists in current directory",
+                    "Error:".red().bold()
+                );
+                eprintln!();
+                eprintln!("Options:");
+                eprintln!("  1. Use {} to overwrite", "--force".cyan());
+                eprintln!("  2. Remove existing .crucible/ directory first");
+                eprintln!("  3. Initialize in a different directory");
+                eprintln!();
+                eprintln!("Example:");
+                eprintln!("  {}", "crucible init --here --force".cyan());
+                std::process::exit(1);
+            } else {
+                // Prompt for confirmation before removing existing .crucible/ directory
+                if !confirm_overwrite("")? {
+                    std::process::exit(1);
+                }
+
+                // Remove existing .crucible/ directory when --force is used
+                std::fs::remove_dir_all(&crucible_path)?;
+            }
+        }
+
+        println!(
+            "{}  Crucible in current directory: {}",
+            "Initializing".green().bold(),
+            dir_name
+        );
+
+        (current_dir, dir_name)
+    } else {
+        // Create new project directory
+        let name = name.unwrap(); // Safe because we validated earlier
+        let project_dir = std::path::PathBuf::from(name);
+
+        // Check if directory already exists
+        if project_dir.exists() {
+            let crucible_path = project_dir.join(".crucible");
+            if crucible_path.exists() {
+                if !force {
+                    eprintln!(
+                        "{} Directory '{}' already has .crucible/ directory",
+                        "Error:".red().bold(),
+                        name
+                    );
+                    eprintln!();
+                    eprintln!("Options:");
+                    eprintln!("  1. Use {} to overwrite", "--force".cyan());
+                    eprintln!("  2. Choose a different project name");
+                    eprintln!("  3. Remove existing .crucible/ directory first");
+                    eprintln!();
+                    eprintln!("Example:");
+                    eprintln!(
+                        "  {}",
+                        format!("crucible init --name {name} --force").cyan()
+                    );
+                    std::process::exit(1);
+                } else {
+                    // Prompt for confirmation before removing existing .crucible/ directory
+                    if !confirm_overwrite(name)? {
+                        std::process::exit(1);
+                    }
+
+                    // Remove existing .crucible/ directory when --force is used
+                    std::fs::remove_dir_all(&crucible_path)?;
+                }
+            } else if !force {
+                eprintln!(
+                    "{} Directory '{}' already exists",
+                    "Warning:".yellow().bold(),
+                    name
+                );
+                eprintln!("  Initializing Crucible in existing directory...");
+                eprintln!();
+            }
+        }
+
+        println!(
+            "{}  Crucible project: {}",
+            "Initializing".green().bold(),
+            name
+        );
+
+        std::fs::create_dir_all(name)?;
+        (project_dir, name.to_string())
+    };
 
     // Create .crucible directory inside project
-    let project_path = std::path::Path::new(name);
     std::fs::create_dir_all(project_path.join(".crucible/modules"))?;
     std::fs::create_dir_all(project_path.join(".crucible/types"))?;
 
@@ -186,7 +334,7 @@ fn init_project(name: &str, language: &str, pattern: &str) -> Result<()> {
         r#"{{
   "version": "0.1.0",
   "project": {{
-    "name": "{name}",
+    "name": "{project_name}",
     "language": "{language}",
     "architecture_pattern": "{pattern}"
   }},
@@ -223,32 +371,66 @@ fn init_project(name: &str, language: &str, pattern: &str) -> Result<()> {
     std::fs::write(project_path.join(".crucible/rules.json"), rules)?;
 
     // Create example modules
-    create_example_modules(project_path)?;
+    create_example_modules(&project_path)?;
 
     // Create README in modules directory
-    create_modules_readme(project_path)?;
+    create_modules_readme(&project_path)?;
 
-    println!("{} Created {}/", "✓".green(), name);
-    println!("{} Created {}/.crucible/manifest.json", "✓".green(), name);
-    println!("{} Created {}/.crucible/rules.json", "✓".green(), name);
-    println!("{} Created {}/.crucible/modules/", "✓".green(), name);
+    // Create Claude Code slash commands
+    create_claude_commands(&project_path)?;
+
+    let display_path = if here { "." } else { &project_name };
+
+    println!("{} Created {}/.crucible/", "✓".green(), display_path);
     println!(
-        "{} Created {} example modules (user, user-service, user-controller)",
+        "{} Created {}/.crucible/manifest.json",
         "✓".green(),
-        name
+        display_path
     );
+    println!(
+        "{} Created {}/.crucible/rules.json",
+        "✓".green(),
+        display_path
+    );
+    println!(
+        "{} Created {}/.crucible/modules/",
+        "✓".green(),
+        display_path
+    );
+    println!(
+        "{} Created 3 example modules (user, user-service, user-controller)",
+        "✓".green()
+    );
+    println!("{} Created {}/.claude/commands/", "✓".green(), display_path);
+    println!("{} Created 8 Claude Code slash commands", "✓".green());
     println!();
     println!("{}", "Project initialized successfully!".green().bold());
     println!();
     println!("Next steps:");
-    println!("  1. {}", format!("cd {name}").cyan());
-    println!("  2. Review example modules in .crucible/modules/");
+    if !here {
+        println!("  1. {}", format!("cd {project_name}").cyan());
+        println!("  2. Review example modules in .crucible/modules/");
+    } else {
+        println!("  1. Review example modules in .crucible/modules/");
+    }
     println!(
-        "  3. Read {} for guidance",
+        "  {}. Read {} for guidance",
+        if here { "2" } else { "3" },
         ".crucible/modules/README.md".cyan()
     );
-    println!("  4. Run {} to validate", "crucible validate".cyan());
-    println!("  5. Customize modules or add your own");
+    println!(
+        "  {}. Run {} to validate",
+        if here { "3" } else { "4" },
+        "crucible validate".cyan()
+    );
+    println!(
+        "  {}. Try Claude Code commands: type '/' and look for 'crucible:' commands",
+        if here { "4" } else { "5" }
+    );
+    println!(
+        "  {}. Customize modules or add your own",
+        if here { "5" } else { "6" }
+    );
 
     Ok(())
 }
@@ -690,6 +872,57 @@ https://github.com/anvanster/crucible/tree/main/spec/examples/calculator-app/mod
 "#;
 
     std::fs::write(project_path.join(".crucible/modules/README.md"), readme)?;
+
+    Ok(())
+}
+
+fn create_claude_commands(project_path: &Path) -> Result<()> {
+    // Create .claude/commands directory
+    std::fs::create_dir_all(project_path.join(".claude/commands"))?;
+
+    // Include command files from embedded resources
+    let crucible_validate = include_str!("../../.claude/commands/crucible-validate.md");
+    let crucible_architecture = include_str!("../../.claude/commands/crucible-architecture.md");
+    let crucible_init = include_str!("../../.claude/commands/crucible-init.md");
+    let crucible_module = include_str!("../../.claude/commands/crucible-module.md");
+    let crucible_review = include_str!("../../.claude/commands/crucible-review.md");
+    let crucible_sync = include_str!("../../.claude/commands/crucible-sync.md");
+    let crucible_analyze = include_str!("../../.claude/commands/crucible-analyze.md");
+    let crucible_diff = include_str!("../../.claude/commands/crucible-diff.md");
+
+    // Write command files
+    std::fs::write(
+        project_path.join(".claude/commands/crucible-validate.md"),
+        crucible_validate,
+    )?;
+    std::fs::write(
+        project_path.join(".claude/commands/crucible-architecture.md"),
+        crucible_architecture,
+    )?;
+    std::fs::write(
+        project_path.join(".claude/commands/crucible-init.md"),
+        crucible_init,
+    )?;
+    std::fs::write(
+        project_path.join(".claude/commands/crucible-module.md"),
+        crucible_module,
+    )?;
+    std::fs::write(
+        project_path.join(".claude/commands/crucible-review.md"),
+        crucible_review,
+    )?;
+    std::fs::write(
+        project_path.join(".claude/commands/crucible-sync.md"),
+        crucible_sync,
+    )?;
+    std::fs::write(
+        project_path.join(".claude/commands/crucible-analyze.md"),
+        crucible_analyze,
+    )?;
+    std::fs::write(
+        project_path.join(".claude/commands/crucible-diff.md"),
+        crucible_diff,
+    )?;
 
     Ok(())
 }

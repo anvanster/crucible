@@ -21,8 +21,7 @@ fn test_builtin_primitive_types_recognized() {
     for primitive in primitives {
         assert!(
             is_builtin_type(primitive),
-            "{} should be recognized as built-in",
-            primitive
+            "{primitive} should be recognized as built-in"
         );
     }
 }
@@ -38,8 +37,7 @@ fn test_builtin_object_types_recognized() {
     for obj in objects {
         assert!(
             is_builtin_type(obj),
-            "{} should be recognized as built-in",
-            obj
+            "{obj} should be recognized as built-in"
         );
     }
 }
@@ -53,11 +51,7 @@ fn test_builtin_special_types_recognized() {
     // When: Checking if they are built-in types
     // Then: All should be recognized as built-in
     for s in special {
-        assert!(
-            is_builtin_type(s),
-            "{} should be recognized as built-in",
-            s
-        );
+        assert!(is_builtin_type(s), "{s} should be recognized as built-in");
     }
 }
 
@@ -72,8 +66,7 @@ fn test_custom_types_not_builtin() {
     for c in custom {
         assert!(
             !is_builtin_type(c),
-            "{} should NOT be recognized as built-in",
-            c
+            "{c} should NOT be recognized as built-in"
         );
     }
 }
@@ -105,9 +98,7 @@ fn test_parse_non_nullable_type() {
     let parser = TypeParser::new();
 
     // When: Parsing without nullable flag
-    let type_ref = parser
-        .parse_from_json("Patient", None, None, None)
-        .unwrap();
+    let type_ref = parser.parse_from_json("Patient", None, None, None).unwrap();
 
     // Then: Should default to non-nullable
     assert_eq!(type_ref.base_type, "Patient");
@@ -126,8 +117,7 @@ fn test_validate_nullable_type_exists() {
     // Then: Should validate successfully
     assert!(
         result.is_ok(),
-        "Nullable Patient type should validate: {:?}",
-        result
+        "Nullable Patient type should validate: {result:?}"
     );
 }
 
@@ -198,8 +188,7 @@ fn test_validate_array_type() {
     // Then: Should validate successfully
     assert!(
         result.is_ok(),
-        "patient.Patient[] should validate: {:?}",
-        result
+        "patient.Patient[] should validate: {result:?}"
     );
 }
 
@@ -234,11 +223,7 @@ fn test_generic_types_recognized() {
     // When: Checking if they are generic types
     // Then: All should be recognized as generics
     for g in generics {
-        assert!(
-            is_generic_type(g),
-            "{} should be recognized as generic",
-            g
-        );
+        assert!(is_generic_type(g), "{g} should be recognized as generic");
     }
 }
 
@@ -266,8 +251,7 @@ fn test_validate_partial_type() {
     // Then: Should validate successfully
     assert!(
         result.is_ok(),
-        "Partial<patient.Patient> should validate: {:?}",
-        result
+        "Partial<patient.Patient> should validate: {result:?}"
     );
 }
 
@@ -295,8 +279,7 @@ fn test_validate_promise_type() {
     // Then: Should validate successfully
     assert!(
         result.is_ok(),
-        "Promise<Patient> should validate: {:?}",
-        result
+        "Promise<Patient> should validate: {result:?}"
     );
 }
 
@@ -321,7 +304,7 @@ fn test_validate_complex_type_combinations() {
 
     for (type_str, nullable, desc) in cases {
         let result = validate_type_string(type_str, Some(nullable), &modules);
-        assert!(result.is_ok(), "{} should validate: {:?}", desc, result);
+        assert!(result.is_ok(), "{desc} should validate: {result:?}");
     }
 }
 

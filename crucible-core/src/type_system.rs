@@ -4,7 +4,7 @@
 //! - Built-in types (string, number, Date, Buffer, etc.)
 //! - Nullable types (Type | null)
 //! - Array syntax (Type[] and array with items)
-//! - Generic types (Partial<T>, Omit<T, K>, etc.)
+//! - Generic types (`Partial<T>`, `Omit<T, K>`, etc.)
 
 use crate::types::Module;
 use std::collections::HashSet;
@@ -156,7 +156,7 @@ impl GenericTypeRegistry {
         generics.insert("Record");
         generics.insert("Promise");
         generics.insert("Array");
-        generics.insert("Vec");  // Rust-style array
+        generics.insert("Vec"); // Rust-style array
         generics.insert("Map");
         generics.insert("HashMap");
         generics.insert("Set");
@@ -251,8 +251,7 @@ impl TypeParser {
 
         // Other union types not yet supported
         Err(format!(
-            "Union type '{}' not supported yet (only Type | null is supported)",
-            type_str
+            "Union type '{type_str}' not supported yet (only Type | null is supported)"
         ))
     }
 
@@ -308,7 +307,7 @@ impl TypeParser {
     /// Parse array shorthand syntax (Type[])
     pub fn parse_array_syntax(&self, type_str: &str) -> Result<TypeReference, String> {
         if !type_str.ends_with("[]") {
-            return Err(format!("Expected array syntax, got: {}", type_str));
+            return Err(format!("Expected array syntax, got: {type_str}"));
         }
 
         // Remove [] suffix
@@ -425,7 +424,7 @@ impl TypeValidator {
         if type_name.contains('.') {
             let parts: Vec<&str> = type_name.split('.').collect();
             if parts.len() != 2 {
-                return Err(format!("Invalid type reference: {}", type_name));
+                return Err(format!("Invalid type reference: {type_name}"));
             }
 
             let module_name = parts[0];
@@ -435,7 +434,7 @@ impl TypeValidator {
             let module = modules
                 .iter()
                 .find(|m| m.module == module_name)
-                .ok_or_else(|| format!("Module '{}' not found", module_name))?;
+                .ok_or_else(|| format!("Module '{module_name}' not found"))?;
 
             // Check if export exists
             if module.exports.contains_key(export_name) {
@@ -443,8 +442,7 @@ impl TypeValidator {
             }
 
             return Err(format!(
-                "Export '{}' not found in module '{}'",
-                export_name, module_name
+                "Export '{export_name}' not found in module '{module_name}'"
             ));
         }
 
@@ -457,8 +455,7 @@ impl TypeValidator {
         }
 
         Err(format!(
-            "Type '{}' not found in any module (consider using module.Type syntax)",
-            type_name
+            "Type '{type_name}' not found in any module (consider using module.Type syntax)"
         ))
     }
 
@@ -511,10 +508,7 @@ pub fn validate_type_string(
     TypeValidator::new().validate_type_string(type_str, nullable, modules)
 }
 
-pub fn validate_type_reference(
-    type_ref: &TypeReference,
-    modules: &[Module],
-) -> Result<(), String> {
+pub fn validate_type_reference(type_ref: &TypeReference, modules: &[Module]) -> Result<(), String> {
     TypeValidator::new().validate_type_exists(type_ref, modules)
 }
 
