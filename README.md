@@ -67,10 +67,28 @@ crucible claude init --mode enhanced
 
 This project uses Crucible to define its own architecture. Before making changes:
 
-1. Update `.crucible/` definitions
-2. Validate: `cargo run --bin crucible -- validate --path .crucible`
+1. Update `crucible-core/.crucible/` definitions
+2. Validate: `crucible validate --path crucible-core/.crucible --strict`
 3. Implement changes
-4. Run tests: `cargo test`
+4. Run tests: `cargo test --all`
+
+### Pre-push Checks
+
+Before pushing to main, run all CI checks locally:
+
+```bash
+./scripts/pre-push.sh
+```
+
+This runs:
+- Code formatting check (`cargo fmt`)
+- Clippy lints (`cargo clippy`)
+- Release build
+- Architecture validation
+- All tests
+- Documentation check
+
+See [scripts/README.md](scripts/README.md) for setup as a Git hook.
 
 ## License
 

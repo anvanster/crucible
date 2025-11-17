@@ -77,10 +77,7 @@ impl Parser {
 
     /// Parse a module definition file with caching
     pub fn parse_module(&self, name: &str) -> Result<Module> {
-        let module_path = self
-            .root_path
-            .join("modules")
-            .join(format!("{name}.json"));
+        let module_path = self.root_path.join("modules").join(format!("{name}.json"));
 
         // Check cache first
         {

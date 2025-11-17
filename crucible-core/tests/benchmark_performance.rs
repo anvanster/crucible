@@ -142,9 +142,7 @@ fn test_performance_benchmarks() {
         incremental_time,
         result2.validated_modules.len()
     );
-    println!(
-        "  Speedup:                {validation_speedup:.1}x faster"
-    );
+    println!("  Speedup:                {validation_speedup:.1}x faster");
     println!("  ✅ Incremental validation skips unchanged modules");
 
     // Benchmark 3: Configuration Loading Performance
@@ -175,9 +173,7 @@ fn test_performance_benchmarks() {
     // Summary
     println!("\n🎯 Performance Summary");
     println!("======================");
-    println!(
-        "✅ Caching provides {speedup:.0}x speedup on repeated operations"
-    );
+    println!("✅ Caching provides {speedup:.0}x speedup on repeated operations");
     println!(
         "✅ Incremental validation saves {:.0}% time on unchanged code",
         (1.0 - incremental_time.as_secs_f64() / full_time.as_secs_f64()) * 100.0
