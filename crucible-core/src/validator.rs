@@ -1,6 +1,6 @@
 //! Architecture validation engine
 
-use crate::types::{Project, Severity};
+use crate::types::{Project, ReturnType, Severity};
 use petgraph::algo::is_cyclic_directed;
 use petgraph::graph::DiGraph;
 use std::collections::HashMap;
@@ -470,12 +470,17 @@ impl Validator {
                             }
                         }
 
-                        // Check return type
-                        if !self.is_type_available(&method.returns.return_type, &available_types) {
+                        // Check return type (including array items if present)
+                        if !self.is_return_type_available(&method.returns, &available_types) {
+                            let type_desc = if method.returns.return_type == "array" && method.returns.inner.is_some() {
+                                format!("array<{}>", method.returns.inner.as_ref().unwrap())
+                            } else {
+                                method.returns.return_type.clone()
+                            };
                             issues.push(ValidationIssue {
                                 rule: "all-types-must-exist".to_string(),
                                 severity: Severity::Error,
-                                message: format!("Type '{}' not found", method.returns.return_type),
+                                message: format!("Type '{}' not found", type_desc),
                                 location: Some(format!(
                                     "{}.{}.{}",
                                     module.module, export_name, method_name
@@ -495,17 +500,41 @@ impl Validator {
     }
 
     /// Check if a type is available (handles generics)
-    fn is_type_available(&self, type_name: &str, available_types: &HashMap<String, bool>) -> bool {
-        // Handle generic types like Array<T>, Map<K,V>, etc.
-        if type_name.contains('<') {
-            let base_type = type_name.split('<').next().unwrap();
-            return matches!(
-                base_type,
-                "Array" | "Vec" | "Map" | "HashMap" | "Promise" | "Result" | "Optional" | "Option"
-            );
-        }
+    fn is_type_available(&self, type_name: &str, _available_types: &HashMap<String, bool>) -> bool {
+        // Use the new TypeValidator for enhanced type checking
+        use crate::type_system::TypeValidator;
 
-        available_types.contains_key(type_name)
+        let validator = TypeValidator::new();
+        validator
+            .validate_type_string(type_name, None, &self.project.modules)
+            .is_ok()
+    }
+
+    /// Check if a return type is available (handles array items)
+    fn is_return_type_available(&self, return_type: &ReturnType, _available_types: &HashMap<String, bool>) -> bool {
+        use crate::type_system::{TypeParser, TypeValidator};
+
+        let parser = TypeParser::new();
+        let validator = TypeValidator::new();
+
+        // Parse the return type with items if present
+        let type_ref = if return_type.return_type == "array" && return_type.inner.is_some() {
+            // Array with items
+            parser
+                .parse_from_json("array", None, return_type.inner.as_deref(), None)
+                .ok()
+        } else {
+            // Regular type
+            parser.parse(&return_type.return_type).ok()
+        };
+
+        if let Some(type_ref) = type_ref {
+            validator
+                .validate_type_exists(&type_ref, &self.project.modules)
+                .is_ok()
+        } else {
+            false
+        }
     }
 
     /// Check that all function calls reference existing exports

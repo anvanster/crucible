@@ -9,6 +9,7 @@
     "primitives",
     "error",
     "types",
+    "type-system",
     "cache",
     "performance",
     "parser",

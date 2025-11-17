@@ -105,7 +105,7 @@ pub struct Parameter {
 pub struct ReturnType {
     #[serde(rename = "type")]
     pub return_type: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none", alias = "items")]
     pub inner: Option<String>,
 }
 

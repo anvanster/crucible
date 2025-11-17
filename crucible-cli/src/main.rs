@@ -313,7 +313,7 @@ fn create_example_modules(project_path: &Path) -> Result<()> {
             {"name": "email", "type": "string", "optional": false},
             {"name": "name", "type": "string", "optional": false}
           ],
-          "returns": {"type": "user.User"},
+          "returns": {"type": "Promise<user.User>"},
           "throws": ["InvalidEmailError", "UserAlreadyExistsError"],
           "calls": ["user.validateEmail"],
           "effects": ["creates user in database"]
@@ -322,18 +322,24 @@ fn create_example_modules(project_path: &Path) -> Result<()> {
           "inputs": [
             {"name": "id", "type": "string", "optional": false}
           ],
-          "returns": {"type": "user.User"},
-          "throws": ["UserNotFoundError"],
+          "returns": {"type": "user.User | null"},
+          "throws": [],
+          "calls": [],
+          "effects": []
+        },
+        "getAllUsers": {
+          "inputs": [],
+          "returns": {"type": "user.User[]"},
+          "throws": [],
           "calls": [],
           "effects": []
         },
         "updateUser": {
           "inputs": [
             {"name": "id", "type": "string", "optional": false},
-            {"name": "name", "type": "string", "optional": true},
-            {"name": "email", "type": "string", "optional": true}
+            {"name": "updates", "type": "Partial<user.User>", "optional": false}
           ],
-          "returns": {"type": "user.User"},
+          "returns": {"type": "Promise<user.User>"},
           "throws": ["UserNotFoundError"],
           "calls": [],
           "effects": ["updates user in database"]
@@ -342,7 +348,7 @@ fn create_example_modules(project_path: &Path) -> Result<()> {
           "inputs": [
             {"name": "id", "type": "string", "optional": false}
           ],
-          "returns": {"type": "void"},
+          "returns": {"type": "Promise<void>"},
           "throws": ["UserNotFoundError"],
           "calls": [],
           "effects": ["deletes user from database"]
@@ -616,6 +622,52 @@ presentation → application → domain
   "values": ["option1", "option2", "option3"]
 }
 ```
+
+## TypeScript Type System
+
+Crucible supports modern TypeScript type patterns:
+
+### Array Types
+```json
+"getAllUsers": {
+  "returns": {"type": "user.User[]"}
+}
+```
+
+### Nullable Types
+```json
+"findUser": {
+  "returns": {"type": "user.User | null"}
+}
+```
+
+### Generic Types
+```json
+"updateUser": {
+  "inputs": [
+    {"name": "updates", "type": "Partial<user.User>"}
+  ],
+  "returns": {"type": "Promise<user.User>"}
+}
+```
+
+**Supported generics:**
+- Utility types: `Partial<T>`, `Omit<T, K>`, `Pick<T, K>`, `Record<K, V>`
+- Async: `Promise<T>`
+- Collections: `Array<T>`, `Map<K,V>`, `Set<T>`
+
+### Built-in Types
+```json
+"createdAt": {"type": "Date"},
+"fileData": {"type": "Buffer"},
+"metadata": {"type": "object"}
+```
+
+**Common built-ins:**
+- Primitives: `string`, `number`, `boolean`, `void`
+- Objects: `Date`, `Buffer`, `Error`, `RegExp`
+- Database: `Connection`, `Transaction`
+- Special: `any`, `unknown`, `object`
 
 ## Tips
 

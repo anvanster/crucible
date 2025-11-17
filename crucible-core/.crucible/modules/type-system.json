@@ -1,0 +1,148 @@
+{
+  "module": "type-system",
+  "version": "1.0.0",
+  "layer": "domain",
+  "description": "Type parsing and validation system for TypeScript types",
+  "exports": {
+    "TypeReference": {
+      "type": "type",
+      "description": "Unified type reference structure",
+      "properties": {
+        "base_type": {"type": "string", "required": true},
+        "nullable": {"type": "boolean", "required": true},
+        "items": {"type": "TypeReference", "required": false},
+        "type_args": {"type": "array", "items": "TypeReference", "required": true}
+      }
+    },
+    "TypeParser": {
+      "type": "class",
+      "description": "Parses type strings into TypeReference",
+      "methods": {
+        "new": {
+          "inputs": [],
+          "returns": {"type": "TypeParser"},
+          "throws": [],
+          "calls": [],
+          "effects": []
+        },
+        "parse": {
+          "inputs": [
+            {"name": "type_string", "type": "string", "optional": false}
+          ],
+          "returns": {"type": "TypeReference"},
+          "throws": ["ParseError"],
+          "calls": [],
+          "effects": []
+        },
+        "parse_array_syntax": {
+          "inputs": [
+            {"name": "type_string", "type": "string", "optional": false}
+          ],
+          "returns": {"type": "TypeReference"},
+          "throws": [],
+          "calls": ["type-system.TypeParser.parse"],
+          "effects": []
+        }
+      }
+    },
+    "TypeValidator": {
+      "type": "class",
+      "description": "Validates types against available modules",
+      "methods": {
+        "new": {
+          "inputs": [],
+          "returns": {"type": "TypeValidator"},
+          "throws": [],
+          "calls": [],
+          "effects": []
+        },
+        "validate_type_exists": {
+          "inputs": [
+            {"name": "type_ref", "type": "TypeReference", "optional": false},
+            {"name": "modules", "type": "any", "optional": false}
+          ],
+          "returns": {"type": "boolean"},
+          "throws": [],
+          "calls": ["type-system.BuiltInTypeRegistry.is_builtin", "type-system.GenericTypeRegistry.is_generic"],
+          "effects": []
+        },
+        "get_type_location": {
+          "inputs": [
+            {"name": "type_string", "type": "string", "optional": false},
+            {"name": "modules", "type": "any", "optional": false}
+          ],
+          "returns": {"type": "string"},
+          "throws": [],
+          "calls": [],
+          "effects": []
+        }
+      }
+    },
+    "BuiltInTypeRegistry": {
+      "type": "class",
+      "description": "Registry of built-in TypeScript types",
+      "methods": {
+        "new": {
+          "inputs": [],
+          "returns": {"type": "BuiltInTypeRegistry"},
+          "throws": [],
+          "calls": [],
+          "effects": []
+        },
+        "is_builtin": {
+          "inputs": [
+            {"name": "type_name", "type": "string", "optional": false}
+          ],
+          "returns": {"type": "boolean"},
+          "throws": [],
+          "calls": [],
+          "effects": []
+        },
+        "get_builtins": {
+          "inputs": [],
+          "returns": {"type": "array", "items": "string"},
+          "throws": [],
+          "calls": [],
+          "effects": []
+        }
+      }
+    },
+    "GenericTypeRegistry": {
+      "type": "class",
+      "description": "Registry of generic utility types",
+      "methods": {
+        "new": {
+          "inputs": [],
+          "returns": {"type": "GenericTypeRegistry"},
+          "throws": [],
+          "calls": [],
+          "effects": []
+        },
+        "is_generic": {
+          "inputs": [
+            {"name": "type_name", "type": "string", "optional": false}
+          ],
+          "returns": {"type": "boolean"},
+          "throws": [],
+          "calls": [],
+          "effects": []
+        },
+        "validate_generic": {
+          "inputs": [
+            {"name": "type_ref", "type": "TypeReference", "optional": false},
+            {"name": "modules", "type": "any", "optional": false}
+          ],
+          "returns": {"type": "boolean"},
+          "throws": [],
+          "calls": ["type-system.TypeValidator.validate_type_exists"],
+          "effects": []
+        }
+      }
+    },
+    "ParseError": {
+      "type": "class",
+      "description": "Error thrown when type parsing fails"
+    }
+  },
+  "dependencies": {}
+}

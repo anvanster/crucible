@@ -9,6 +9,7 @@ pub mod error;
 pub mod generator;
 pub mod graph;
 pub mod parser;
+pub mod type_system;
 pub mod types;
 pub mod validator;
 
