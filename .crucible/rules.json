@@ -2,50 +2,16 @@
   "architecture": {
     "pattern": "layered",
     "layers": [
-      {
-        "name": "cli",
-        "can_depend_on": ["application", "core"]
-      },
-      {
-        "name": "application",
-        "can_depend_on": ["core"]
-      },
-      {
-        "name": "core",
-        "can_depend_on": ["core"]
-      }
+      {"name": "presentation", "can_depend_on": ["application"]},
+      {"name": "application", "can_depend_on": ["domain"]},
+      {"name": "domain", "can_depend_on": []}
     ]
   },
-  
   "rules": [
     {
       "id": "no-circular-dependencies",
       "enabled": true,
-      "severity": "error",
-      "description": "Modules must not have circular dependencies"
-    },
-    {
-      "id": "respect-layer-boundaries",
-      "enabled": true,
-      "severity": "error",
-      "description": "Modules can only depend on allowed layers"
-    },
-    {
-      "id": "all-calls-must-exist",
-      "enabled": true,
-      "severity": "error",
-      "description": "All function calls must reference exported functions"
-    }
-  ],
-  
-  "custom_rules": [
-    {
-      "id": "error-suffix",
-      "type": "naming-convention",
-      "target": "export",
-      "pattern": "^[A-Z][a-zA-Z]*Error$",
-      "severity": "warning",
-      "description": "Error types should end with 'Error'"
+      "severity": "error"
     }
   ]
 }

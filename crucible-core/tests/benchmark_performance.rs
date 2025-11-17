@@ -108,9 +108,9 @@ fn test_performance_benchmarks() {
 
     let speedup = cold_time.as_secs_f64() / cached_time.as_secs_f64();
 
-    println!("  Cold parse:   {:?}", cold_time);
-    println!("  Cached parse: {:?}", cached_time);
-    println!("  Speedup:      {:.1}x faster", speedup);
+    println!("  Cold parse:   {cold_time:?}");
+    println!("  Cached parse: {cached_time:?}");
+    println!("  Speedup:      {speedup:.1}x faster");
     println!("  ✅ Cache achieves significant performance improvement");
 
     // Benchmark 2: Incremental Validation
@@ -143,8 +143,7 @@ fn test_performance_benchmarks() {
         result2.validated_modules.len()
     );
     println!(
-        "  Speedup:                {:.1}x faster",
-        validation_speedup
+        "  Speedup:                {validation_speedup:.1}x faster"
     );
     println!("  ✅ Incremental validation skips unchanged modules");
 
@@ -165,8 +164,8 @@ fn test_performance_benchmarks() {
     config2.apply_env_overrides();
     let override_time = start.elapsed();
 
-    println!("  Default config:    {:?}", default_time);
-    println!("  With env overrides: {:?}", override_time);
+    println!("  Default config:    {default_time:?}");
+    println!("  With env overrides: {override_time:?}");
     println!("  ✅ Configuration loading is performant");
 
     // Clean up env vars
@@ -177,8 +176,7 @@ fn test_performance_benchmarks() {
     println!("\n🎯 Performance Summary");
     println!("======================");
     println!(
-        "✅ Caching provides {:.0}x speedup on repeated operations",
-        speedup
+        "✅ Caching provides {speedup:.0}x speedup on repeated operations"
     );
     println!(
         "✅ Incremental validation saves {:.0}% time on unchanged code",

@@ -37,6 +37,12 @@ pub struct ChangeTracker {
     pub dependency_graph: HashMap<String, HashMap<String, bool>>,
 }
 
+impl Default for ChangeTracker {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ChangeTracker {
     pub fn new() -> Self {
         Self {
@@ -52,10 +58,10 @@ impl ChangeTracker {
 
         // Build forward dependencies (who depends on me)
         for module in &project.modules {
-            for (dep_name, _) in &module.dependencies {
+            for dep_name in module.dependencies.keys() {
                 self.dependency_graph
                     .entry(dep_name.clone())
-                    .or_insert_with(HashMap::new)
+                    .or_default()
                     .insert(module.module.clone(), true);
             }
         }
@@ -100,7 +106,7 @@ impl ChangeTracker {
         while let Some(module) = to_process.pop() {
             // Find all modules that depend on this one
             if let Some(dependents) = self.dependency_graph.get(&module) {
-                for (dependent, _) in dependents {
+                for dependent in dependents.keys() {
                     if !affected.contains_key(dependent) {
                         affected.insert(dependent.clone(), true);
                         to_process.push(dependent.clone());
@@ -351,7 +357,7 @@ impl Validator {
         // Add edges for dependencies
         for module in &self.project.modules {
             if let Some(from_node) = node_map.get(&module.module) {
-                for (dep_name, _) in &module.dependencies {
+                for dep_name in module.dependencies.keys() {
                     if let Some(to_node) = node_map.get(dep_name) {
                         graph.add_edge(*from_node, *to_node, ());
                     }
@@ -399,7 +405,7 @@ impl Validator {
 
                 if let Some(layer) = layer_def {
                     // Check each dependency
-                    for (dep_name, _) in &module.dependencies {
+                    for dep_name in module.dependencies.keys() {
                         if let Some(to_layer) = module_layers.get(dep_name) {
                             // Check if this dependency is allowed
                             if !layer.can_depend_on.contains(to_layer) {
@@ -407,8 +413,7 @@ impl Validator {
                                     rule: "respect-layer-boundaries".to_string(),
                                     severity: Severity::Error,
                                     message: format!(
-                                        "Layer '{}' cannot depend on layer '{}'",
-                                        from_layer, to_layer
+                                        "Layer '{from_layer}' cannot depend on layer '{to_layer}'"
                                     ),
                                     location: Some(format!("{} -> {}", module.module, dep_name)),
                                 });
@@ -433,7 +438,7 @@ impl Validator {
         // Collect all available types
         let mut available_types = HashMap::new();
         for module in &self.project.modules {
-            for (export_name, _) in &module.exports {
+            for export_name in module.exports.keys() {
                 available_types.insert(format!("{}.{}", module.module, export_name), true);
                 available_types.insert(export_name.clone(), true);
             }
@@ -541,8 +546,7 @@ impl Validator {
                                     rule: "all-calls-must-exist".to_string(),
                                     severity: Severity::Error,
                                     message: format!(
-                                        "Invalid call format '{}' (expected 'module.Export.method' or 'module.function')",
-                                        call
+                                        "Invalid call format '{call}' (expected 'module.Export.method' or 'module.function')"
                                     ),
                                     location: Some(format!(
                                         "{}.{}.{}",
@@ -581,8 +585,7 @@ impl Validator {
                                             rule: "all-calls-must-exist".to_string(),
                                             severity: Severity::Error,
                                             message: format!(
-                                                "Method '{}' not found on '{}'",
-                                                target_method, export_name
+                                                "Method '{target_method}' not found on '{export_name}'"
                                             ),
                                             location: Some(format!(
                                                 "{}.{}.{}",
@@ -597,12 +600,12 @@ impl Validator {
                             // Check if it's a function call (2 parts) or method call (3 parts)
                             if parts.len() == 2 {
                                 // Function call: module.function
-                                let full_name = format!("{}.{}", target_module, target_export);
+                                let full_name = format!("{target_module}.{target_export}");
                                 if !available_exports.contains_key(&full_name) {
                                     issues.push(ValidationIssue {
                                         rule: "all-calls-must-exist".to_string(),
                                         severity: Severity::Error,
-                                        message: format!("Call target '{}' not found", call),
+                                        message: format!("Call target '{call}' not found"),
                                         location: Some(format!(
                                             "{}.{}.{}",
                                             module.module, export_name, method_name
@@ -612,7 +615,7 @@ impl Validator {
                             } else if parts.len() == 3 {
                                 // Method call: module.Export.method
                                 let target_method = parts[2];
-                                let full_export = format!("{}.{}", target_module, target_export);
+                                let full_export = format!("{target_module}.{target_export}");
 
                                 if let Some(export_methods) = available_exports.get(&full_export) {
                                     if !export_methods.contains_key(target_method) {
@@ -620,8 +623,7 @@ impl Validator {
                                             rule: "all-calls-must-exist".to_string(),
                                             severity: Severity::Error,
                                             message: format!(
-                                                "Method '{}' not found on '{}.{}'",
-                                                target_method, target_module, target_export
+                                                "Method '{target_method}' not found on '{target_module}.{target_export}'"
                                             ),
                                             location: Some(format!(
                                                 "{}.{}.{}",
@@ -634,8 +636,7 @@ impl Validator {
                                         rule: "all-calls-must-exist".to_string(),
                                         severity: Severity::Error,
                                         message: format!(
-                                            "Export '{}.{}' not found",
-                                            target_module, target_export
+                                            "Export '{target_module}.{target_export}' not found"
                                         ),
                                         location: Some(format!(
                                             "{}.{}.{}",
@@ -647,7 +648,7 @@ impl Validator {
                                 issues.push(ValidationIssue {
                                     rule: "all-calls-must-exist".to_string(),
                                     severity: Severity::Error,
-                                    message: format!("Invalid call format '{}'", call),
+                                    message: format!("Invalid call format '{call}'"),
                                     location: Some(format!(
                                         "{}.{}.{}",
                                         module.module, export_name, method_name
@@ -675,9 +676,9 @@ impl Validator {
             let mut used_modules = std::collections::HashSet::new();
 
             // Collect all modules referenced in calls
-            for (_, export) in &module.exports {
+            for export in module.exports.values() {
                 if let Some(methods) = &export.methods {
-                    for (_, method) in methods {
+                    for method in methods.values() {
                         for call in &method.calls {
                             // Extract module name from call (first part before '.')
                             if let Some(target_module) = call.split('.').next() {
@@ -698,8 +699,7 @@ impl Validator {
                         rule: "used-dependencies-declared".to_string(),
                         severity: Severity::Error,
                         message: format!(
-                            "Module '{}' is used but not declared in dependencies",
-                            used_module
+                            "Module '{used_module}' is used but not declared in dependencies"
                         ),
                         location: Some(module.module.clone()),
                     });
@@ -722,9 +722,9 @@ impl Validator {
             let mut used_modules = std::collections::HashSet::new();
 
             // Collect all modules referenced in calls
-            for (_, export) in &module.exports {
+            for export in module.exports.values() {
                 if let Some(methods) = &export.methods {
-                    for (_, method) in methods {
+                    for method in methods.values() {
                         for call in &method.calls {
                             if let Some(target_module) = call.split('.').next() {
                                 used_modules.insert(target_module.to_string());
@@ -735,12 +735,12 @@ impl Validator {
             }
 
             // Check for unused dependencies
-            for (dep_name, _) in &module.dependencies {
+            for dep_name in module.dependencies.keys() {
                 if !used_modules.contains(dep_name) {
                     issues.push(ValidationIssue {
                         rule: "declared-dependencies-must-be-used".to_string(),
                         severity: Severity::Warning,
-                        message: format!("Dependency '{}' is declared but not used", dep_name),
+                        message: format!("Dependency '{dep_name}' is declared but not used"),
                         location: Some(module.module.clone()),
                     });
                 }

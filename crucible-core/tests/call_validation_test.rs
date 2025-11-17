@@ -51,7 +51,7 @@ fn test_all_calls_must_exist_valid() {
     for error in &result.errors {
         eprintln!("✗ {}: {}", error.rule, error.message);
         if let Some(loc) = &error.location {
-            eprintln!("  at {}", loc);
+            eprintln!("  at {loc}");
         }
     }
 

@@ -80,7 +80,7 @@ impl Parser {
         let module_path = self
             .root_path
             .join("modules")
-            .join(format!("{}.json", name));
+            .join(format!("{name}.json"));
 
         // Check cache first
         {
@@ -98,7 +98,7 @@ impl Parser {
 
         let module: Module =
             serde_json::from_str(&content).map_err(|e| CrucibleError::ParseError {
-                file: format!("{}.json", name),
+                file: format!("{name}.json"),
                 message: e.to_string(),
             })?;
 

@@ -273,7 +273,7 @@ impl IntegrationConfig {
 
         serde_json::from_str(&content).map_err(|e| CrucibleError::ParseError {
             file: path.display().to_string(),
-            message: format!("Invalid configuration: {}", e),
+            message: format!("Invalid configuration: {e}"),
         })
     }
 
@@ -282,7 +282,7 @@ impl IntegrationConfig {
         let content =
             serde_json::to_string_pretty(self).map_err(|e| CrucibleError::ParseError {
                 file: path.display().to_string(),
-                message: format!("Failed to serialize config: {}", e),
+                message: format!("Failed to serialize config: {e}"),
             })?;
 
         fs::write(path, content).map_err(|e| CrucibleError::FileRead {
@@ -464,7 +464,7 @@ mod tests {
 
         assert_eq!(config.mode, IntegrationMode::Strict);
         assert_eq!(config.validation.severity, ValidationLevel::Error);
-        assert_eq!(config.sync.auto_sync, false);
+        assert!(!config.sync.auto_sync);
         assert_eq!(config.context.max_tokens, 5000);
 
         // Clean up

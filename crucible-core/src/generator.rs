@@ -47,7 +47,7 @@ impl Generator {
         for (name, export) in &module.exports {
             match export.export_type {
                 ExportType::Interface => {
-                    output.push_str(&format!("export interface {} {{\n", name));
+                    output.push_str(&format!("export interface {name} {{\n"));
                     if let Some(props) = &export.properties {
                         for (prop_name, prop) in props {
                             let optional = if prop.required { "" } else { "?" };
@@ -60,10 +60,10 @@ impl Generator {
                     output.push_str("}\n\n");
                 }
                 ExportType::Class => {
-                    output.push_str(&format!("export class {} {{\n", name));
+                    output.push_str(&format!("export class {name} {{\n"));
                     if let Some(methods) = &export.methods {
                         for (method_name, method) in methods {
-                            output.push_str(&format!("  {}(", method_name));
+                            output.push_str(&format!("  {method_name}("));
 
                             // Parameters
                             let params: Vec<String> = method
@@ -85,7 +85,7 @@ impl Generator {
                     if let Some(methods) = &export.methods {
                         // For function exports, we expect a single "function" entry
                         if let Some((_, method)) = methods.iter().next() {
-                            output.push_str(&format!("export function {}(", name));
+                            output.push_str(&format!("export function {name}("));
 
                             // Parameters
                             let params: Vec<String> = method
@@ -103,10 +103,10 @@ impl Generator {
                     }
                 }
                 ExportType::Enum => {
-                    output.push_str(&format!("export enum {} {{\n", name));
+                    output.push_str(&format!("export enum {name} {{\n"));
                     if let Some(values) = &export.values {
                         for value in values {
-                            output.push_str(&format!("  {} = '{}',\n", value, value));
+                            output.push_str(&format!("  {value} = '{value}',\n"));
                         }
                     }
                     output.push_str("}\n\n");

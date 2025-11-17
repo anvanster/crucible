@@ -19,7 +19,7 @@ pub fn build_dependency_graph(modules: &[Module]) -> DiGraph<String, ()> {
     // Add edges
     for module in modules {
         if let Some(from_node) = node_map.get(&module.module) {
-            for (dep_name, _) in &module.dependencies {
+            for dep_name in module.dependencies.keys() {
                 if let Some(to_node) = node_map.get(dep_name) {
                     graph.add_edge(*from_node, *to_node, ());
                 }

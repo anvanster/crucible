@@ -230,7 +230,7 @@ impl SyncManager {
         let mut module_json: serde_json::Value =
             serde_json::from_str(&existing_content).map_err(|e| CrucibleError::ParseError {
                 file: module_path.display().to_string(),
-                message: format!("Failed to parse existing module JSON: {}", e),
+                message: format!("Failed to parse existing module JSON: {e}"),
             })?;
 
         // Merge new exports
@@ -279,7 +279,7 @@ impl SyncManager {
         let updated_json =
             serde_json::to_string_pretty(&module_json).map_err(|e| CrucibleError::ParseError {
                 file: module_path.display().to_string(),
-                message: format!("Failed to serialize updated module JSON: {}", e),
+                message: format!("Failed to serialize updated module JSON: {e}"),
             })?;
 
         Ok(updated_json)
@@ -305,9 +305,9 @@ impl SyncManager {
         if !report.new_modules.is_empty() {
             prompt.push_str(&format!("📦 {} new modules:\n", report.new_modules.len()));
             for module in &report.new_modules {
-                prompt.push_str(&format!("   - {}\n", module));
+                prompt.push_str(&format!("   - {module}\n"));
             }
-            prompt.push_str("\n");
+            prompt.push('\n');
         }
 
         if !report.updated_modules.is_empty() {
@@ -316,9 +316,9 @@ impl SyncManager {
                 report.updated_modules.len()
             ));
             for module in &report.updated_modules {
-                prompt.push_str(&format!("   - {}\n", module));
+                prompt.push_str(&format!("   - {module}\n"));
             }
-            prompt.push_str("\n");
+            prompt.push('\n');
         }
 
         if !report.new_exports.is_empty() {
@@ -335,7 +335,7 @@ impl SyncManager {
                     report.new_exports.len() - 3
                 ));
             }
-            prompt.push_str("\n");
+            prompt.push('\n');
         }
 
         if !report.new_dependencies.is_empty() {
@@ -352,7 +352,7 @@ impl SyncManager {
                     report.new_dependencies.len() - 3
                 ));
             }
-            prompt.push_str("\n");
+            prompt.push('\n');
         }
 
         prompt.push_str("Would you like to auto-update the architecture? [y/N]: ");
@@ -380,7 +380,7 @@ impl SyncManager {
         if interactive {
             // Show prompt and wait for user input
             let prompt = self.format_sync_prompt(report);
-            print!("{}", prompt);
+            print!("{prompt}");
             io::stdout().flush().map_err(|e| CrucibleError::FileRead {
                 path: "stdout".to_string(),
                 source: e,
@@ -413,12 +413,12 @@ impl SyncManager {
         for module_name in &report.new_modules {
             if let Some(discovered) = discovered_modules.iter().find(|m| &m.name == module_name) {
                 let module_def = self.generate_module_definition(module_name, discovered);
-                let file_path = modules_dir.join(format!("{}.json", module_name));
+                let file_path = modules_dir.join(format!("{module_name}.json"));
 
                 let json_str = serde_json::to_string_pretty(&module_def).map_err(|e| {
                     CrucibleError::ParseError {
                         file: module_name.clone(),
-                        message: format!("Failed to serialize module definition: {}", e),
+                        message: format!("Failed to serialize module definition: {e}"),
                     }
                 })?;
 
@@ -427,14 +427,14 @@ impl SyncManager {
                     source: e,
                 })?;
 
-                println!("   ✅ Created .crucible/modules/{}.json", module_name);
+                println!("   ✅ Created .crucible/modules/{module_name}.json");
                 updates_applied += 1;
             }
         }
 
         // Update existing modules with new exports and dependencies
         for module_name in &report.updated_modules {
-            let file_path = modules_dir.join(format!("{}.json", module_name));
+            let file_path = modules_dir.join(format!("{module_name}.json"));
 
             // Get the new exports and dependencies for this module
             let new_exports = report
@@ -459,13 +459,13 @@ impl SyncManager {
                     source: e,
                 })?;
 
-                println!("   🔄 Updated .crucible/modules/{}.json", module_name);
+                println!("   🔄 Updated .crucible/modules/{module_name}.json");
                 updates_applied += 1;
             }
         }
 
         if updates_applied > 0 {
-            println!("\n✨ Successfully applied {} updates!", updates_applied);
+            println!("\n✨ Successfully applied {updates_applied} updates!");
             println!("   Run `crucible validate` to verify the updated architecture.\n");
         }
 

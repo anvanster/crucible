@@ -50,7 +50,7 @@ mod tests {
             path: "/path/to/file.json".to_string(),
             source: io::Error::new(io::ErrorKind::NotFound, "file not found"),
         };
-        let msg = format!("{}", err);
+        let msg = format!("{err}");
         assert!(msg.contains("/path/to/file.json"));
         assert!(msg.contains("Failed to read file"));
     }
@@ -62,7 +62,7 @@ mod tests {
             message: "invalid JSON".to_string(),
         };
         assert_eq!(
-            format!("{}", err),
+            format!("{err}"),
             "Failed to parse manifest.json: invalid JSON"
         );
     }
@@ -72,7 +72,7 @@ mod tests {
         let err = CrucibleError::ModuleNotFound {
             name: "test-module".to_string(),
         };
-        assert_eq!(format!("{}", err), "Module not found: test-module");
+        assert_eq!(format!("{err}"), "Module not found: test-module");
     }
 
     #[test]
@@ -81,7 +81,7 @@ mod tests {
             module: "mymodule".to_string(),
             export: "MyClass".to_string(),
         };
-        assert_eq!(format!("{}", err), "Export not found: mymodule.MyClass");
+        assert_eq!(format!("{err}"), "Export not found: mymodule.MyClass");
     }
 
     #[test]
@@ -90,7 +90,7 @@ mod tests {
             cycle: "A -> B -> C -> A".to_string(),
         };
         assert_eq!(
-            format!("{}", err),
+            format!("{err}"),
             "Circular dependency detected: A -> B -> C -> A"
         );
     }
@@ -102,7 +102,7 @@ mod tests {
             to: "presentation".to_string(),
         };
         assert_eq!(
-            format!("{}", err),
+            format!("{err}"),
             "Layer boundary violation: domain -> presentation"
         );
     }
@@ -112,7 +112,7 @@ mod tests {
         let err = CrucibleError::TypeNotFound {
             type_name: "UnknownType".to_string(),
         };
-        assert_eq!(format!("{}", err), "Type not found: UnknownType");
+        assert_eq!(format!("{err}"), "Type not found: UnknownType");
     }
 
     #[test]
@@ -121,7 +121,7 @@ mod tests {
             call: "someFunction".to_string(),
         };
         assert_eq!(
-            format!("{}", err),
+            format!("{err}"),
             "Function call target not found: someFunction"
         );
     }
@@ -132,7 +132,7 @@ mod tests {
             message: "Multiple rules violated".to_string(),
         };
         assert_eq!(
-            format!("{}", err),
+            format!("{err}"),
             "Validation failed: Multiple rules violated"
         );
     }
@@ -142,7 +142,7 @@ mod tests {
         let err = CrucibleError::ModuleNotFound {
             name: "test".to_string(),
         };
-        let debug = format!("{:?}", err);
+        let debug = format!("{err:?}");
         assert!(debug.contains("ModuleNotFound"));
     }
 }

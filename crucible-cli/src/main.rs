@@ -6,7 +6,7 @@ use crucible_core::claude::{
     ValidationLevel,
 };
 use crucible_core::{Generator, Parser as CrucibleParser, Validator};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -137,7 +137,7 @@ fn main() -> Result<()> {
         }
         Commands::Graph { format } => {
             println!("Graph generation not yet implemented");
-            println!("Format: {}", format);
+            println!("Format: {format}");
         }
         Commands::Claude { command } => match command {
             ClaudeCommands::Init {
@@ -186,14 +186,13 @@ fn init_project(name: &str, language: &str, pattern: &str) -> Result<()> {
         r#"{{
   "version": "0.1.0",
   "project": {{
-    "name": "{}",
-    "language": "{}",
-    "architecture_pattern": "{}"
+    "name": "{name}",
+    "language": "{language}",
+    "architecture_pattern": "{pattern}"
   }},
   "modules": [],
   "strict_validation": true
-}}"#,
-        name, language, pattern
+}}"#
     );
 
     std::fs::write(project_path.join(".crucible/manifest.json"), manifest)?;
@@ -228,14 +227,14 @@ fn init_project(name: &str, language: &str, pattern: &str) -> Result<()> {
     println!("{}", "Project initialized successfully!".green().bold());
     println!();
     println!("Next steps:");
-    println!("  1. {}", format!("cd {}", name).cyan());
+    println!("  1. {}", format!("cd {name}").cyan());
     println!("  2. Create module definitions in .crucible/modules/");
     println!("  3. Run {} to validate", "crucible validate".cyan());
 
     Ok(())
 }
 
-fn validate_project(path: &PathBuf, strict: bool) -> Result<()> {
+fn validate_project(path: &Path, strict: bool) -> Result<()> {
     println!("{}  architecture...", "Validating".cyan().bold());
 
     let parser = CrucibleParser::new(path);
@@ -279,7 +278,7 @@ fn validate_project(path: &PathBuf, strict: bool) -> Result<()> {
     Ok(())
 }
 
-fn generate_code(path: &PathBuf, lang: &str, output: &PathBuf) -> Result<()> {
+fn generate_code(path: &Path, lang: &str, output: &Path) -> Result<()> {
     let parser = CrucibleParser::new(path);
     let project = parser.parse_project()?;
 
@@ -290,7 +289,7 @@ fn generate_code(path: &PathBuf, lang: &str, output: &PathBuf) -> Result<()> {
             println!("✓ Generated TypeScript interfaces in {}", output.display());
         }
         _ => {
-            println!("Language '{}' not yet supported", lang);
+            println!("Language '{lang}' not yet supported");
         }
     }
 
@@ -408,7 +407,7 @@ fn claude_sync(from_code: &bool, from_architecture: &bool, interactive: &bool) -
         println!("{}  code with architecture...", "Syncing".cyan().bold());
 
         // Parse current architecture
-        let parser = CrucibleParser::new(&PathBuf::from(".crucible"));
+        let parser = CrucibleParser::new(PathBuf::from(".crucible"));
         let project = parser.parse_project()?;
 
         // Create sync manager
@@ -438,7 +437,7 @@ fn claude_sync(from_code: &bool, from_architecture: &bool, interactive: &bool) -
                 for (module, exports) in &report.new_exports {
                     println!("  {} ({} new):", module.cyan(), exports.len());
                     for export in exports {
-                        println!("    - {}", export);
+                        println!("    - {export}");
                     }
                 }
                 println!();
@@ -449,7 +448,7 @@ fn claude_sync(from_code: &bool, from_architecture: &bool, interactive: &bool) -
                 for (module, deps) in &report.new_dependencies {
                     println!("  {} depends on:", module.cyan());
                     for dep in deps {
-                        println!("    - {}", dep);
+                        println!("    - {dep}");
                     }
                 }
                 println!();
@@ -491,26 +490,26 @@ fn claude_validate(_module: Option<&str>) -> Result<()> {
         "Validating".cyan().bold()
     );
 
-    let parser = CrucibleParser::new(&PathBuf::from(".crucible"));
+    let parser = CrucibleParser::new(PathBuf::from(".crucible"));
     let project = parser.parse_project()?;
 
     let validator = Validator::new(project);
     let result = validator.validate();
 
     // Format for Claude with enhanced suggestions - re-parse project
-    let parser2 = CrucibleParser::new(&PathBuf::from(".crucible"));
+    let parser2 = CrucibleParser::new(PathBuf::from(".crucible"));
     let project2 = parser2.parse_project()?;
     let hooks = ValidationHooks::new(project2);
     let formatted = hooks.format_with_context(&result);
 
     println!();
-    println!("{}", formatted);
+    println!("{formatted}");
 
     Ok(())
 }
 
 fn claude_context(_format: &str) -> Result<()> {
-    let parser = CrucibleParser::new(&PathBuf::from(".crucible"));
+    let parser = CrucibleParser::new(PathBuf::from(".crucible"));
     let project = parser.parse_project()?;
 
     let mut config = IntegrationConfig::load_with_overrides(None)?;
@@ -518,7 +517,7 @@ fn claude_context(_format: &str) -> Result<()> {
     let context_gen = ContextGenerator::new(project, config);
 
     let context = context_gen.generate_context_json()?;
-    println!("{}", context);
+    println!("{context}");
 
     Ok(())
 }

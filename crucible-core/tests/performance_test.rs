@@ -47,9 +47,7 @@ fn test_caching_performance() {
     // In practice it's usually 10-100x faster, but we use 2x for test stability
     assert!(
         cached_parse_time < first_parse_time / 2,
-        "Cached parse should be at least 2x faster. First: {:?}, Cached: {:?}",
-        first_parse_time,
-        cached_parse_time
+        "Cached parse should be at least 2x faster. First: {first_parse_time:?}, Cached: {cached_parse_time:?}"
     );
 
     // Verify cache stats
@@ -74,10 +72,10 @@ fn test_env_overrides() {
 
     assert_eq!(config.mode, IntegrationMode::Strict);
     assert_eq!(config.validation.severity, ValidationLevel::Error);
-    assert_eq!(config.sync.auto_sync, false);
+    assert!(!config.sync.auto_sync);
     assert_eq!(config.context.max_tokens, 8000);
-    assert_eq!(config.performance.enable_caching, false);
-    assert_eq!(config.performance.incremental_validation, false);
+    assert!(!config.performance.enable_caching);
+    assert!(!config.performance.incremental_validation);
 
     // Clean up
     env::remove_var("CRUCIBLE_CLAUDE_MODE");
@@ -341,7 +339,7 @@ fn test_global_config_loading() {
                 // Verify global settings were applied
                 assert_eq!(config.mode, IntegrationMode::Strict);
                 assert_eq!(config.validation.severity, ValidationLevel::Error);
-                assert_eq!(config.performance.enable_caching, false);
+                assert!(!config.performance.enable_caching);
                 assert_eq!(config.performance.cache_ttl_seconds, 1800);
                 assert_eq!(config.performance.max_parallel_modules, 2);
 

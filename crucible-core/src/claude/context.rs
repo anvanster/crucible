@@ -102,7 +102,7 @@ impl ContextGenerator {
             .project
             .architecture_pattern
             .as_ref()
-            .map(|p| format!("{:?}", p))
+            .map(|p| format!("{p:?}"))
             .unwrap_or_else(|| "layered".to_string());
         content.push_str(&format!(
             "This project follows a **{}** pattern with clear separation of concerns.\n\n",
@@ -217,7 +217,7 @@ impl ContextGenerator {
         ));
 
         if let Some(layer) = &module.layer {
-            content.push_str(&format!("- **Layer**: {}\n", layer));
+            content.push_str(&format!("- **Layer**: {layer}\n"));
         }
 
         content.push_str(&format!(
@@ -235,7 +235,7 @@ impl ContextGenerator {
             content.push_str(&format!("- **Key exports**: {}\n", export_names.join(", ")));
         }
 
-        content.push_str("\n");
+        content.push('\n');
     }
 
     /// Generate optimized context.json for Claude
@@ -257,7 +257,7 @@ impl ContextGenerator {
             .project
             .architecture_pattern
             .as_ref()
-            .map(|p| format!("{:?}", p).to_lowercase())
+            .map(|p| format!("{p:?}").to_lowercase())
             .unwrap_or_else(|| "layered".to_string());
 
         let summary = SummaryInfo {

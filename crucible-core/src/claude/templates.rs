@@ -27,7 +27,7 @@ impl TemplateEngine {
         self.handlebars
             .register_template_string(name, template)
             .map_err(|e| CrucibleError::ParseError {
-                file: format!("template:{}", name),
+                file: format!("template:{name}"),
                 message: e.to_string(),
             })?;
 
@@ -51,7 +51,7 @@ impl TemplateEngine {
         self.handlebars
             .render(template_name, data)
             .map_err(|e| CrucibleError::ParseError {
-                file: format!("template:{}", template_name),
+                file: format!("template:{template_name}"),
                 message: e.to_string(),
             })
     }

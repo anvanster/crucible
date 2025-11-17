@@ -93,12 +93,11 @@ impl ValidationHooks {
     /// Generate pre-change validation prompt for a specific module
     pub fn generate_pre_change_prompt(&self, module_name: &str) -> String {
         format!(
-            "Before modifying the '{}' module, please verify:\n\
-             1. Check allowed dependencies in .crucible/modules/{}.json\n\
+            "Before modifying the '{module_name}' module, please verify:\n\
+             1. Check allowed dependencies in .crucible/modules/{module_name}.json\n\
              2. Verify you're not creating circular dependencies\n\
              3. Ensure new exports follow naming conventions\n\
-             4. Confirm layer boundary rules are respected",
-            module_name, module_name
+             4. Confirm layer boundary rules are respected"
         )
     }
 
@@ -257,7 +256,7 @@ impl ValidationHooks {
                 content.push_str(&format!("**Message**: {}\n\n", error.message));
 
                 if let Some(location) = &error.location {
-                    content.push_str(&format!("**Location**: `{}`\n\n", location));
+                    content.push_str(&format!("**Location**: `{location}`\n\n"));
                 }
 
                 // Generate and add suggestions
@@ -268,9 +267,9 @@ impl ValidationHooks {
                         content.push_str(&format!("{}. **{}**\n", i + 1, suggestion.title));
                         content.push_str(&format!("   {}\n", suggestion.description));
                         if let Some(example) = &suggestion.example {
-                            content.push_str(&format!("   \n   *Example*: {}\n", example));
+                            content.push_str(&format!("   \n   *Example*: {example}\n"));
                         }
-                        content.push_str("\n");
+                        content.push('\n');
                     }
                 }
 
@@ -286,7 +285,7 @@ impl ValidationHooks {
             for warning in &result.warnings {
                 content.push_str(&format!("- **{}**: {}\n", warning.rule, warning.message));
                 if let Some(location) = &warning.location {
-                    content.push_str(&format!("  *Location*: `{}`\n", location));
+                    content.push_str(&format!("  *Location*: `{location}`\n"));
                 }
 
                 // Add brief suggestions for warnings
@@ -297,7 +296,7 @@ impl ValidationHooks {
                         first_suggestion.description
                     ));
                 }
-                content.push_str("\n");
+                content.push('\n');
             }
         }
 
@@ -313,7 +312,7 @@ impl ValidationHooks {
         // Architecture context
         content.push_str("## 🎯 Architecture Context\n\n");
         if let Some(pattern) = &self.project.manifest.project.architecture_pattern {
-            content.push_str(&format!("- **Pattern**: {:?}\n", pattern));
+            content.push_str(&format!("- **Pattern**: {pattern:?}\n"));
         }
         content.push_str(&format!("- **Modules**: {}\n", self.project.modules.len()));
         content.push_str(&format!(
@@ -333,10 +332,10 @@ impl ValidationHooks {
             for error in &result.errors {
                 content.push_str(&format!("- **{}**: {}\n", error.rule, error.message));
                 if let Some(location) = &error.location {
-                    content.push_str(&format!("  Location: {}\n", location));
+                    content.push_str(&format!("  Location: {location}\n"));
                 }
             }
-            content.push_str("\n");
+            content.push('\n');
         }
 
         if !result.warnings.is_empty() {
@@ -344,7 +343,7 @@ impl ValidationHooks {
             for warning in &result.warnings {
                 content.push_str(&format!("- **{}**: {}\n", warning.rule, warning.message));
                 if let Some(location) = &warning.location {
-                    content.push_str(&format!("  Location: {}\n", location));
+                    content.push_str(&format!("  Location: {location}\n"));
                 }
             }
         }
