@@ -17,50 +17,289 @@ This command guides users through step 1: designing the architecture.
 
 ## Command Behavior
 
-1. **Parse feature description**:
-   - Extract feature name and requirements from user input
-   - Ask clarifying questions if needed
-   - Understand the problem domain
+### Phase 1: Project Analysis & Detection
 
-2. **Design module architecture**:
-   - Suggest module name (kebab-case)
-   - Determine appropriate layer (domain, application, infrastructure)
+1. **Check existing project state**:
+   - Verify `.crucible/` directory exists (if not, suggest running `/crucible:init` first)
+   - Read `manifest.json` to discover existing modules
+   - Parse `rules.json` to understand current architecture pattern (layers, dependencies)
+   - Identify current layer structure (3-layer, 4-layer, custom)
+
+2. **Analyze requirements**:
+   - Parse feature description from user input
+   - Read referenced files (PRDs, specs) if `@path` syntax used
+   - Extract feature areas and functional requirements
+   - Identify required modules and their relationships
+
+### Phase 2: Architecture Design
+
+3. **Design module architecture**:
+   - Determine required modules and their purposes
+   - Suggest module names (kebab-case convention)
+   - Assign appropriate layers (domain, application, infrastructure, presentation)
+   - Identify dependencies between new modules
    - Identify dependencies on existing modules
    - Define exports (types, functions, classes, interfaces)
-   - Consider TypeScript type system features (generics, unions, arrays)
+   - Consider TypeScript type system features (generics, unions, arrays, nullable)
 
-3. **Interactive workflow**:
-   - Ask about layer if not obvious
-   - Confirm module name
-   - Suggest dependencies based on existing modules
-   - Help define exports with proper TypeScript types
-   - Validate against existing architecture
+4. **Detect architecture conflicts**:
+   - Check if new modules require layers not in `rules.json`
+   - Example: Infrastructure layer needed but only 3-layer (domain → application → presentation) exists
+   - Identify layer dependency conflicts
+   - Check for circular dependency risks
 
-4. **Generate module definition**:
-   - Create `.crucible/modules/<module-name>.json`
+### Phase 3: Interactive Confirmation & Updates
+
+5. **Handle existing modules** (if manifest has modules):
+   ```
+   ⚠️  Found existing Crucible project with 3 modules:
+      • user (domain)
+      • user-service (application)
+      • user-controller (presentation)
+
+   Your new architecture will add 20 healthcare modules.
+
+   Options:
+   1. Merge - Keep existing modules and add new ones (23 total)
+   2. Replace - Remove existing modules and start fresh (20 total)
+   3. Cancel - Manual review required
+
+   Choose [1-3]:
+   ```
+
+6. **Update rules.json if needed**:
+   ```
+   ⚠️  Architecture Pattern Conflict Detected!
+
+   Your new architecture requires an "infrastructure" layer, but your
+   current rules.json only supports 3 layers.
+
+   Recommended change to rules.json:
+
+   ADD layer:
+   + {"name": "infrastructure", "can_depend_on": ["domain"]}
+
+   UPDATE dependencies:
+   ~ {"name": "application", "can_depend_on": ["infrastructure", "domain"]}
+   ~ {"name": "presentation", "can_depend_on": ["application", "infrastructure", "domain"]}
+
+   Apply this change? (Y/n): [Y]
+   ```
+
+7. **Update manifest.json automatically**:
+   - Based on user's merge/replace choice
+   - Add new module names to `modules` array
+   - Preserve existing modules if merge selected
+   - Show confirmation: `✓ Updated .crucible/manifest.json (N modules registered)`
+
+### Phase 4: Module Generation
+
+8. **Generate module definition files**:
+   - Create `.crucible/modules/<module-name>.json` for each module
    - Follow Crucible JSON schema
-   - Include all exports with proper type signatures
-   - Declare dependencies
+   - Include all exports with proper TypeScript type signatures
+   - Declare all dependencies (inter-module and to existing modules)
    - Add metadata (version, layer, language)
+   - Show progress: `✓ Domain layer (5 modules)`, `✓ Application layer (8 modules)`, etc.
 
-5. **Validate architecture**:
-   - Run `crucible validate` to check new module
-   - Ensure no circular dependencies
-   - Verify layer boundaries
-   - Check type references
+### Phase 5: Post-Generation Validation
 
-6. **Provide TDD guidance**:
-   - Suggest test file location
-   - List tests to write (based on exports)
-   - Recommend test framework commands
-   - Guide towards implementation
+9. **Run validation automatically**:
+   - Execute `crucible validate` on all modules
+   - Parse validation output for errors and warnings
+   - Categorize violations by type (missing exports, type errors, layer violations, etc.)
+   - Calculate violation summary statistics
+
+10. **Present validation results**:
+    ```
+    ❌ Found 78 violations (75 errors, 3 warnings)
+
+    Common issues:
+    • 3 type errors: Type 'Blob' not found
+    • 75 missing exports: Methods called but not defined in modules
+    • 0 layer violations
+
+    💡 Next steps:
+    1. Fix type definitions (Blob → Buffer or add Blob type)
+    2. Add missing method exports to infrastructure modules
+    3. Run: /crucible:validate to check progress
+
+    Would you like help fixing these issues? (Y/n):
+    ```
+
+11. **Offer guided fixes** (if user accepts):
+    - Identify fixable violations automatically
+    - Suggest specific changes to module definitions
+    - Ask permission before applying fixes
+    - Re-validate after fixes applied
+
+### Phase 6: TDD Guidance
+
+12. **Provide architecture-first TDD guidance**:
+    - Suggest test file locations based on modules
+    - List specific tests to write for each export
+    - Provide example test structure with actual type signatures
+    - Recommend test commands (npm test, cargo test, etc.)
+    - Guide towards implementation workflow
+
+## Automatic Project Updates
+
+This command automatically handles:
+
+✓ **Manifest updates**: Adds new modules to `.crucible/manifest.json`
+✓ **Layer detection**: Identifies required architecture layers from module designs
+✓ **Rules.json updates**: Adds missing layers to architecture rules when needed
+✓ **Conflict resolution**: Prompts for handling existing modules (merge/replace)
+✓ **Post-validation**: Runs validation and categorizes violations with actionable fixes
+✓ **TDD guidance**: Provides test structure and implementation workflow
+
+## Interactive Prompts
+
+You will be asked to:
+- **Choose merge strategy** when existing modules are found (merge, replace, or cancel)
+- **Approve rules.json updates** when new layers are required (e.g., adding infrastructure layer)
+- **Accept or modify** suggested module names, layers, dependencies, and exports
+- **Review guided fixes** for validation violations (optional automation)
 
 ## Output Format
 
-### Interactive Design Flow:
+### Multi-Module Architecture Flow
+
+When designing complex architecture with multiple modules:
 
 ```
-🏗️ Designing architecture for: User authentication with JWT tokens
+🏗️ Designing architecture for: [Feature Name]
+
+📋 Phase 1: Project Analysis
+   ✓ Found existing Crucible project
+   ✓ Current architecture: [N]-layer ([layer names and dependencies])
+   ✓ Existing modules: [N] ([list module names with layers])
+   ✓ Analyzed requirements from [source: user input, @file, PRD, etc.]
+
+📋 Phase 2: Architecture Design
+   ✓ Identified [N] feature areas
+   ✓ Proposed [N] modules across [N] layers
+
+   Layer distribution:
+   • [Layer 1]: [N] modules ([list module names])
+   • [Layer 2]: [N] modules ([list module names])
+   • [Layer 3]: [N] modules ([list module names])
+   ... (for each layer with modules)
+
+[IF new layers needed that don't exist in rules.json]
+⚠️  Architecture Pattern Conflict Detected!
+
+   Your new architecture requires "[layer-name]" layer, but your
+   current rules.json only supports [N] layers ([list current layers]).
+
+   Recommended change to rules.json:
+
+   ADD layer:
+   + {"name": "[layer-name]", "can_depend_on": ["[allowed-dependencies]"]}
+
+   UPDATE dependencies:
+   ~ [For each affected layer, show dependency updates]
+
+   Apply this change? (Y/n): [wait for input]
+
+   [If Y] ✓ Updated .crucible/rules.json
+   [If n] ⚠️  Proceeding without rules.json update - may cause validation errors
+
+📋 Phase 3: Module Manifest Update
+
+   Current manifest.json modules: [list current module names]
+   New modules to add: [N] modules
+
+   Options:
+   1. Merge - Keep existing modules and add new ones ([total] total)
+   2. Replace - Remove existing modules and start fresh ([N] modules)
+   3. Cancel - Manual review required
+
+   Choose [1-3]: [wait for input]
+
+   [If 1 or 2] ✓ Updated .crucible/manifest.json ([N] modules registered)
+   [If 3] ⚠️  Cancelled - no changes made to manifest
+
+📋 Phase 4: Generate Module Definitions
+
+   Generating [N] module definition files...
+
+   [Group by layer and list modules]
+   ✓ [Layer] layer ([N] modules)
+     • [module-name].json
+     ... (for each module in layer)
+
+   💾 Created [N] files in .crucible/modules/
+
+📋 Phase 5: Validation
+
+   Running: crucible validate
+
+   [IF validation passes]
+   ✅ Validation passed: 0 violations
+   ✓ No circular dependencies
+   ✓ Layer boundaries respected
+   ✓ All type references valid
+
+   [IF validation fails]
+   ❌ Found [N] violations ([N] errors, [N] warnings)
+
+   [Categorize violations by type and show top issues]
+   Common issues:
+   • [N] type errors: [Brief description, e.g., "Type 'X' not found in [modules]"]
+   • [N] missing exports: [Brief description, e.g., "Methods called but not defined"]
+     [Show 3-5 specific examples with module names]
+     ... ([N] more)
+   • [N] layer violations: [Brief description if any]
+   • [N] circular dependencies: [Brief description if any]
+
+   💡 Next steps:
+   1. [Specific fix for issue type 1, e.g., "Fix type definitions:"]
+      - [Concrete action, e.g., "Change X → Y in [module] module"]
+      - [Alternative action, e.g., "Or add X type to [location]"]
+   2. [Specific fix for issue type 2, e.g., "Add missing method exports:"]
+      - [Concrete action with module names and method signatures]
+   3. Run: /crucible:validate to check progress
+
+   Would you like help fixing these issues? (Y/n): [wait for input]
+
+   [If Y] [Show guided fix workflow - see Guided Fixes section below]
+   [If n] ℹ️  You can run /crucible:validate anytime to check progress
+
+📝 Architecture-First TDD Guidance
+
+   ✅ Architecture phase complete!
+
+   Next: Write tests BEFORE implementing (RED → GREEN → REFACTOR)
+
+   [Generate test structure based on modules created]
+   Recommended test structure:
+
+   tests/
+   [For each layer with modules, create directory]
+   ├── [layer-name]/
+   │   ├── [module-1].test.[ext]  # Test [brief description]
+   │   ├── [module-2].test.[ext]  # Test [brief description]
+   │   └── ...
+   └── ...
+
+   Start with [lowest layer - typically domain] layer tests:
+
+   [test command for language] tests/[layer]/[module].test.[ext]  # Should FAIL (not implemented yet)
+
+   Then implement [layer] layer to make tests pass.
+   Repeat for [next layers in dependency order].
+
+   🎯 Architecture validation:
+      Run /crucible:validate frequently to ensure compliance!
+```
+
+### Simple Single-Module Flow
+
+When designing a simple architecture with one module:
+
+```
+🏗️ Designing architecture for: [Feature Name]
 
 📋 Understanding requirements...
 
@@ -68,167 +307,90 @@ This command guides users through step 1: designing the architecture.
    1. domain (business logic, core types)
    2. application (use cases, services, orchestration)
    3. infrastructure (external systems, databases, APIs)
+   [4. presentation (UI, controllers) - if exists in project]
 
-   Based on "authentication service", I suggest: application
-   Press Enter to accept, or type 1-3: [2]
+   Based on "[feature description]", I suggest: [suggested-layer]
+   Press Enter to accept, or type 1-[N]: [wait for input]
 
-✓ Layer: application
+✓ Layer: [chosen-layer]
 
-📝 Module name suggestion: auth
-   (from "authentication")
-   Press Enter to accept, or type custom name: [auth]
+📝 Module name suggestion: [suggested-name]
+   (from "[feature description]")
+   Press Enter to accept, or type custom name: [wait for input]
 
-✓ Module: auth
+✓ Module: [chosen-name]
 
 🔍 Analyzing existing modules...
-   Found 15 modules in project
+   Found [N] modules in project
 
 🔗 Suggested dependencies:
-   • user (domain) - for User type
-   • token (infrastructure) - for JWT token generation
-   • database (infrastructure) - for credential storage
+   [For each suggested dependency]
+   • [module-name] ([layer]) - for [reason/types it provides]
 
-   Add more dependencies? (comma-separated, or Enter to continue): []
+   Add more dependencies? (comma-separated, or Enter to continue): [wait for input]
 
-✓ Dependencies: user, token, database
+✓ Dependencies: [list chosen dependencies]
 
 📦 Defining exports...
 
-For an authentication service, I suggest these exports:
+For [feature description], I suggest these exports:
 
-1. AuthService (class)
-   - login(username: string, password: string) → Promise<user.User>
-   - logout(userId: string) → Promise<void>
-   - validateToken(token: string) → Promise<boolean>
-   - refreshToken(oldToken: string) → Promise<string>
+[For each export, with appropriate formatting]
+1. [ExportName] ([export-type])
+   [If class] Methods:
+   - [methodName]([params with types]) → [return-type]
+   [If type/interface] Properties:
+   - [propertyName]: [type]
 
-2. AuthToken (type)
-   Properties:
-   - token: string
-   - expiresAt: Date
-   - userId: string
+[Repeat for all exports]
 
-3. LoginRequest (type)
-   Properties:
-   - username: string
-   - password: string
-
-4. LoginResponse (type)
-   Properties:
-   - user: user.User
-   - token: AuthToken
-
-Looks good? (Y/n): [Y]
+Looks good? (Y/n/edit): [wait for input]
 
 ✓ Exports defined
 
 💾 Generating module definition...
-✓ Created: .crucible/modules/auth.json
+✓ Created: .crucible/modules/[module-name].json
 
 🔍 Validating architecture...
+[IF passes]
 ✓ Validation passed: 0 violations
 ✓ No circular dependencies
 ✓ Layer boundaries respected
 ✓ All type references valid
 
+[IF fails - show same format as multi-module Phase 5]
+
 📊 Module summary:
-   • Name: auth
-   • Layer: application
-   • Dependencies: 3 (user, token, database)
-   • Exports: 4 (1 class, 3 types)
-   • Language: TypeScript
+   • Name: [module-name]
+   • Layer: [layer-name]
+   • Dependencies: [N] ([list module names])
+   • Exports: [N] ([breakdown by type: N classes, N types, N interfaces, etc.])
+   • Language: [language]
 
 📝 Next steps (TDD approach):
 
 1. **Write failing tests** (RED phase):
-   Create: src/auth/auth.test.ts
+   Create: [test file path based on language and conventions]
 
-   ```typescript
-   import { AuthService } from './auth';
-   import { describe, it, expect, beforeEach } from 'vitest';
-
-   describe('AuthService', () => {
-     let authService: AuthService;
-
-     beforeEach(() => {
-       authService = new AuthService(/* dependencies */);
-     });
-
-     it('should login with valid credentials', async () => {
-       const result = await authService.login('user', 'pass');
-       expect(result).toBeDefined();
-       expect(result.username).toBe('user');
-     });
-
-     it('should reject invalid credentials', async () => {
-       await expect(
-         authService.login('user', 'wrong')
-       ).rejects.toThrow('Invalid credentials');
-     });
-
-     it('should validate valid token', async () => {
-       const isValid = await authService.validateToken('valid-token');
-       expect(isValid).toBe(true);
-     });
-
-     // Add more tests...
-   });
-   ```
+   [Generate example test structure with actual export names and types from module]
+   Tests should cover:
+   [For each export]
+   - Test [ExportName]: [describe what to test based on export type]
 
 2. **Run tests** (should FAIL):
-   npm test
+   [test command for language]
    # All tests should fail - implementation doesn't exist yet
 
-3. **Implement AuthService** (GREEN phase):
-   Create: src/auth/auth.ts
+3. **Implement [module-name]** (GREEN phase):
+   Create: [source file path based on language and conventions]
 
-   ```typescript
-   import { User } from '../domain/user';
-   import { TokenService } from '../infrastructure/token';
-   import { Database } from '../infrastructure/database';
-
-   export class AuthService {
-     constructor(
-       private tokenService: TokenService,
-       private database: Database
-     ) {}
-
-     async login(username: string, password: string): Promise<User> {
-       // Implementation here
-     }
-
-     async logout(userId: string): Promise<void> {
-       // Implementation here
-     }
-
-     async validateToken(token: string): Promise<boolean> {
-       // Implementation here
-     }
-
-     async refreshToken(oldToken: string): Promise<string> {
-       // Implementation here
-     }
-   }
-
-   export interface AuthToken {
-     token: string;
-     expiresAt: Date;
-     userId: string;
-   }
-
-   export interface LoginRequest {
-     username: string;
-     password: string;
-   }
-
-   export interface LoginResponse {
-     user: User;
-     token: AuthToken;
-   }
-   ```
+   [Generate implementation scaffold with actual imports and types from module definition]
+   Implement:
+   [For each export]
+   - [ExportName]: [brief implementation guidance]
 
 4. **Run tests again**:
-   npm test
+   [test command for language]
    # Tests should PASS
 
 5. **Validate architecture**:
@@ -242,6 +404,131 @@ Looks good? (Y/n): [Y]
    - Re-run tests to ensure still passing
 
 ✅ Architecture-first TDD workflow complete!
+```
+
+### Guided Fixes Workflow
+
+When user accepts help fixing validation violations:
+
+```
+🔧 Guided Fixes for [N] Violations
+
+Analyzing violations and suggesting fixes...
+
+[Group violations by type and fixability]
+
+═══ Fixable Automatically ([N] violations) ═══
+
+1. Type Reference Errors ([N] violations)
+
+   Issue: Type '[TypeName]' not found in [N] modules
+
+   Suggested fix:
+   [For each affected module]
+   • In [module-name].json:
+     - Change type '[TypeName]' → '[SuggestedType]'
+     [OR]
+     - Add export for type '[TypeName]' to [dependency-module]
+
+   Apply these fixes? (Y/n/skip): [wait for input]
+
+2. Missing Export Errors ([N] violations)
+
+   Issue: Methods called but not exported in [N] modules
+
+   Suggested fix:
+   [For each affected module and method]
+   • In [module-name].json, add to exports:
+     ```json
+     {
+       "name": "[methodName]",
+       "type": "method",
+       "parameters": [/* inferred from usage */],
+       "returns": "/* inferred type */"
+     }
+     ```
+
+   Apply these fixes? (Y/n/skip): [wait for input]
+
+═══ Needs Manual Review ([N] violations) ═══
+
+3. [Violation Type] ([N] violations)
+
+   Issue: [Description]
+
+   These require manual review because: [reason]
+
+   Recommendations:
+   - [Specific recommendation 1]
+   - [Specific recommendation 2]
+
+   [Show affected modules and locations]
+
+[After applying fixes]
+✓ Applied [N] automatic fixes
+ℹ️  [N] violations require manual review
+
+Running validation again...
+
+[Show updated validation results]
+```
+
+## Flags
+
+**`--merge`**
+Automatically merge with existing modules (no prompt):
+```bash
+/crucible:architecture "Feature X" --merge
+```
+
+**`--replace`**
+Automatically replace existing modules (no prompt):
+```bash
+/crucible:architecture "Feature X" --replace
+```
+
+**`--no-validate`**
+Skip post-generation validation:
+```bash
+/crucible:architecture "Feature X" --no-validate
+```
+
+**`--layer <layer>`**
+Pre-specify the layer for single module:
+```bash
+/crucible:architecture "Database connector" --layer infrastructure
+```
+
+**`--layers <layers>`**
+Explicitly set required layers for multi-module architecture:
+```bash
+/crucible:architecture @prd.md --layers domain,application,infrastructure,presentation
+```
+
+**`--language <lang>`**
+Override detected language (typescript, rust, python, go):
+```bash
+/crucible:architecture "Config loader" --language rust
+```
+
+**`--template <type>`**
+Use template for module generation (service, repository, controller, etc.):
+```bash
+/crucible:architecture "User service" --template service
+```
+
+## Implementation Notes
+
+- **Read manifest.json and rules.json first** to understand existing project structure
+- **Detect layer conflicts** by comparing proposed modules against rules.json layers
+- **Always ask for confirmation** before modifying manifest.json or rules.json
+- **Run crucible validate** after generating modules to catch issues immediately
+- **Parse validation output** and categorize violations by type for actionable fixes
+- **Generate language-appropriate** test structures and implementation scaffolds
+- **Use AskUserQuestion tool** for interactive prompts (layer selection, merge strategy, fix approvals)
+- **Show progress phases** clearly: Analysis → Design → Confirmation → Generation → Validation → TDD
+- **Provide file:line references** in validation output for easy navigation
+- **Link to documentation** for complex issues that need deeper understanding
 
 🎯 Key benefits:
    • Architecture designed upfront (prevents rework)
