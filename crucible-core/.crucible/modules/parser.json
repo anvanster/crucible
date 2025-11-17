@@ -1,0 +1,152 @@
+{
+  "module": "parser",
+  "version": "0.1.0",
+  "layer": "infrastructure",
+  "description": "Parser for Crucible JSON files with caching support",
+  "exports": {
+    "Parser": {
+      "type": "class",
+      "methods": {
+        "new": {
+          "inputs": [
+            {
+              "name": "root_path",
+              "type": "Path",
+              "optional": false,
+              "description": "Project root path"
+            }
+          ],
+          "returns": {
+            "type": "Parser"
+          },
+          "throws": [],
+          "calls": ["performance.ArchitectureCache.new"],
+          "effects": ["creates parser with cache enabled"]
+        },
+        "new_without_cache": {
+          "inputs": [
+            {
+              "name": "root_path",
+              "type": "Path",
+              "optional": false,
+              "description": "Project root path"
+            }
+          ],
+          "returns": {
+            "type": "Parser"
+          },
+          "throws": [],
+          "calls": ["performance.ArchitectureCache.disabled"],
+          "effects": ["creates parser with cache disabled"]
+        },
+        "parse_project": {
+          "inputs": [],
+          "returns": {
+            "type": "Result<Project>"
+          },
+          "throws": ["CrucibleError"],
+          "calls": [
+            "performance.ArchitectureCache.get_project",
+            "parser.Parser.parse_manifest",
+            "parser.Parser.parse_modules",
+            "parser.Parser.parse_rules",
+            "performance.ArchitectureCache.cache_project"
+          ],
+          "effects": ["reads files", "uses cache if available", "caches result"]
+        },
+        "parse_manifest": {
+          "inputs": [],
+          "returns": {
+            "type": "Result<Manifest>"
+          },
+          "throws": ["CrucibleError"],
+          "calls": [],
+          "effects": ["reads manifest.json"]
+        },
+        "parse_module": {
+          "inputs": [
+            {
+              "name": "name",
+              "type": "String",
+              "optional": false,
+              "description": "Module name"
+            }
+          ],
+          "returns": {
+            "type": "Result<Module>"
+          },
+          "throws": ["CrucibleError"],
+          "calls": [
+            "performance.ArchitectureCache.get_module",
+            "performance.ArchitectureCache.cache_module"
+          ],
+          "effects": ["reads module file", "uses cache if available", "caches result"]
+        },
+        "parse_modules": {
+          "inputs": [
+            {
+              "name": "module_names",
+              "type": "Vec<String>",
+              "optional": false,
+              "description": "List of module names"
+            }
+          ],
+          "returns": {
+            "type": "Result<Vec<Module>>"
+          },
+          "throws": ["CrucibleError"],
+          "calls": ["parser.Parser.parse_module"],
+          "effects": ["parses multiple modules"]
+        },
+        "parse_rules": {
+          "inputs": [],
+          "returns": {
+            "type": "Result<Rules>"
+          },
+          "throws": ["CrucibleError"],
+          "calls": [],
+          "effects": ["reads rules.json"]
+        },
+        "clear_cache": {
+          "inputs": [],
+          "returns": {
+            "type": "void"
+          },
+          "throws": [],
+          "calls": ["performance.ArchitectureCache.clear"],
+          "effects": ["clears cache"]
+        },
+        "cache_stats": {
+          "inputs": [],
+          "returns": {
+            "type": "CacheStats"
+          },
+          "throws": [],
+          "calls": ["performance.ArchitectureCache.stats"],
+          "effects": []
+        },
+        "set_caching_enabled": {
+          "inputs": [
+            {
+              "name": "enabled",
+              "type": "boolean",
+              "optional": false,
+              "description": "Enable or disable caching"
+            }
+          ],
+          "returns": {
+            "type": "void"
+          },
+          "throws": [],
+          "calls": ["performance.ArchitectureCache.set_enabled"],
+          "effects": ["modifies cache state"]
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "primitives": "0.1.0",
+    "performance": "0.1.0",
+    "types": "0.1.0"
+  }
+}

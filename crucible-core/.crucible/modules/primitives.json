@@ -1,0 +1,165 @@
+{
+  "module": "primitives",
+  "version": "0.1.0",
+  "layer": "core",
+  "description": "Primitive and standard library types",
+  "exports": {
+    "String": {
+      "type": "type",
+      "properties": {}
+    },
+    "Path": {
+      "type": "type",
+      "properties": {}
+    },
+    "PathBuf": {
+      "type": "type",
+      "properties": {}
+    },
+    "HashSet<String>": {
+      "type": "type",
+      "properties": {}
+    },
+    "HashMap<String, boolean>": {
+      "type": "type",
+      "properties": {}
+    },
+    "HashMap<String, ValidationLevel>": {
+      "type": "type",
+      "properties": {}
+    },
+    "HashMap<String, Export>": {
+      "type": "type",
+      "properties": {}
+    },
+    "HashMap<String, Method>": {
+      "type": "type",
+      "properties": {}
+    },
+    "HashMap<String, Property>": {
+      "type": "type",
+      "properties": {}
+    },
+    "HashMap<String, String>": {
+      "type": "type",
+      "properties": {}
+    },
+    "Vec<String>": {
+      "type": "type",
+      "properties": {}
+    },
+    "Vec<Module>": {
+      "type": "type",
+      "properties": {}
+    },
+    "Vec<Parameter>": {
+      "type": "type",
+      "properties": {}
+    },
+    "Vec<ValidationIssue>": {
+      "type": "type",
+      "properties": {}
+    },
+    "Vec<Dependency>": {
+      "type": "type",
+      "properties": {}
+    },
+    "Option<String>": {
+      "type": "type",
+      "properties": {}
+    },
+    "Option<Path>": {
+      "type": "type",
+      "properties": {}
+    },
+    "Option<Rules>": {
+      "type": "type",
+      "properties": {}
+    },
+    "Option<Metadata>": {
+      "type": "type",
+      "properties": {}
+    },
+    "Option<ArchitecturePattern>": {
+      "type": "type",
+      "properties": {}
+    },
+    "Option<GlobalConfig>": {
+      "type": "type",
+      "properties": {}
+    },
+    "Option<IntegrationMode>": {
+      "type": "type",
+      "properties": {}
+    },
+    "Option<ValidationLevel>": {
+      "type": "type",
+      "properties": {}
+    },
+    "Option<Module>": {
+      "type": "type",
+      "properties": {}
+    },
+    "Option<Project>": {
+      "type": "type",
+      "properties": {}
+    },
+    "Option<Vec<ValidationIssue>>": {
+      "type": "type",
+      "properties": {}
+    },
+    "Result<Project>": {
+      "type": "type",
+      "properties": {}
+    },
+    "Result<Module>": {
+      "type": "type",
+      "properties": {}
+    },
+    "Result<Manifest>": {
+      "type": "type",
+      "properties": {}
+    },
+    "Result<Rules>": {
+      "type": "type",
+      "properties": {}
+    },
+    "Result<Vec<Module>>": {
+      "type": "type",
+      "properties": {}
+    },
+    "Result<IntegrationConfig>": {
+      "type": "type",
+      "properties": {}
+    },
+    "Result<void>": {
+      "type": "type",
+      "properties": {}
+    },
+    "Result<GenerationResult>": {
+      "type": "type",
+      "properties": {}
+    },
+    "Result<Vec<String>>": {
+      "type": "type",
+      "properties": {}
+    },
+    "boolean": {
+      "type": "type",
+      "properties": {}
+    },
+    "void": {
+      "type": "type",
+      "properties": {}
+    },
+    "usize": {
+      "type": "type",
+      "properties": {}
+    },
+    "u64": {
+      "type": "type",
+      "properties": {}
+    }
+  },
+  "dependencies": {}
+}

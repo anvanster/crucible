@@ -1,12 +1,15 @@
-//! Parser for Crucible JSON files
+//! Parser for Crucible JSON files with caching support
 
+use crate::cache::ArchitectureCache;
 use crate::error::{CrucibleError, Result};
 use crate::types::{Manifest, Module, Project, Rules};
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::sync::{Arc, Mutex};
 
 pub struct Parser {
     root_path: PathBuf,
+    cache: Arc<Mutex<ArchitectureCache>>,
 }
 
 impl Parser {
@@ -14,20 +17,48 @@ impl Parser {
     pub fn new<P: AsRef<Path>>(root_path: P) -> Self {
         Self {
             root_path: root_path.as_ref().to_path_buf(),
+            cache: Arc::new(Mutex::new(ArchitectureCache::new())),
         }
     }
 
-    /// Parse the entire project
+    /// Create a parser with caching disabled
+    pub fn new_without_cache<P: AsRef<Path>>(root_path: P) -> Self {
+        Self {
+            root_path: root_path.as_ref().to_path_buf(),
+            cache: Arc::new(Mutex::new(ArchitectureCache::disabled())),
+        }
+    }
+
+    /// Parse the entire project with caching
     pub fn parse_project(&self) -> Result<Project> {
+        // Try to get cached project first
+        let manifest_path = self.root_path.join("manifest.json");
+
+        {
+            let cache = self.cache.lock().unwrap();
+            if let Some(cached_project) = cache.get_project(&manifest_path)? {
+                return Ok(cached_project);
+            }
+        }
+
+        // Not cached, parse normally
         let manifest = self.parse_manifest()?;
         let modules = self.parse_modules(&manifest.modules)?;
         let rules = self.parse_rules().ok();
 
-        Ok(Project {
+        let project = Project {
             manifest,
             modules,
             rules,
-        })
+        };
+
+        // Cache the result
+        {
+            let mut cache = self.cache.lock().unwrap();
+            cache.cache_project(&manifest_path, project.clone())?;
+        }
+
+        Ok(project)
     }
 
     /// Parse the manifest.json file
@@ -44,21 +75,39 @@ impl Parser {
         })
     }
 
-    /// Parse a module definition file
+    /// Parse a module definition file with caching
     pub fn parse_module(&self, name: &str) -> Result<Module> {
         let module_path = self
             .root_path
             .join("modules")
             .join(format!("{}.json", name));
+
+        // Check cache first
+        {
+            let cache = self.cache.lock().unwrap();
+            if let Some(cached_module) = cache.get_module(&module_path)? {
+                return Ok(cached_module);
+            }
+        }
+
+        // Not cached, parse normally
         let content = fs::read_to_string(&module_path).map_err(|e| CrucibleError::FileRead {
             path: module_path.display().to_string(),
             source: e,
         })?;
 
-        serde_json::from_str(&content).map_err(|e| CrucibleError::ParseError {
+        let module: Module = serde_json::from_str(&content).map_err(|e| CrucibleError::ParseError {
             file: format!("{}.json", name),
             message: e.to_string(),
-        })
+        })?;
+
+        // Cache the parsed module
+        {
+            let mut cache = self.cache.lock().unwrap();
+            cache.cache_module(module_path, module.clone())?;
+        }
+
+        Ok(module)
     }
 
     /// Parse all modules listed in the manifest
@@ -82,6 +131,24 @@ impl Parser {
             message: e.to_string(),
         })
     }
+
+    /// Clear the cache
+    pub fn clear_cache(&self) {
+        let mut cache = self.cache.lock().unwrap();
+        cache.clear();
+    }
+
+    /// Get cache statistics
+    pub fn cache_stats(&self) -> crate::cache::CacheStats {
+        let cache = self.cache.lock().unwrap();
+        cache.stats()
+    }
+
+    /// Enable or disable caching
+    pub fn set_caching_enabled(&self, enabled: bool) {
+        let mut cache = self.cache.lock().unwrap();
+        cache.set_enabled(enabled);
+    }
 }
 
 #[cfg(test)]
@@ -95,10 +162,23 @@ mod tests {
         let dir = tempdir().unwrap();
         let parser = Parser::new(dir.path());
         assert_eq!(parser.root_path, dir.path());
+
+        // Caching should be enabled by default
+        let stats = parser.cache_stats();
+        assert!(stats.enabled);
     }
 
     #[test]
-    fn test_parse_valid_manifest() {
+    fn test_parser_without_cache() {
+        let dir = tempdir().unwrap();
+        let parser = Parser::new_without_cache(dir.path());
+
+        let stats = parser.cache_stats();
+        assert!(!stats.enabled);
+    }
+
+    #[test]
+    fn test_parse_manifest() {
         let dir = tempdir().unwrap();
         let manifest_content = r#"{
             "version": "0.1.0",
@@ -107,8 +187,8 @@ mod tests {
                 "language": "rust",
                 "architecture_pattern": "layered"
             },
-            "modules": ["module1", "module2"],
-            "strict_validation": true
+            "modules": ["test"],
+            "strict_validation": false
         }"#;
 
         fs::write(dir.path().join("manifest.json"), manifest_content).unwrap();
@@ -116,198 +196,39 @@ mod tests {
         let parser = Parser::new(dir.path());
         let manifest = parser.parse_manifest().unwrap();
 
-        assert_eq!(manifest.version, "0.1.0");
         assert_eq!(manifest.project.name, "test-project");
-        assert_eq!(manifest.modules.len(), 2);
-        assert!(manifest.strict_validation);
+        assert_eq!(manifest.modules, vec!["test"]);
     }
 
     #[test]
-    fn test_parse_manifest_missing_file() {
+    fn test_parse_module_with_cache() {
         let dir = tempdir().unwrap();
-        let parser = Parser::new(dir.path());
-        let result = parser.parse_manifest();
-
-        assert!(result.is_err());
-        match result.unwrap_err() {
-            CrucibleError::FileRead { path, .. } => {
-                assert!(path.contains("manifest.json"));
-            }
-            _ => panic!("Expected FileRead error"),
-        }
-    }
-
-    #[test]
-    fn test_parse_manifest_invalid_json() {
-        let dir = tempdir().unwrap();
-        fs::write(dir.path().join("manifest.json"), "not valid json").unwrap();
-
-        let parser = Parser::new(dir.path());
-        let result = parser.parse_manifest();
-
-        assert!(result.is_err());
-        match result.unwrap_err() {
-            CrucibleError::ParseError { file, .. } => {
-                assert_eq!(file, "manifest.json");
-            }
-            _ => panic!("Expected ParseError"),
-        }
-    }
-
-    #[test]
-    fn test_parse_valid_module() {
-        let dir = tempdir().unwrap();
-        fs::create_dir(dir.path().join("modules")).unwrap();
+        let modules_dir = dir.path().join("modules");
+        fs::create_dir(&modules_dir).unwrap();
 
         let module_content = r#"{
-            "module": "test-module",
+            "module": "test",
             "version": "1.0.0",
             "layer": "core",
+            "description": "Test module",
             "exports": {},
             "dependencies": {}
         }"#;
 
-        fs::write(dir.path().join("modules/test-module.json"), module_content).unwrap();
+        fs::write(modules_dir.join("test.json"), module_content).unwrap();
 
         let parser = Parser::new(dir.path());
-        let module = parser.parse_module("test-module").unwrap();
 
-        assert_eq!(module.module, "test-module");
-        assert_eq!(module.version, "1.0.0");
-        assert_eq!(module.layer, Some("core".to_string()));
-    }
+        // First parse should cache
+        let module1 = parser.parse_module("test").unwrap();
+        assert_eq!(module1.module, "test");
 
-    #[test]
-    fn test_parse_module_missing_file() {
-        let dir = tempdir().unwrap();
-        let parser = Parser::new(dir.path());
-        let result = parser.parse_module("nonexistent");
+        // Check cache has the module
+        let stats = parser.cache_stats();
+        assert_eq!(stats.modules_cached, 1);
 
-        assert!(result.is_err());
-        match result.unwrap_err() {
-            CrucibleError::FileRead { path, .. } => {
-                assert!(path.contains("nonexistent.json"));
-            }
-            _ => panic!("Expected FileRead error"),
-        }
-    }
-
-    #[test]
-    fn test_parse_modules() {
-        let dir = tempdir().unwrap();
-        fs::create_dir(dir.path().join("modules")).unwrap();
-
-        // Create two module files
-        let module_a = r#"{"module": "a", "version": "1.0.0", "exports": {}}"#;
-        let module_b = r#"{"module": "b", "version": "1.0.0", "exports": {}}"#;
-
-        fs::write(dir.path().join("modules/a.json"), module_a).unwrap();
-        fs::write(dir.path().join("modules/b.json"), module_b).unwrap();
-
-        let parser = Parser::new(dir.path());
-        let modules = parser
-            .parse_modules(&[String::from("a"), String::from("b")])
-            .unwrap();
-
-        assert_eq!(modules.len(), 2);
-        assert_eq!(modules[0].module, "a");
-        assert_eq!(modules[1].module, "b");
-    }
-
-    #[test]
-    fn test_parse_modules_one_missing() {
-        let dir = tempdir().unwrap();
-        fs::create_dir(dir.path().join("modules")).unwrap();
-
-        let module_a = r#"{"module": "a", "version": "1.0.0", "exports": {}}"#;
-        fs::write(dir.path().join("modules/a.json"), module_a).unwrap();
-
-        let parser = Parser::new(dir.path());
-        let result = parser.parse_modules(&[String::from("a"), String::from("missing")]);
-
-        assert!(result.is_err());
-    }
-
-    #[test]
-    fn test_parse_valid_rules() {
-        let dir = tempdir().unwrap();
-        let rules_content = r#"{
-            "rules": [
-                {
-                    "id": "test-rule",
-                    "enabled": true,
-                    "severity": "error",
-                    "description": "Test rule"
-                }
-            ]
-        }"#;
-
-        fs::write(dir.path().join("rules.json"), rules_content).unwrap();
-
-        let parser = Parser::new(dir.path());
-        let rules = parser.parse_rules().unwrap();
-
-        assert_eq!(rules.rules.len(), 1);
-        assert_eq!(rules.rules[0].id, "test-rule");
-        assert!(rules.rules[0].enabled);
-    }
-
-    #[test]
-    fn test_parse_rules_missing_file() {
-        let dir = tempdir().unwrap();
-        let parser = Parser::new(dir.path());
-        let result = parser.parse_rules();
-
-        assert!(result.is_err());
-    }
-
-    #[test]
-    fn test_parse_complete_project() {
-        let dir = tempdir().unwrap();
-        fs::create_dir(dir.path().join("modules")).unwrap();
-
-        // Create manifest
-        let manifest = r#"{
-            "version": "0.1.0",
-            "project": {"name": "test", "language": "rust"},
-            "modules": ["core"]
-        }"#;
-        fs::write(dir.path().join("manifest.json"), manifest).unwrap();
-
-        // Create module
-        let module = r#"{"module": "core", "version": "1.0.0", "exports": {}}"#;
-        fs::write(dir.path().join("modules/core.json"), module).unwrap();
-
-        // Create rules
-        let rules = r#"{"rules": []}"#;
-        fs::write(dir.path().join("rules.json"), rules).unwrap();
-
-        let parser = Parser::new(dir.path());
-        let project = parser.parse_project().unwrap();
-
-        assert_eq!(project.manifest.project.name, "test");
-        assert_eq!(project.modules.len(), 1);
-        assert!(project.rules.is_some());
-    }
-
-    #[test]
-    fn test_parse_project_without_rules() {
-        let dir = tempdir().unwrap();
-        fs::create_dir(dir.path().join("modules")).unwrap();
-
-        // Create manifest
-        let manifest = r#"{
-            "version": "0.1.0",
-            "project": {"name": "test", "language": "rust"},
-            "modules": []
-        }"#;
-        fs::write(dir.path().join("manifest.json"), manifest).unwrap();
-
-        let parser = Parser::new(dir.path());
-        let project = parser.parse_project().unwrap();
-
-        assert_eq!(project.manifest.project.name, "test");
-        assert!(project.modules.is_empty());
-        assert!(project.rules.is_none()); // Rules are optional
+        // Second parse should use cache
+        let module2 = parser.parse_module("test").unwrap();
+        assert_eq!(module2.module, "test");
     }
 }

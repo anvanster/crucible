@@ -1,0 +1,56 @@
+{
+  "version": "0.1.0",
+  "mode": "enhanced",
+  "features": {
+    "auto_validation": true,
+    "sync_on_change": true,
+    "suggest_improvements": true,
+    "track_violations": true,
+    "generate_types": true
+  },
+  "validation": {
+    "pre_commit": true,
+    "on_save": false,
+    "on_generate": true,
+    "severity": "warning",
+    "rules": {
+      "circular_dependencies": "error",
+      "missing_exports": "warning",
+      "layer_boundaries": "error",
+      "type_mismatches": "error",
+      "undeclared_dependencies": "warning"
+    },
+    "incremental": true
+  },
+  "sync": {
+    "strategy": "bidirectional",
+    "auto_sync": true,
+    "conflict_resolution": "prompt",
+    "ignore_patterns": [
+      "*.test.ts",
+      "*.spec.ts",
+      "__tests__/**"
+    ]
+  },
+  "context": {
+    "max_tokens": 4000,
+    "include_descriptions": true,
+    "include_examples": false,
+    "focus_mode": "relevant",
+    "optimization": "balanced"
+  },
+  "templates": {
+    "service": ".crucible/templates/service.hbs",
+    "repository": ".crucible/templates/repository.hbs",
+    "controller": ".crucible/templates/controller.hbs",
+    "component": ".crucible/templates/component.hbs",
+    "test": ".crucible/templates/test.hbs"
+  },
+  "performance": {
+    "enable_caching": true,
+    "cache_ttl_seconds": 3600,
+    "lazy_loading": true,
+    "incremental_validation": true,
+    "max_parallel_modules": 4
+  }
+}

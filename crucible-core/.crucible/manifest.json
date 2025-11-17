@@ -1,0 +1,26 @@
+{
+  "version": "0.1.0",
+  "project": {
+    "name": "crucible-core",
+    "language": "rust",
+    "architecture_pattern": "layered"
+  },
+  "modules": [
+    "primitives",
+    "error",
+    "types",
+    "cache",
+    "performance",
+    "parser",
+    "validator",
+    "generator",
+    "config",
+    "context"
+  ],
+  "strict_validation": true,
+  "metadata": {
+    "author": "Crucible Team",
+    "repository": "https://github.com/crucible/crucible-core",
+    "created": "2024-01-01"
+  }
+}

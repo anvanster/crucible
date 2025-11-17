@@ -1,0 +1,226 @@
+{
+  "module": "config",
+  "version": "0.1.0",
+  "layer": "infrastructure",
+  "description": "Configuration management with global config and environment variable support",
+  "exports": {
+    "IntegrationConfig": {
+      "type": "class",
+      "methods": {
+        "from_file": {
+          "inputs": [
+            {
+              "name": "path",
+              "type": "Path",
+              "optional": false,
+              "description": "Path to config file"
+            }
+          ],
+          "returns": {
+            "type": "Result<IntegrationConfig>"
+          },
+          "throws": ["CrucibleError"],
+          "calls": [],
+          "effects": ["reads config file"]
+        },
+        "to_file": {
+          "inputs": [
+            {
+              "name": "path",
+              "type": "Path",
+              "optional": false,
+              "description": "Path to save config"
+            }
+          ],
+          "returns": {
+            "type": "Result<void>"
+          },
+          "throws": ["CrucibleError"],
+          "calls": [],
+          "effects": ["writes config file"]
+        },
+        "load_global": {
+          "inputs": [],
+          "returns": {
+            "type": "Option<GlobalConfig>"
+          },
+          "throws": [],
+          "calls": [],
+          "effects": ["reads ~/.claude/crucible/global.json"]
+        },
+        "merge_with_global": {
+          "inputs": [
+            {
+              "name": "global",
+              "type": "GlobalConfig",
+              "optional": false,
+              "description": "Global config to merge"
+            }
+          ],
+          "returns": {
+            "type": "void"
+          },
+          "throws": [],
+          "calls": [],
+          "effects": ["merges global settings"]
+        },
+        "apply_env_overrides": {
+          "inputs": [],
+          "returns": {
+            "type": "void"
+          },
+          "throws": [],
+          "calls": [],
+          "effects": ["reads environment variables", "applies overrides"]
+        },
+        "load_with_overrides": {
+          "inputs": [
+            {
+              "name": "path",
+              "type": "Option<Path>",
+              "optional": false,
+              "description": "Optional path to config file"
+            }
+          ],
+          "returns": {
+            "type": "Result<IntegrationConfig>"
+          },
+          "throws": ["CrucibleError"],
+          "calls": [
+            "config.IntegrationConfig.from_file",
+            "config.IntegrationConfig.load_global",
+            "config.IntegrationConfig.merge_with_global",
+            "config.IntegrationConfig.apply_env_overrides"
+          ],
+          "effects": ["loads config with all overrides applied"]
+        }
+      },
+      "properties": {
+        "version": {
+          "type": "String",
+          "required": true,
+          "description": "Config version"
+        },
+        "mode": {
+          "type": "IntegrationMode",
+          "required": true,
+          "description": "Integration mode"
+        },
+        "features": {
+          "type": "Features",
+          "required": true,
+          "description": "Feature flags"
+        },
+        "validation": {
+          "type": "ValidationConfig",
+          "required": true,
+          "description": "Validation settings"
+        },
+        "sync": {
+          "type": "SyncConfig",
+          "required": true,
+          "description": "Sync settings"
+        },
+        "context": {
+          "type": "ContextConfig",
+          "required": true,
+          "description": "Context optimization"
+        },
+        "templates": {
+          "type": "TemplateConfig",
+          "required": true,
+          "description": "Template configuration"
+        },
+        "performance": {
+          "type": "PerformanceConfig",
+          "required": true,
+          "description": "Performance settings"
+        }
+      }
+    },
+    "IntegrationMode": {
+      "type": "enum",
+      "values": ["Basic", "Enhanced", "Strict"],
+      "methods": {
+        "from_env_str": {
+          "inputs": [
+            {
+              "name": "s",
+              "type": "String",
+              "optional": false,
+              "description": "Environment variable value"
+            }
+          ],
+          "returns": {
+            "type": "Option<IntegrationMode>"
+          },
+          "throws": [],
+          "calls": [],
+          "effects": []
+        }
+      }
+    },
+    "ValidationLevel": {
+      "type": "enum",
+      "values": ["Error", "Warning", "Info"],
+      "methods": {
+        "from_env_str": {
+          "inputs": [
+            {
+              "name": "s",
+              "type": "String",
+              "optional": false,
+              "description": "Environment variable value"
+            }
+          ],
+          "returns": {
+            "type": "Option<ValidationLevel>"
+          },
+          "throws": [],
+          "calls": [],
+          "effects": []
+        }
+      }
+    },
+    "ValidationConfig": {
+      "type": "type",
+      "properties": {
+        "pre_commit": {
+          "type": "boolean",
+          "required": true,
+          "description": "Validate on pre-commit"
+        },
+        "on_save": {
+          "type": "boolean",
+          "required": true,
+          "description": "Validate on save"
+        },
+        "on_generate": {
+          "type": "boolean",
+          "required": true,
+          "description": "Validate on generate"
+        },
+        "severity": {
+          "type": "ValidationLevel",
+          "required": true,
+          "description": "Default severity"
+        },
+        "rules": {
+          "type": "HashMap<String, ValidationLevel>",
+          "required": true,
+          "description": "Per-rule severity"
+        },
+        "incremental": {
+          "type": "boolean",
+          "required": true,
+          "description": "Enable incremental validation"
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "primitives": "0.1.0",
+    "performance": "0.1.0",
+    "types": "0.1.0"
+  }
+}

@@ -4,6 +4,9 @@ use crate::types::{Project, Severity};
 use petgraph::algo::is_cyclic_directed;
 use petgraph::graph::DiGraph;
 use std::collections::HashMap;
+use std::fs;
+use std::path::Path;
+use std::time::SystemTime;
 
 #[derive(Debug, Clone)]
 pub struct ValidationResult {
@@ -11,6 +14,8 @@ pub struct ValidationResult {
     pub errors: Vec<ValidationIssue>,
     pub warnings: Vec<ValidationIssue>,
     pub info: Vec<ValidationIssue>,
+    /// Modules that were actually validated (for incremental validation)
+    pub validated_modules: Vec<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -21,13 +26,199 @@ pub struct ValidationIssue {
     pub location: Option<String>,
 }
 
+/// Tracks module changes for incremental validation
+#[derive(Debug, Clone)]
+pub struct ChangeTracker {
+    /// Last validation time for each module
+    pub module_timestamps: HashMap<String, SystemTime>,
+    /// Modules that have changed since last validation
+    pub changed_modules: HashMap<String, bool>,
+    /// Dependency graph for impact analysis
+    pub dependency_graph: HashMap<String, HashMap<String, bool>>,
+}
+
+impl ChangeTracker {
+    pub fn new() -> Self {
+        Self {
+            module_timestamps: HashMap::new(),
+            changed_modules: HashMap::new(),
+            dependency_graph: HashMap::new(),
+        }
+    }
+
+    /// Build dependency graph from project
+    pub fn build_dependency_graph(&mut self, project: &Project) {
+        self.dependency_graph.clear();
+
+        // Build forward dependencies (who depends on me)
+        for module in &project.modules {
+            for (dep_name, _) in &module.dependencies {
+                self.dependency_graph
+                    .entry(dep_name.clone())
+                    .or_insert_with(HashMap::new)
+                    .insert(module.module.clone(), true);
+            }
+        }
+    }
+
+    /// Detect changed modules based on file modification times
+    pub fn detect_changes(&mut self, project: &Project, root_path: &Path) -> HashMap<String, bool> {
+        let mut changed = HashMap::new();
+
+        for module in &project.modules {
+            let module_path = root_path
+                .join("modules")
+                .join(format!("{}.json", module.module));
+
+            if let Ok(metadata) = fs::metadata(&module_path) {
+                if let Ok(modified) = metadata.modified() {
+                    // Check if this is a new module or has been modified
+                    if let Some(last_validated) = self.module_timestamps.get(&module.module) {
+                        if modified > *last_validated {
+                            changed.insert(module.module.clone(), true);
+                        }
+                    } else {
+                        // New module, needs validation
+                        changed.insert(module.module.clone(), true);
+                    }
+                }
+            }
+        }
+
+        self.changed_modules = changed.clone();
+        changed
+    }
+
+    /// Get all modules affected by changes (changed + dependents)
+    pub fn get_affected_modules(&self, changed_modules: &HashMap<String, bool>) -> HashMap<String, bool> {
+        let mut affected = changed_modules.clone();
+        let mut to_process: Vec<String> = changed_modules.keys().cloned().collect();
+
+        while let Some(module) = to_process.pop() {
+            // Find all modules that depend on this one
+            if let Some(dependents) = self.dependency_graph.get(&module) {
+                for (dependent, _) in dependents {
+                    if !affected.contains_key(dependent) {
+                        affected.insert(dependent.clone(), true);
+                        to_process.push(dependent.clone());
+                    }
+                }
+            }
+        }
+
+        affected
+    }
+
+    /// Update timestamps after successful validation
+    pub fn update_timestamps(&mut self, validated_modules: &[String]) {
+        let now = SystemTime::now();
+        for module in validated_modules {
+            self.module_timestamps.insert(module.clone(), now);
+        }
+    }
+}
+
 pub struct Validator {
     project: Project,
+    /// Optional change tracker for incremental validation
+    change_tracker: Option<ChangeTracker>,
 }
 
 impl Validator {
     pub fn new(project: Project) -> Self {
-        Self { project }
+        Self {
+            project,
+            change_tracker: None,
+        }
+    }
+
+    /// Create a new validator with incremental validation support
+    pub fn new_with_incremental(project: Project) -> Self {
+        let mut change_tracker = ChangeTracker::new();
+        change_tracker.build_dependency_graph(&project);
+
+        Self {
+            project,
+            change_tracker: Some(change_tracker),
+        }
+    }
+
+    /// Perform incremental validation - only validate changed modules and their dependents
+    pub fn incremental_validate(&mut self, root_path: &Path) -> ValidationResult {
+        // Extract data from tracker to avoid borrow issues
+        let (changed_modules, affected_modules) = if let Some(ref mut tracker) = self.change_tracker {
+            let changed = tracker.detect_changes(&self.project, root_path);
+
+            if changed.is_empty() {
+                // No changes, return successful result
+                return ValidationResult {
+                    valid: true,
+                    errors: Vec::new(),
+                    warnings: Vec::new(),
+                    info: vec![ValidationIssue {
+                        rule: "incremental-validation".to_string(),
+                        severity: Severity::Info,
+                        message: "No modules changed since last validation".to_string(),
+                        location: None,
+                    }],
+                    validated_modules: Vec::new(),
+                };
+            }
+
+            let affected = tracker.get_affected_modules(&changed);
+            (changed, affected)
+        } else {
+            // No change tracker, fall back to full validation
+            return self.validate();
+        };
+
+        // Filter project to only validate affected modules
+        let filtered_project = self.filter_project_modules(&affected_modules);
+
+        // Run validation on filtered project
+        let mut result = self.validate_filtered(&filtered_project);
+
+        // Add info about what was validated
+        result.info.insert(0, ValidationIssue {
+            rule: "incremental-validation".to_string(),
+            severity: Severity::Info,
+            message: format!(
+                "Incremental validation: {} modules changed, {} modules validated",
+                changed_modules.len(),
+                affected_modules.len()
+            ),
+            location: None,
+        });
+
+        // Update timestamps for successfully validated modules
+        if result.valid {
+            if let Some(ref mut tracker) = self.change_tracker {
+                tracker.update_timestamps(&result.validated_modules);
+            }
+        }
+
+        result
+    }
+
+    /// Filter project to only include specified modules
+    fn filter_project_modules(&self, module_names: &HashMap<String, bool>) -> Project {
+        let filtered_modules: Vec<_> = self.project.modules
+            .iter()
+            .filter(|m| module_names.contains_key(&m.module))
+            .cloned()
+            .collect();
+
+        Project {
+            manifest: self.project.manifest.clone(),
+            modules: filtered_modules,
+            rules: self.project.rules.clone(),
+        }
+    }
+
+    /// Validate a filtered project (internal use for incremental validation)
+    fn validate_filtered(&self, project: &Project) -> ValidationResult {
+        let temp_validator = Validator::new(project.clone());
+        temp_validator.validate()
     }
 
     /// Run all validation rules
@@ -37,6 +228,7 @@ impl Validator {
             errors: Vec::new(),
             warnings: Vec::new(),
             info: Vec::new(),
+            validated_modules: self.project.modules.iter().map(|m| m.module.clone()).collect(),
         };
 
         // Check for circular dependencies

@@ -136,7 +136,7 @@ pub struct Metadata {
 }
 
 /// A complete Crucible project
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Project {
     pub manifest: Manifest,
     pub modules: Vec<Module>,

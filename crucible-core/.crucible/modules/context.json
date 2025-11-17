@@ -1,0 +1,63 @@
+{
+  "module": "context",
+  "version": "0.1.0",
+  "layer": "application",
+  "description": "Context generation for Claude Code integration with architecture-first instructions",
+  "exports": {
+    "ContextGenerator": {
+      "type": "class",
+      "description": "Generates optimized Claude-readable context from architecture",
+      "methods": {
+        "new": {
+          "inputs": [
+            {
+              "name": "project",
+              "type": "Project",
+              "optional": false,
+              "description": "Project with architecture definitions"
+            },
+            {
+              "name": "config",
+              "type": "IntegrationConfig",
+              "optional": false,
+              "description": "Integration configuration"
+            }
+          ],
+          "returns": {
+            "type": "ContextGenerator"
+          },
+          "throws": [],
+          "calls": [],
+          "effects": []
+        },
+        "generate_instructions": {
+          "inputs": [],
+          "returns": {
+            "type": "String"
+          },
+          "throws": [],
+          "calls": [],
+          "effects": ["generates architecture-first workflow instructions for Claude"]
+        },
+        "generate_context_json": {
+          "inputs": [],
+          "returns": {
+            "type": "Result<String>"
+          },
+          "throws": ["CrucibleError"],
+          "calls": [],
+          "effects": ["generates optimized JSON context"]
+        }
+      }
+    },
+    "ContextSummary": {
+      "type": "type",
+      "description": "Optimized context summary for Claude"
+    }
+  },
+  "dependencies": {
+    "types": "0.1.0",
+    "config": "0.1.0",
+    "error": "0.1.0"
+  }
+}

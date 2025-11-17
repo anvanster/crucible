@@ -87,7 +87,7 @@ impl ContextGenerator {
         Self { project, config }
     }
 
-    /// Generate instructions.md content for Claude
+    /// Generate CRUCIBLE.md content for Claude
     pub fn generate_instructions(&self) -> String {
         let mut content = String::new();
 
@@ -117,30 +117,60 @@ impl ContextGenerator {
             self.add_module_section(&mut content, module);
         }
 
-        // Pre-change checklist
-        content.push_str("## ✅ Before Writing Code\n\n");
-        content.push_str("**Always check these architectural constraints:**\n\n");
-        content
-            .push_str("1. **Layer Dependencies**: Ensure you're not violating layer boundaries\n");
-        content.push_str("2. **Module Dependencies**: Check if the module you're modifying can depend on the module you're importing\n");
-        content
-            .push_str("   - Review `.crucible/modules/<module>.json` for allowed dependencies\n");
-        content.push_str("3. **Interface Contracts**: When calling functions from other modules\n");
-        content.push_str("   - Verify the function exists in the module's exports\n");
-        content.push_str("   - Match the exact signature defined in the architecture\n");
-        content.push_str("4. **Naming Conventions**: Follow established patterns\n\n");
+        // CRITICAL: Architecture-first workflow
+        content.push_str("## ⚠️ CRITICAL: Architecture-First Development\n\n");
+        content.push_str("**This project uses architecture-first development. You MUST follow this workflow:**\n\n");
 
-        // Post-change checklist
-        content.push_str("## 🔄 After Writing Code\n\n");
-        content.push_str("**Update the architecture to maintain sync:**\n\n");
-        content.push_str("1. **New Exports**: If you added public functions/classes\n");
+        content.push_str("### 🔴 STOP: Before Writing ANY Code\n\n");
+        content.push_str("**When adding features, changing APIs, or modifying module interfaces:**\n\n");
+
+        content.push_str("1. **UPDATE ARCHITECTURE FIRST**\n");
+        content.push_str("   - Edit `.crucible/modules/<module>.json` to add new methods/exports\n");
+        content.push_str("   - Create `.crucible/modules/<new-module>.json` for new modules\n");
+        content.push_str("   - Update dependencies, method signatures, and types in architecture\n");
+        content.push_str("   - Add new modules to `.crucible/manifest.json`\n\n");
+
+        content.push_str("2. **VALIDATE ARCHITECTURE**\n");
         content.push_str("   ```bash\n");
         content.push_str("   crucible validate\n");
-        content.push_str("   ```\n\n");
-        content.push_str("2. **New Dependencies**: If you imported from a new module\n");
+        content.push_str("   ```\n");
+        content.push_str("   - Fix ALL violations before proceeding\n");
+        content.push_str("   - Resolve layer boundaries, circular dependencies, missing types\n");
+        content.push_str("   - Re-validate until zero errors\n\n");
+
+        content.push_str("3. **ONLY AFTER VALIDATION PASSES: Write Code**\n");
+        content.push_str("   - Implement code matching the validated architecture\n");
+        content.push_str("   - Follow exact signatures from architecture definitions\n");
+        content.push_str("   - Use only declared dependencies\n\n");
+
+        content.push_str("4. **VERIFY IMPLEMENTATION**\n");
         content.push_str("   ```bash\n");
-        content.push_str("   crucible validate <module-name>\n");
+        content.push_str("   cargo build  # or npm build, etc.\n");
+        content.push_str("   cargo test   # verify tests pass\n");
         content.push_str("   ```\n\n");
+
+        content.push_str("### ❌ Anti-Pattern (Code-First)\n\n");
+        content.push_str("```\n");
+        content.push_str("1. Write code → 2. Compilation errors → 3. Fix code → \n");
+        content.push_str("4. Architecture violations → 5. Update architecture → 6. Fix code again\n");
+        content.push_str("Result: 7-10 iterations, 16,500 tokens wasted\n");
+        content.push_str("```\n\n");
+
+        content.push_str("### ✅ Correct Pattern (Architecture-First)\n\n");
+        content.push_str("```\n");
+        content.push_str("1. Update architecture → 2. Validate architecture → 3. Fix violations → \n");
+        content.push_str("4. Write code → 5. Build succeeds → 6. Tests pass\n");
+        content.push_str("Result: 1-2 iterations, 4,500 tokens, zero violations\n");
+        content.push_str("```\n\n");
+
+        content.push_str("### 📋 Pre-Implementation Checklist\n\n");
+        content.push_str("Before writing code, verify:\n\n");
+        content.push_str("- [ ] Architecture definition exists in `.crucible/modules/`\n");
+        content.push_str("- [ ] New methods/types added to module's `exports`\n");
+        content.push_str("- [ ] Dependencies declared in `dependencies` section\n");
+        content.push_str("- [ ] `crucible validate` shows ZERO errors\n");
+        content.push_str("- [ ] Layer boundaries respected (core → infrastructure → application → presentation)\n");
+        content.push_str("- [ ] No circular dependencies detected\n\n");
 
         // Architectural rules
         content.push_str("## 🚫 Architectural Rules\n\n");
@@ -340,8 +370,8 @@ impl ContextGenerator {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::claude::config::IntegrationMode;
-    use crate::types::{ExportType, Method};
+    
+    use crate::types::ExportType;
     use std::collections::HashMap;
 
     fn create_test_project() -> Project {
@@ -350,19 +380,18 @@ mod tests {
         let mut auth_exports = HashMap::new();
         auth_exports.insert(
             "AuthService".to_string(),
-            ExportType::Class {
-                methods: Some(vec![Method {
-                    name: "login".to_string(),
-                    inputs: vec![],
-                    returns: Some("Token".to_string()),
-                    calls: vec![],
-                    effects: vec![],
-                }]),
+            crate::types::Export {
+                export_type: ExportType::Class,
+                methods: Some(HashMap::new()),
+                properties: None,
+                values: None,
+                dependencies: None,
             },
         );
 
         modules.push(Module {
             module: "auth".to_string(),
+            version: "1.0.0".to_string(),
             description: Some("Authentication module".to_string()),
             layer: Some("application".to_string()),
             exports: auth_exports,
@@ -370,21 +399,26 @@ mod tests {
         });
 
         Project {
-            name: "test-project".to_string(),
-            language: crate::types::Language::TypeScript,
-            architecture_pattern: "layered".to_string(),
+            manifest: crate::types::Manifest {
+                version: "0.1.0".to_string(),
+                project: crate::types::ProjectConfig {
+                    name: "test-project".to_string(),
+                    language: crate::types::Language::TypeScript,
+                    architecture_pattern: Some(crate::types::ArchitecturePattern::Layered),
+                },
+                modules: vec!["auth".to_string()],
+                strict_validation: false,
+                metadata: None,
+            },
             modules,
+            rules: None,
         }
     }
 
     #[test]
     fn test_generate_instructions() {
         let project = create_test_project();
-        let config = IntegrationConfig::new(
-            IntegrationMode::Enhanced,
-            "test-project",
-            std::path::Path::new("/tmp/test"),
-        );
+        let config = IntegrationConfig::default();
         let generator = ContextGenerator::new(project, config);
 
         let instructions = generator.generate_instructions();
@@ -398,11 +432,7 @@ mod tests {
     #[test]
     fn test_generate_context_json() {
         let project = create_test_project();
-        let config = IntegrationConfig::new(
-            IntegrationMode::Enhanced,
-            "test-project",
-            std::path::Path::new("/tmp/test"),
-        );
+        let config = IntegrationConfig::default();
         let generator = ContextGenerator::new(project, config);
 
         let context_json = generator.generate_context_json().unwrap();
@@ -414,11 +444,7 @@ mod tests {
     #[test]
     fn test_context_summary_structure() {
         let project = create_test_project();
-        let config = IntegrationConfig::new(
-            IntegrationMode::Enhanced,
-            "test-project",
-            std::path::Path::new("/tmp/test"),
-        );
+        let config = IntegrationConfig::default();
         let generator = ContextGenerator::new(project, config);
 
         let summary = generator.build_context_summary();

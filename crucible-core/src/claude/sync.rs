@@ -2,7 +2,7 @@
 
 use crate::claude::rust_parser::{DiscoveredModule, RustParser};
 use crate::error::{CrucibleError, Result};
-use crate::types::{Export, ExportType, Project};
+use crate::types::Project;
 use serde_json::json;
 use std::collections::HashMap;
 use std::fs;
@@ -218,7 +218,7 @@ impl SyncManager {
         module_path: &Path,
         new_exports: &[String],
         new_dependencies: &[String],
-        discovered: &DiscoveredModule,
+        _discovered: &DiscoveredModule,
     ) -> Result<String> {
         // Read existing module JSON
         let existing_content =
@@ -481,10 +481,19 @@ mod tests {
     #[test]
     fn test_sync_manager_new() {
         let project = Project {
-            name: "test".to_string(),
-            language: Language::TypeScript,
-            architecture_pattern: "layered".to_string(),
+            manifest: crate::types::Manifest {
+                version: "0.1.0".to_string(),
+                project: crate::types::ProjectConfig {
+                    name: "test".to_string(),
+                    language: Language::TypeScript,
+                    architecture_pattern: Some(crate::types::ArchitecturePattern::Layered),
+                },
+                modules: vec![],
+                strict_validation: false,
+                metadata: None,
+            },
             modules: vec![],
+            rules: None,
         };
 
         let _manager = SyncManager::new(project);

@@ -1,0 +1,265 @@
+{
+  "module": "validator",
+  "version": "0.1.0",
+  "layer": "infrastructure",
+  "description": "Architecture validation engine with incremental validation support",
+  "exports": {
+    "Validator": {
+      "type": "class",
+      "methods": {
+        "new": {
+          "inputs": [
+            {
+              "name": "project",
+              "type": "Project",
+              "optional": false,
+              "description": "Project to validate"
+            }
+          ],
+          "returns": {
+            "type": "Validator"
+          },
+          "throws": [],
+          "calls": [],
+          "effects": ["creates validator without incremental support"]
+        },
+        "new_with_incremental": {
+          "inputs": [
+            {
+              "name": "project",
+              "type": "Project",
+              "optional": false,
+              "description": "Project to validate"
+            }
+          ],
+          "returns": {
+            "type": "Validator"
+          },
+          "throws": [],
+          "calls": [
+            "performance.ChangeTracker.new",
+            "performance.ChangeTracker.build_dependency_graph"
+          ],
+          "effects": ["creates validator with incremental support"]
+        },
+        "validate": {
+          "inputs": [],
+          "returns": {
+            "type": "ValidationResult"
+          },
+          "throws": [],
+          "calls": [
+            "validator.Validator.check_circular_dependencies",
+            "validator.Validator.check_layer_boundaries",
+            "validator.Validator.check_type_existence",
+            "validator.Validator.check_call_targets",
+            "validator.Validator.check_used_dependencies",
+            "validator.Validator.check_declared_dependencies"
+          ],
+          "effects": ["performs full validation"]
+        },
+        "incremental_validate": {
+          "inputs": [
+            {
+              "name": "root_path",
+              "type": "Path",
+              "optional": false,
+              "description": "Project root path"
+            }
+          ],
+          "returns": {
+            "type": "ValidationResult"
+          },
+          "throws": [],
+          "calls": [
+            "performance.ChangeTracker.detect_changes",
+            "performance.ChangeTracker.get_affected_modules",
+            "validator.Validator.filter_project_modules",
+            "validator.Validator.validate_filtered",
+            "performance.ChangeTracker.update_timestamps"
+          ],
+          "effects": ["performs incremental validation on changed modules"]
+        },
+        "filter_project_modules": {
+          "inputs": [
+            {
+              "name": "module_names",
+              "type": "HashMap<string, boolean>",
+              "optional": false,
+              "description": "Modules to include"
+            }
+          ],
+          "returns": {
+            "type": "Project"
+          },
+          "throws": [],
+          "calls": [],
+          "effects": ["filters project to specified modules"]
+        },
+        "validate_filtered": {
+          "inputs": [
+            {
+              "name": "project",
+              "type": "Project",
+              "optional": false,
+              "description": "Filtered project to validate"
+            }
+          ],
+          "returns": {
+            "type": "ValidationResult"
+          },
+          "throws": [],
+          "calls": ["validator.Validator.validate"],
+          "effects": ["validates filtered project"]
+        },
+        "check_circular_dependencies": {
+          "inputs": [],
+          "returns": {
+            "type": "Option<Vec<ValidationIssue>>"
+          },
+          "throws": [],
+          "calls": [],
+          "effects": ["checks for circular dependencies"]
+        },
+        "check_layer_boundaries": {
+          "inputs": [
+            {
+              "name": "architecture",
+              "type": "Architecture",
+              "optional": false,
+              "description": "Architecture rules"
+            }
+          ],
+          "returns": {
+            "type": "Option<Vec<ValidationIssue>>"
+          },
+          "throws": [],
+          "calls": [],
+          "effects": ["validates layer boundaries"]
+        },
+        "check_type_existence": {
+          "inputs": [],
+          "returns": {
+            "type": "Option<Vec<ValidationIssue>>"
+          },
+          "throws": [],
+          "calls": ["validator.Validator.is_type_available"],
+          "effects": ["validates type references"]
+        },
+        "check_call_targets": {
+          "inputs": [],
+          "returns": {
+            "type": "Option<Vec<ValidationIssue>>"
+          },
+          "throws": [],
+          "calls": [],
+          "effects": ["validates function calls"]
+        },
+        "check_used_dependencies": {
+          "inputs": [],
+          "returns": {
+            "type": "Option<Vec<ValidationIssue>>"
+          },
+          "throws": [],
+          "calls": [],
+          "effects": ["validates dependency usage"]
+        },
+        "check_declared_dependencies": {
+          "inputs": [],
+          "returns": {
+            "type": "Option<Vec<ValidationIssue>>"
+          },
+          "throws": [],
+          "calls": [],
+          "effects": ["checks for unused dependencies"]
+        },
+        "is_type_available": {
+          "inputs": [
+            {
+              "name": "type_name",
+              "type": "String",
+              "optional": false,
+              "description": "Type to check"
+            },
+            {
+              "name": "available_types",
+              "type": "HashMap<String, boolean>",
+              "optional": false,
+              "description": "Map of available types"
+            }
+          ],
+          "returns": {
+            "type": "boolean"
+          },
+          "throws": [],
+          "calls": [],
+          "effects": []
+        }
+      }
+    },
+    "ValidationResult": {
+      "type": "type",
+      "properties": {
+        "valid": {
+          "type": "boolean",
+          "required": true,
+          "description": "Whether validation passed"
+        },
+        "errors": {
+          "type": "Vec<ValidationIssue>",
+          "required": true,
+          "description": "Validation errors"
+        },
+        "warnings": {
+          "type": "Vec<ValidationIssue>",
+          "required": true,
+          "description": "Validation warnings"
+        },
+        "info": {
+          "type": "Vec<ValidationIssue>",
+          "required": true,
+          "description": "Informational messages"
+        },
+        "validated_modules": {
+          "type": "Vec<String>",
+          "required": true,
+          "description": "Modules that were validated"
+        }
+      }
+    },
+    "HashMap<string, boolean>": {
+      "type": "type",
+      "properties": {}
+    },
+    "ValidationIssue": {
+      "type": "type",
+      "properties": {
+        "rule": {
+          "type": "String",
+          "required": true,
+          "description": "Validation rule ID"
+        },
+        "severity": {
+          "type": "Severity",
+          "required": true,
+          "description": "Issue severity"
+        },
+        "message": {
+          "type": "String",
+          "required": true,
+          "description": "Issue description"
+        },
+        "location": {
+          "type": "Option<String>",
+          "required": true,
+          "description": "Location of issue"
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "primitives": "0.1.0",
+    "performance": "0.1.0",
+    "types": "0.1.0"
+  }
+}

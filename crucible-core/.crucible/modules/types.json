@@ -1,0 +1,390 @@
+{
+  "module": "types",
+  "version": "0.1.0",
+  "layer": "core",
+  "description": "Core type definitions matching the Crucible specification",
+  "exports": {
+    "Project": {
+      "type": "type",
+      "properties": {
+        "manifest": {
+          "type": "Manifest",
+          "required": true,
+          "description": "Project manifest"
+        },
+        "modules": {
+          "type": "Vec<Module>",
+          "required": true,
+          "description": "Project modules"
+        },
+        "rules": {
+          "type": "Option<Rules>",
+          "required": true,
+          "description": "Validation rules"
+        }
+      }
+    },
+    "Manifest": {
+      "type": "type",
+      "properties": {
+        "version": {
+          "type": "String",
+          "required": true,
+          "description": "Crucible version"
+        },
+        "project": {
+          "type": "ProjectConfig",
+          "required": true,
+          "description": "Project configuration"
+        },
+        "modules": {
+          "type": "Vec<String>",
+          "required": true,
+          "description": "Module names"
+        },
+        "strict_validation": {
+          "type": "boolean",
+          "required": true,
+          "description": "Strict validation mode"
+        },
+        "metadata": {
+          "type": "Option<Metadata>",
+          "required": true,
+          "description": "Optional metadata"
+        }
+      }
+    },
+    "Module": {
+      "type": "type",
+      "properties": {
+        "module": {
+          "type": "String",
+          "required": true,
+          "description": "Module name"
+        },
+        "version": {
+          "type": "String",
+          "required": true,
+          "description": "Module version"
+        },
+        "layer": {
+          "type": "Option<String>",
+          "required": true,
+          "description": "Architecture layer"
+        },
+        "description": {
+          "type": "Option<String>",
+          "required": true,
+          "description": "Module description"
+        },
+        "exports": {
+          "type": "HashMap<String, Export>",
+          "required": true,
+          "description": "Module exports"
+        },
+        "dependencies": {
+          "type": "HashMap<String, String>",
+          "required": true,
+          "description": "Module dependencies"
+        }
+      }
+    },
+    "Export": {
+      "type": "type",
+      "properties": {
+        "export_type": {
+          "type": "ExportType",
+          "required": true,
+          "description": "Type of export"
+        },
+        "methods": {
+          "type": "Option<HashMap<String, Method>>",
+          "required": true,
+          "description": "Methods for classes"
+        },
+        "properties": {
+          "type": "Option<HashMap<String, Property>>",
+          "required": true,
+          "description": "Properties for types"
+        },
+        "values": {
+          "type": "Option<Vec<String>>",
+          "required": true,
+          "description": "Enum values"
+        },
+        "dependencies": {
+          "type": "Option<Vec<Dependency>>",
+          "required": true,
+          "description": "Export dependencies"
+        }
+      }
+    },
+    "Method": {
+      "type": "type",
+      "properties": {
+        "inputs": {
+          "type": "Vec<Parameter>",
+          "required": true,
+          "description": "Method parameters"
+        },
+        "returns": {
+          "type": "ReturnType",
+          "required": true,
+          "description": "Return type"
+        },
+        "throws": {
+          "type": "Vec<String>",
+          "required": true,
+          "description": "Exceptions thrown"
+        },
+        "calls": {
+          "type": "Vec<String>",
+          "required": true,
+          "description": "Methods called"
+        },
+        "effects": {
+          "type": "Vec<String>",
+          "required": true,
+          "description": "Side effects"
+        }
+      }
+    },
+    "ProjectConfig": {
+      "type": "type",
+      "properties": {
+        "name": {
+          "type": "String",
+          "required": true,
+          "description": "Project name"
+        },
+        "language": {
+          "type": "Language",
+          "required": true,
+          "description": "Project language"
+        },
+        "architecture_pattern": {
+          "type": "Option<ArchitecturePattern>",
+          "required": true,
+          "description": "Architecture pattern"
+        }
+      }
+    },
+    "Language": {
+      "type": "enum",
+      "values": ["TypeScript", "Rust", "Python", "Go", "Java"]
+    },
+    "ExportType": {
+      "type": "enum",
+      "values": ["Class", "Function", "Interface", "Type", "Enum"]
+    },
+    "ArchitecturePattern": {
+      "type": "enum",
+      "values": ["Layered", "Hexagonal", "Microservices", "Modular"]
+    },
+    "Severity": {
+      "type": "enum",
+      "values": ["Error", "Warning", "Info"]
+    },
+    "Rules": {
+      "type": "type",
+      "properties": {
+        "architecture": {
+          "type": "Option<Architecture>",
+          "required": true,
+          "description": "Architecture rules"
+        },
+        "rules": {
+          "type": "Vec<Rule>",
+          "required": true,
+          "description": "Validation rules"
+        },
+        "custom_rules": {
+          "type": "Vec<CustomRule>",
+          "required": true,
+          "description": "Custom validation rules"
+        }
+      }
+    },
+    "Architecture": {
+      "type": "type",
+      "properties": {
+        "pattern": {
+          "type": "ArchitecturePattern",
+          "required": true,
+          "description": "Architecture pattern"
+        },
+        "layers": {
+          "type": "Vec<Layer>",
+          "required": true,
+          "description": "Architecture layers"
+        }
+      }
+    },
+    "Layer": {
+      "type": "type",
+      "properties": {
+        "name": {
+          "type": "String",
+          "required": true,
+          "description": "Layer name"
+        },
+        "can_depend_on": {
+          "type": "Vec<String>",
+          "required": true,
+          "description": "Allowed dependencies"
+        }
+      }
+    },
+    "Rule": {
+      "type": "type",
+      "properties": {
+        "id": {
+          "type": "String",
+          "required": true,
+          "description": "Rule ID"
+        },
+        "enabled": {
+          "type": "boolean",
+          "required": true,
+          "description": "Is rule enabled"
+        },
+        "severity": {
+          "type": "Severity",
+          "required": true,
+          "description": "Rule severity"
+        },
+        "description": {
+          "type": "Option<String>",
+          "required": true,
+          "description": "Rule description"
+        }
+      }
+    },
+    "CustomRule": {
+      "type": "type",
+      "properties": {
+        "id": {
+          "type": "String",
+          "required": true,
+          "description": "Rule ID"
+        },
+        "rule_type": {
+          "type": "String",
+          "required": true,
+          "description": "Rule type"
+        },
+        "target": {
+          "type": "String",
+          "required": true,
+          "description": "Target pattern"
+        },
+        "pattern": {
+          "type": "Option<String>",
+          "required": true,
+          "description": "Match pattern"
+        },
+        "severity": {
+          "type": "Severity",
+          "required": true,
+          "description": "Rule severity"
+        }
+      }
+    },
+    "Parameter": {
+      "type": "type",
+      "properties": {
+        "name": {
+          "type": "String",
+          "required": true,
+          "description": "Parameter name"
+        },
+        "param_type": {
+          "type": "String",
+          "required": true,
+          "description": "Parameter type"
+        },
+        "optional": {
+          "type": "boolean",
+          "required": true,
+          "description": "Is optional"
+        },
+        "description": {
+          "type": "Option<String>",
+          "required": true,
+          "description": "Parameter description"
+        }
+      }
+    },
+    "ReturnType": {
+      "type": "type",
+      "properties": {
+        "type": {
+          "type": "String",
+          "required": true,
+          "description": "Return type"
+        },
+        "inner": {
+          "type": "Option<String>",
+          "required": true,
+          "description": "Inner type for generics"
+        }
+      }
+    },
+    "Property": {
+      "type": "type",
+      "properties": {
+        "type": {
+          "type": "String",
+          "required": true,
+          "description": "Property type"
+        },
+        "required": {
+          "type": "boolean",
+          "required": true,
+          "description": "Is required"
+        },
+        "description": {
+          "type": "Option<String>",
+          "required": true,
+          "description": "Property description"
+        }
+      }
+    },
+    "Dependency": {
+      "type": "type",
+      "properties": {
+        "module": {
+          "type": "String",
+          "required": true,
+          "description": "Module name"
+        },
+        "imports": {
+          "type": "Vec<String>",
+          "required": true,
+          "description": "Imported items"
+        }
+      }
+    },
+    "Metadata": {
+      "type": "type",
+      "properties": {
+        "author": {
+          "type": "Option<String>",
+          "required": true,
+          "description": "Author"
+        },
+        "repository": {
+          "type": "Option<String>",
+          "required": true,
+          "description": "Repository URL"
+        },
+        "created": {
+          "type": "Option<String>",
+          "required": true,
+          "description": "Creation date"
+        }
+      }
+    }
+  },
+  "dependencies": {}
+}

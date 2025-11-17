@@ -1,0 +1,27 @@
+{
+  "module": "error",
+  "version": "0.1.0",
+  "layer": "core",
+  "description": "Error types for Crucible operations",
+  "exports": {
+    "CrucibleError": {
+      "type": "enum",
+      "description": "Main error type for Crucible operations",
+      "values": [
+        "FileRead",
+        "FileWrite",
+        "ParseError",
+        "ValidationError",
+        "ConfigError",
+        "ModuleNotFound",
+        "DependencyError",
+        "CircularDependency"
+      ]
+    },
+    "Result": {
+      "type": "type",
+      "description": "Result type alias for Crucible operations"
+    }
+  },
+  "dependencies": {}
+}

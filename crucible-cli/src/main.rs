@@ -337,21 +337,22 @@ fn claude_init(mode_str: &str, _global: &bool, validation_str: &str) -> Result<(
     let parser = CrucibleParser::new(&crucible_path);
     let project = parser.parse_project()?;
 
-    // Create config
-    let config = IntegrationConfig::new(mode, &project.manifest.project.name, &project_root);
-
     // Create .claude directory structure
     let claude_dir = project_root.join(".claude");
     let crucible_claude_dir = claude_dir.join("crucible");
     std::fs::create_dir_all(&crucible_claude_dir)?;
 
+    // Create config with overrides
+    let mut config = IntegrationConfig::load_with_overrides(None)?;
+    config.mode = mode;
+
     // Generate and write files
     let context_gen = ContextGenerator::new(project, config.clone());
 
-    // Write instructions.md
+    // Write CRUCIBLE.md
     let instructions = context_gen.generate_instructions();
-    std::fs::write(claude_dir.join("instructions.md"), instructions)?;
-    println!("{} Created .claude/instructions.md", "✓".green());
+    std::fs::write(claude_dir.join("CRUCIBLE.md"), instructions)?;
+    println!("{} Created .claude/CRUCIBLE.md", "✓".green());
 
     // Write context.json
     let context_json = context_gen.generate_context_json()?;
@@ -367,8 +368,9 @@ fn claude_init(mode_str: &str, _global: &bool, validation_str: &str) -> Result<(
     println!("{} Created .claude/crucible/hooks.md", "✓".green());
 
     // Write config.json
-    config.write_claude_files(&project_root)?;
-    println!("{} Created .claude/crucible/config.json", "✓".green());
+    let config_path = crucible_claude_dir.join("claude.json");
+    config.to_file(&config_path)?;
+    println!("{} Created .claude/crucible/claude.json", "✓".green());
 
     println!();
     println!(
@@ -380,7 +382,7 @@ fn claude_init(mode_str: &str, _global: &bool, validation_str: &str) -> Result<(
     println!("  1. Start Claude Code in this directory");
     println!(
         "  2. Claude will automatically read the architecture from {}",
-        ".claude/instructions.md".cyan()
+        ".claude/CRUCIBLE.md".cyan()
     );
     println!("  3. Run {} to sync changes", "crucible claude sync".cyan());
 
@@ -505,11 +507,8 @@ fn claude_context(_format: &str) -> Result<()> {
     let parser = CrucibleParser::new(&PathBuf::from(".crucible"));
     let project = parser.parse_project()?;
 
-    let config = IntegrationConfig::new(
-        IntegrationMode::Enhanced,
-        &project.manifest.project.name,
-        &std::env::current_dir()?,
-    );
+    let mut config = IntegrationConfig::load_with_overrides(None)?;
+    config.mode = IntegrationMode::Enhanced;
     let context_gen = ContextGenerator::new(project, config);
 
     let context = context_gen.generate_context_json()?;

@@ -1,0 +1,319 @@
+{
+  "module": "performance",
+  "version": "0.1.0",
+  "layer": "core",
+  "description": "Performance optimization features including caching, incremental validation, and configuration management",
+  "exports": {
+    "ArchitectureCache": {
+      "type": "class",
+      "methods": {
+        "new": {
+          "inputs": [],
+          "returns": {
+            "type": "ArchitectureCache"
+          },
+          "throws": [],
+          "calls": [],
+          "effects": ["creates cache instance"]
+        },
+        "disabled": {
+          "inputs": [],
+          "returns": {
+            "type": "ArchitectureCache"
+          },
+          "throws": [],
+          "calls": [],
+          "effects": ["creates disabled cache instance"]
+        },
+        "set_enabled": {
+          "inputs": [
+            {
+              "name": "enabled",
+              "type": "boolean",
+              "optional": false,
+              "description": "Enable or disable caching"
+            }
+          ],
+          "returns": {
+            "type": "void"
+          },
+          "throws": [],
+          "calls": ["performance.ArchitectureCache.clear"],
+          "effects": ["modifies cache state", "may clear cache"]
+        },
+        "get_module": {
+          "inputs": [
+            {
+              "name": "path",
+              "type": "Path",
+              "optional": false,
+              "description": "Path to module file"
+            }
+          ],
+          "returns": {
+            "type": "Option<Module>"
+          },
+          "throws": ["CrucibleError"],
+          "calls": [],
+          "effects": ["reads file metadata", "checks timestamps"]
+        },
+        "cache_module": {
+          "inputs": [
+            {
+              "name": "path",
+              "type": "PathBuf",
+              "optional": false,
+              "description": "Path to module file"
+            },
+            {
+              "name": "module",
+              "type": "Module",
+              "optional": false,
+              "description": "Module to cache"
+            }
+          ],
+          "returns": {
+            "type": "Result<void>"
+          },
+          "throws": ["CrucibleError"],
+          "calls": [],
+          "effects": ["reads file metadata", "stores in cache"]
+        },
+        "get_project": {
+          "inputs": [
+            {
+              "name": "manifest_path",
+              "type": "Path",
+              "optional": false,
+              "description": "Path to manifest.json"
+            }
+          ],
+          "returns": {
+            "type": "Option<Project>"
+          },
+          "throws": ["CrucibleError"],
+          "calls": [],
+          "effects": ["reads file metadata", "checks timestamps"]
+        },
+        "cache_project": {
+          "inputs": [
+            {
+              "name": "manifest_path",
+              "type": "Path",
+              "optional": false,
+              "description": "Path to manifest.json"
+            },
+            {
+              "name": "project",
+              "type": "Project",
+              "optional": false,
+              "description": "Project to cache"
+            }
+          ],
+          "returns": {
+            "type": "Result<void>"
+          },
+          "throws": ["CrucibleError"],
+          "calls": [],
+          "effects": ["reads file metadata", "stores in cache"]
+        },
+        "clear": {
+          "inputs": [],
+          "returns": {
+            "type": "void"
+          },
+          "throws": [],
+          "calls": [],
+          "effects": ["clears all cached data"]
+        },
+        "stats": {
+          "inputs": [],
+          "returns": {
+            "type": "CacheStats"
+          },
+          "throws": [],
+          "calls": [],
+          "effects": []
+        }
+      }
+    },
+    "CacheStats": {
+      "type": "type",
+      "properties": {
+        "modules_cached": {
+          "type": "usize",
+          "required": true,
+          "description": "Number of modules in cache"
+        },
+        "project_cached": {
+          "type": "boolean",
+          "required": true,
+          "description": "Whether project is cached"
+        },
+        "enabled": {
+          "type": "boolean",
+          "required": true,
+          "description": "Whether caching is enabled"
+        }
+      }
+    },
+    "ChangeTracker": {
+      "type": "class",
+      "methods": {
+        "new": {
+          "inputs": [],
+          "returns": {
+            "type": "ChangeTracker"
+          },
+          "throws": [],
+          "calls": [],
+          "effects": ["creates tracker instance"]
+        },
+        "build_dependency_graph": {
+          "inputs": [
+            {
+              "name": "project",
+              "type": "Project",
+              "optional": false,
+              "description": "Project to analyze"
+            }
+          ],
+          "returns": {
+            "type": "void"
+          },
+          "throws": [],
+          "calls": [],
+          "effects": ["builds dependency graph"]
+        },
+        "detect_changes": {
+          "inputs": [
+            {
+              "name": "project",
+              "type": "Project",
+              "optional": false,
+              "description": "Current project"
+            },
+            {
+              "name": "root_path",
+              "type": "Path",
+              "optional": false,
+              "description": "Project root path"
+            }
+          ],
+          "returns": {
+            "type": "HashMap<string, boolean>"
+          },
+          "throws": [],
+          "calls": [],
+          "effects": ["reads file metadata", "detects changes"]
+        },
+        "get_affected_modules": {
+          "inputs": [
+            {
+              "name": "changed_modules",
+              "type": "HashMap<string, boolean>",
+              "optional": false,
+              "description": "Modules that changed"
+            }
+          ],
+          "returns": {
+            "type": "HashMap<string, boolean>"
+          },
+          "throws": [],
+          "calls": [],
+          "effects": ["analyzes dependencies"]
+        },
+        "update_timestamps": {
+          "inputs": [
+            {
+              "name": "validated_modules",
+              "type": "Vec<string>",
+              "optional": false,
+              "description": "Successfully validated modules"
+            }
+          ],
+          "returns": {
+            "type": "void"
+          },
+          "throws": [],
+          "calls": [],
+          "effects": ["updates internal timestamps"]
+        }
+      }
+    },
+    "GlobalConfig": {
+      "type": "type",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "required": true,
+          "description": "Whether integration is enabled"
+        },
+        "auto_discover": {
+          "type": "boolean",
+          "required": true,
+          "description": "Auto-discover projects"
+        },
+        "default_mode": {
+          "type": "IntegrationMode",
+          "required": true,
+          "description": "Default integration mode"
+        },
+        "default_validation_level": {
+          "type": "ValidationLevel",
+          "required": true,
+          "description": "Default validation severity"
+        },
+        "template_paths": {
+          "type": "Vec<String>",
+          "required": true,
+          "description": "Paths to template directories"
+        },
+        "performance": {
+          "type": "PerformanceConfig",
+          "required": true,
+          "description": "Performance settings"
+        }
+      }
+    },
+    "HashMap<string, boolean>": {
+      "type": "type",
+      "properties": {}
+    },
+    "Vec<string>": {
+      "type": "type",
+      "properties": {}
+    },
+    "PerformanceConfig": {
+      "type": "type",
+      "properties": {
+        "enable_caching": {
+          "type": "boolean",
+          "required": true,
+          "description": "Enable caching"
+        },
+        "cache_ttl_seconds": {
+          "type": "u64",
+          "required": true,
+          "description": "Cache TTL in seconds"
+        },
+        "lazy_loading": {
+          "type": "boolean",
+          "required": true,
+          "description": "Enable lazy loading"
+        },
+        "incremental_validation": {
+          "type": "boolean",
+          "required": true,
+          "description": "Enable incremental validation"
+        },
+        "max_parallel_modules": {
+          "type": "usize",
+          "required": true,
+          "description": "Max parallel module processing"
+        }
+      }
+    }
+  },
+  "dependencies": {}
+}

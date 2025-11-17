@@ -1,0 +1,88 @@
+{
+  "module": "generator",
+  "version": "0.1.0",
+  "layer": "infrastructure",
+  "description": "Code generation from architecture definitions",
+  "exports": {
+    "Generator": {
+      "type": "class",
+      "methods": {
+        "new": {
+          "inputs": [
+            {
+              "name": "project",
+              "type": "Project",
+              "optional": false,
+              "description": "Project to generate from"
+            }
+          ],
+          "returns": {
+            "type": "Generator"
+          },
+          "throws": [],
+          "calls": [],
+          "effects": ["creates generator instance"]
+        },
+        "generate": {
+          "inputs": [
+            {
+              "name": "output_dir",
+              "type": "Path",
+              "optional": false,
+              "description": "Output directory"
+            }
+          ],
+          "returns": {
+            "type": "Result<GenerationResult>"
+          },
+          "throws": ["CrucibleError"],
+          "calls": [
+            "generator.Generator.generate_module"
+          ],
+          "effects": ["generates code files"]
+        },
+        "generate_module": {
+          "inputs": [
+            {
+              "name": "module",
+              "type": "Module",
+              "optional": false,
+              "description": "Module to generate"
+            },
+            {
+              "name": "output_dir",
+              "type": "Path",
+              "optional": false,
+              "description": "Output directory"
+            }
+          ],
+          "returns": {
+            "type": "Result<Vec<String>>"
+          },
+          "throws": ["CrucibleError"],
+          "calls": [],
+          "effects": ["generates module code"]
+        }
+      }
+    },
+    "GenerationResult": {
+      "type": "type",
+      "properties": {
+        "files_generated": {
+          "type": "Vec<String>",
+          "required": true,
+          "description": "List of generated files"
+        },
+        "errors": {
+          "type": "Vec<String>",
+          "required": true,
+          "description": "Generation errors"
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "primitives": "0.1.0",
+    "types": "0.1.0"
+  }
+}

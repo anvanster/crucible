@@ -1,0 +1,62 @@
+{
+  "architecture": {
+    "pattern": "layered",
+    "layers": [
+      {
+        "name": "core",
+        "can_depend_on": []
+      },
+      {
+        "name": "infrastructure",
+        "can_depend_on": ["core"]
+      },
+      {
+        "name": "application",
+        "can_depend_on": ["core", "infrastructure"]
+      },
+      {
+        "name": "presentation",
+        "can_depend_on": ["core", "infrastructure", "application"]
+      }
+    ]
+  },
+  "rules": [
+    {
+      "id": "no-circular-dependencies",
+      "enabled": true,
+      "severity": "error",
+      "description": "Modules must not have circular dependencies"
+    },
+    {
+      "id": "respect-layer-boundaries",
+      "enabled": true,
+      "severity": "error",
+      "description": "Modules must respect architectural layer boundaries"
+    },
+    {
+      "id": "all-types-must-exist",
+      "enabled": true,
+      "severity": "error",
+      "description": "All referenced types must exist"
+    },
+    {
+      "id": "all-calls-must-exist",
+      "enabled": true,
+      "severity": "error",
+      "description": "All method calls must reference existing methods"
+    },
+    {
+      "id": "used-dependencies-declared",
+      "enabled": true,
+      "severity": "error",
+      "description": "All used modules must be declared in dependencies"
+    },
+    {
+      "id": "declared-dependencies-must-be-used",
+      "enabled": true,
+      "severity": "warning",
+      "description": "Declared dependencies should be used"
+    }
+  ],
+  "custom_rules": []
+}

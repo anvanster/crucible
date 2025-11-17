@@ -1,0 +1,247 @@
+{
+  "summary": {
+    "pattern": "layered",
+    "modules": 10,
+    "layers": 3,
+    "total_exports": 83,
+    "validation_mode": "enhanced"
+  },
+  "current_focus": null,
+  "layers": {
+    "application": {
+      "modules": [
+        "context"
+      ],
+      "can_use": [],
+      "forbidden": []
+    },
+    "core": {
+      "modules": [
+        "primitives",
+        "error",
+        "types",
+        "performance"
+      ],
+      "can_use": [],
+      "forbidden": []
+    },
+    "infrastructure": {
+      "modules": [
+        "cache",
+        "parser",
+        "validator",
+        "generator",
+        "config"
+      ],
+      "can_use": [],
+      "forbidden": []
+    }
+  },
+  "modules_compact": {
+    "performance": {
+      "layer": "core",
+      "deps": [],
+      "exports": [
+        "GlobalConfig",
+        "Vec<string>",
+        "HashMap<string, boolean>",
+        "PerformanceConfig",
+        "ChangeTracker",
+        "ArchitectureCache",
+        "CacheStats"
+      ],
+      "main_purpose": "Performance optimization features including caching, incremental validation, and configuration management"
+    },
+    "parser": {
+      "layer": "infrastructure",
+      "deps": [
+        "primitives",
+        "types",
+        "performance"
+      ],
+      "exports": [
+        "Parser"
+      ],
+      "main_purpose": "Parser for Crucible JSON files with caching support"
+    },
+    "error": {
+      "layer": "core",
+      "deps": [],
+      "exports": [
+        "Result",
+        "CrucibleError"
+      ],
+      "main_purpose": "Error types for Crucible operations"
+    },
+    "validator": {
+      "layer": "infrastructure",
+      "deps": [
+        "primitives",
+        "performance",
+        "types"
+      ],
+      "exports": [
+        "ValidationResult",
+        "ValidationIssue",
+        "HashMap<string, boolean>",
+        "Validator"
+      ],
+      "main_purpose": "Architecture validation engine with incremental validation support"
+    },
+    "primitives": {
+      "layer": "core",
+      "deps": [],
+      "exports": [
+        "Path",
+        "HashMap<String, String>",
+        "Result<Module>",
+        "Option<IntegrationMode>",
+        "Vec<String>",
+        "u64",
+        "Result<Vec<Module>>",
+        "Result<IntegrationConfig>",
+        "HashMap<String, Method>",
+        "Option<Rules>",
+        "Result<Project>",
+        "void",
+        "Vec<ValidationIssue>",
+        "Vec<Dependency>",
+        "String",
+        "HashMap<String, Export>",
+        "Option<Module>",
+        "Option<ValidationLevel>",
+        "Result<void>",
+        "Option<ArchitecturePattern>",
+        "Option<Metadata>",
+        "Result<Manifest>",
+        "Result<Vec<String>>",
+        "Option<String>",
+        "HashSet<String>",
+        "Option<Vec<ValidationIssue>>",
+        "Vec<Parameter>",
+        "HashMap<String, ValidationLevel>",
+        "PathBuf",
+        "Result<Rules>",
+        "boolean",
+        "Option<Project>",
+        "Result<GenerationResult>",
+        "HashMap<String, Property>",
+        "Option<GlobalConfig>",
+        "Vec<Module>",
+        "usize",
+        "HashMap<String, boolean>",
+        "Option<Path>"
+      ],
+      "main_purpose": "Primitive and standard library types"
+    },
+    "config": {
+      "layer": "infrastructure",
+      "deps": [
+        "types",
+        "performance",
+        "primitives"
+      ],
+      "exports": [
+        "IntegrationMode",
+        "ValidationLevel",
+        "IntegrationConfig",
+        "ValidationConfig"
+      ],
+      "main_purpose": "Configuration management with global config and environment variable support"
+    },
+    "generator": {
+      "layer": "infrastructure",
+      "deps": [
+        "primitives",
+        "types"
+      ],
+      "exports": [
+        "Generator",
+        "GenerationResult"
+      ],
+      "main_purpose": "Code generation from architecture definitions"
+    },
+    "types": {
+      "layer": "core",
+      "deps": [],
+      "exports": [
+        "ReturnType",
+        "Architecture",
+        "Severity",
+        "Method",
+        "Rules",
+        "Layer",
+        "CustomRule",
+        "Dependency",
+        "Metadata",
+        "ProjectConfig",
+        "Project",
+        "Property",
+        "Manifest",
+        "ArchitecturePattern",
+        "Module",
+        "Export",
+        "Language",
+        "ExportType",
+        "Rule",
+        "Parameter"
+      ],
+      "main_purpose": "Core type definitions matching the Crucible specification"
+    },
+    "cache": {
+      "layer": "infrastructure",
+      "deps": [
+        "primitives",
+        "types",
+        "error"
+      ],
+      "exports": [
+        "ArchitectureCache",
+        "CacheStats"
+      ],
+      "main_purpose": "Caching layer for parsed architecture definitions with timestamp-based invalidation"
+    },
+    "context": {
+      "layer": "application",
+      "deps": [
+        "error",
+        "types",
+        "config"
+      ],
+      "exports": [
+        "ContextSummary",
+        "ContextGenerator"
+      ],
+      "main_purpose": "Context generation for Claude Code integration with architecture-first instructions"
+    }
+  },
+  "key_rules": [
+    "no_circular_dependencies",
+    "respect_layer_boundaries",
+    "declare_all_dependencies",
+    "match_function_signatures",
+    "follow_naming_conventions"
+  ],
+  "naming_patterns": {
+    "services": "*Service",
+    "repositories": "*Repository",
+    "controllers": "*Controller",
+    "types": "PascalCase",
+    "functions": "camelCase"
+  },
+  "quick_reference": {
+    "validate": "crucible validate",
+    "sync": "crucible claude sync --from-code",
+    "check_module": "crucible validate <module>"
+  },
+  "optimization": {
+    "token_count": 0,
+    "compression_ratio": 0.73,
+    "excluded": [
+      "internal_functions",
+      "implementation_details",
+      "test_code"
+    ],
+    "focus_modules": []
+  }
+}

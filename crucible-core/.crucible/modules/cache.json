@@ -1,0 +1,185 @@
+{
+  "module": "cache",
+  "version": "0.1.0",
+  "layer": "infrastructure",
+  "description": "Caching layer for parsed architecture definitions with timestamp-based invalidation",
+  "exports": {
+    "ArchitectureCache": {
+      "type": "class",
+      "description": "Cache for parsed modules and projects",
+      "methods": {
+        "new": {
+          "inputs": [],
+          "returns": {
+            "type": "ArchitectureCache"
+          },
+          "throws": [],
+          "calls": [],
+          "effects": ["creates enabled cache"]
+        },
+        "disabled": {
+          "inputs": [],
+          "returns": {
+            "type": "ArchitectureCache"
+          },
+          "throws": [],
+          "calls": [],
+          "effects": ["creates disabled cache"]
+        },
+        "set_enabled": {
+          "inputs": [
+            {
+              "name": "enabled",
+              "type": "boolean",
+              "optional": false,
+              "description": "Enable or disable caching"
+            }
+          ],
+          "returns": {
+            "type": "void"
+          },
+          "throws": [],
+          "calls": [],
+          "effects": ["updates cache state", "clears cache if disabled"]
+        },
+        "get_module": {
+          "inputs": [
+            {
+              "name": "path",
+              "type": "Path",
+              "optional": false,
+              "description": "Path to module file"
+            }
+          ],
+          "returns": {
+            "type": "Result<Option<Module>>"
+          },
+          "throws": ["CrucibleError"],
+          "calls": [],
+          "effects": ["checks file timestamp", "returns cached module if valid"]
+        },
+        "cache_module": {
+          "inputs": [
+            {
+              "name": "path",
+              "type": "PathBuf",
+              "optional": false,
+              "description": "Path to module file"
+            },
+            {
+              "name": "module",
+              "type": "Module",
+              "optional": false,
+              "description": "Module to cache"
+            }
+          ],
+          "returns": {
+            "type": "Result<void>"
+          },
+          "throws": ["CrucibleError"],
+          "calls": [],
+          "effects": ["stores module with timestamp"]
+        },
+        "get_project": {
+          "inputs": [
+            {
+              "name": "manifest_path",
+              "type": "Path",
+              "optional": false,
+              "description": "Path to manifest file"
+            }
+          ],
+          "returns": {
+            "type": "Result<Option<Project>>"
+          },
+          "throws": ["CrucibleError"],
+          "calls": [],
+          "effects": ["checks file timestamp", "returns cached project if valid"]
+        },
+        "cache_project": {
+          "inputs": [
+            {
+              "name": "manifest_path",
+              "type": "Path",
+              "optional": false,
+              "description": "Path to manifest file"
+            },
+            {
+              "name": "project",
+              "type": "Project",
+              "optional": false,
+              "description": "Project to cache"
+            }
+          ],
+          "returns": {
+            "type": "Result<void>"
+          },
+          "throws": ["CrucibleError"],
+          "calls": [],
+          "effects": ["stores project with timestamp"]
+        },
+        "clear": {
+          "inputs": [],
+          "returns": {
+            "type": "void"
+          },
+          "throws": [],
+          "calls": [],
+          "effects": ["clears all cached data"]
+        },
+        "stats": {
+          "inputs": [],
+          "returns": {
+            "type": "CacheStats"
+          },
+          "throws": [],
+          "calls": [],
+          "effects": []
+        }
+      },
+      "properties": {
+        "modules": {
+          "type": "HashMap<PathBuf, tuple<Module, SystemTime>>",
+          "required": true,
+          "description": "Cached modules with timestamps"
+        },
+        "project": {
+          "type": "Option<tuple<Project, SystemTime>>",
+          "required": true,
+          "description": "Cached project with timestamp"
+        },
+        "enabled": {
+          "type": "boolean",
+          "required": true,
+          "description": "Whether caching is enabled"
+        }
+      }
+    },
+    "CacheStats": {
+      "type": "type",
+      "description": "Statistics about the cache",
+      "properties": {
+        "modules_cached": {
+          "type": "number",
+          "required": true,
+          "description": "Number of modules in cache"
+        },
+        "project_cached": {
+          "type": "boolean",
+          "required": true,
+          "description": "Whether project is cached"
+        },
+        "enabled": {
+          "type": "boolean",
+          "required": true,
+          "description": "Whether caching is enabled"
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "types": "0.1.0",
+    "error": "0.1.0",
+    "primitives": "0.1.0"
+  }
+}

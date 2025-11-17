@@ -1,6 +1,6 @@
 .codemender/
 logs/
-
+docs-integration/
 # Rust
 target/
 Cargo.lock

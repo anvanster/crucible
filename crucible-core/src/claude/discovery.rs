@@ -6,7 +6,7 @@ use std::path::Path;
 
 /// Architecture discovery engine
 pub struct ArchitectureDiscovery {
-    source_root: std::path::PathBuf,
+    _source_root: std::path::PathBuf,
     language: Language,
 }
 
@@ -14,7 +14,7 @@ impl ArchitectureDiscovery {
     /// Create a new discovery engine
     pub fn new(source_root: &Path, language: Language) -> Self {
         Self {
-            source_root: source_root.to_path_buf(),
+            _source_root: source_root.to_path_buf(),
             language,
         }
     }
@@ -67,6 +67,6 @@ mod tests {
     fn test_discovery_new() {
         let discovery = ArchitectureDiscovery::new(Path::new("/tmp/test"), Language::TypeScript);
 
-        assert_eq!(discovery.source_root, Path::new("/tmp/test"));
+        assert_eq!(discovery._source_root, Path::new("/tmp/test").to_path_buf());
     }
 }

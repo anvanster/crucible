@@ -361,16 +361,26 @@ mod tests {
 
     fn create_test_project() -> Project {
         Project {
-            name: "test".to_string(),
-            language: Language::TypeScript,
-            architecture_pattern: "layered".to_string(),
+            manifest: crate::types::Manifest {
+                version: "0.1.0".to_string(),
+                project: crate::types::ProjectConfig {
+                    name: "test".to_string(),
+                    language: Language::TypeScript,
+                    architecture_pattern: Some(crate::types::ArchitecturePattern::Layered),
+                },
+                modules: vec!["auth".to_string()],
+                strict_validation: false,
+                metadata: None,
+            },
             modules: vec![Module {
                 module: "auth".to_string(),
+                version: "1.0.0".to_string(),
                 description: None,
                 layer: Some("application".to_string()),
                 exports: HashMap::new(),
                 dependencies: HashMap::new(),
             }],
+            rules: None,
         }
     }
 
