@@ -279,10 +279,11 @@ impl IntegrationConfig {
 
     /// Save configuration to a file
     pub fn to_file(&self, path: &Path) -> Result<()> {
-        let content = serde_json::to_string_pretty(self).map_err(|e| CrucibleError::ParseError {
-            file: path.display().to_string(),
-            message: format!("Failed to serialize config: {}", e),
-        })?;
+        let content =
+            serde_json::to_string_pretty(self).map_err(|e| CrucibleError::ParseError {
+                file: path.display().to_string(),
+                message: format!("Failed to serialize config: {}", e),
+            })?;
 
         fs::write(path, content).map_err(|e| CrucibleError::FileRead {
             path: path.display().to_string(),
@@ -352,7 +353,8 @@ impl IntegrationConfig {
 
         // CRUCIBLE_INCREMENTAL
         if let Ok(incremental) = env::var("CRUCIBLE_INCREMENTAL") {
-            self.performance.incremental_validation = incremental.to_lowercase() == "true" || incremental == "1";
+            self.performance.incremental_validation =
+                incremental.to_lowercase() == "true" || incremental == "1";
         }
 
         // CRUCIBLE_MAX_TOKENS
@@ -405,17 +407,35 @@ mod tests {
 
     #[test]
     fn test_integration_mode_from_env() {
-        assert_eq!(IntegrationMode::from_env_str("basic"), Some(IntegrationMode::Basic));
-        assert_eq!(IntegrationMode::from_env_str("ENHANCED"), Some(IntegrationMode::Enhanced));
-        assert_eq!(IntegrationMode::from_env_str("strict"), Some(IntegrationMode::Strict));
+        assert_eq!(
+            IntegrationMode::from_env_str("basic"),
+            Some(IntegrationMode::Basic)
+        );
+        assert_eq!(
+            IntegrationMode::from_env_str("ENHANCED"),
+            Some(IntegrationMode::Enhanced)
+        );
+        assert_eq!(
+            IntegrationMode::from_env_str("strict"),
+            Some(IntegrationMode::Strict)
+        );
         assert_eq!(IntegrationMode::from_env_str("invalid"), None);
     }
 
     #[test]
     fn test_validation_level_from_env() {
-        assert_eq!(ValidationLevel::from_env_str("error"), Some(ValidationLevel::Error));
-        assert_eq!(ValidationLevel::from_env_str("WARNING"), Some(ValidationLevel::Warning));
-        assert_eq!(ValidationLevel::from_env_str("info"), Some(ValidationLevel::Info));
+        assert_eq!(
+            ValidationLevel::from_env_str("error"),
+            Some(ValidationLevel::Error)
+        );
+        assert_eq!(
+            ValidationLevel::from_env_str("WARNING"),
+            Some(ValidationLevel::Warning)
+        );
+        assert_eq!(
+            ValidationLevel::from_env_str("info"),
+            Some(ValidationLevel::Info)
+        );
         assert_eq!(ValidationLevel::from_env_str("invalid"), None);
     }
 

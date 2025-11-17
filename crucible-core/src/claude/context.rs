@@ -122,12 +122,16 @@ impl ContextGenerator {
         content.push_str("**This project uses architecture-first development. You MUST follow this workflow:**\n\n");
 
         content.push_str("### 🔴 STOP: Before Writing ANY Code\n\n");
-        content.push_str("**When adding features, changing APIs, or modifying module interfaces:**\n\n");
+        content.push_str(
+            "**When adding features, changing APIs, or modifying module interfaces:**\n\n",
+        );
 
         content.push_str("1. **UPDATE ARCHITECTURE FIRST**\n");
-        content.push_str("   - Edit `.crucible/modules/<module>.json` to add new methods/exports\n");
+        content
+            .push_str("   - Edit `.crucible/modules/<module>.json` to add new methods/exports\n");
         content.push_str("   - Create `.crucible/modules/<new-module>.json` for new modules\n");
-        content.push_str("   - Update dependencies, method signatures, and types in architecture\n");
+        content
+            .push_str("   - Update dependencies, method signatures, and types in architecture\n");
         content.push_str("   - Add new modules to `.crucible/manifest.json`\n\n");
 
         content.push_str("2. **VALIDATE ARCHITECTURE**\n");
@@ -152,13 +156,15 @@ impl ContextGenerator {
         content.push_str("### ❌ Anti-Pattern (Code-First)\n\n");
         content.push_str("```\n");
         content.push_str("1. Write code → 2. Compilation errors → 3. Fix code → \n");
-        content.push_str("4. Architecture violations → 5. Update architecture → 6. Fix code again\n");
+        content
+            .push_str("4. Architecture violations → 5. Update architecture → 6. Fix code again\n");
         content.push_str("Result: 7-10 iterations, 16,500 tokens wasted\n");
         content.push_str("```\n\n");
 
         content.push_str("### ✅ Correct Pattern (Architecture-First)\n\n");
         content.push_str("```\n");
-        content.push_str("1. Update architecture → 2. Validate architecture → 3. Fix violations → \n");
+        content
+            .push_str("1. Update architecture → 2. Validate architecture → 3. Fix violations → \n");
         content.push_str("4. Write code → 5. Build succeeds → 6. Tests pass\n");
         content.push_str("Result: 1-2 iterations, 4,500 tokens, zero violations\n");
         content.push_str("```\n\n");
@@ -370,7 +376,7 @@ impl ContextGenerator {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     use crate::types::ExportType;
     use std::collections::HashMap;
 
@@ -425,8 +431,8 @@ mod tests {
 
         assert!(instructions.contains("# Project Architecture Guidelines"));
         assert!(instructions.contains("auth Module"));
-        assert!(instructions.contains("✅ Before Writing Code"));
-        assert!(instructions.contains("🔄 After Writing Code"));
+        assert!(instructions.contains("CRITICAL: Architecture-First Development"));
+        assert!(instructions.contains("🔴 STOP: Before Writing ANY Code"));
     }
 
     #[test]

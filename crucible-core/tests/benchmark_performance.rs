@@ -1,8 +1,8 @@
 //! Performance benchmark to verify Stage 5 improvements
 
+use crucible_core::claude::config::IntegrationConfig;
 use crucible_core::parser::Parser;
 use crucible_core::validator::Validator;
-use crucible_core::claude::config::IntegrationConfig;
 use std::fs;
 use std::time::Instant;
 use tempfile::TempDir;
@@ -73,7 +73,11 @@ fn setup_test_project() -> TempDir {
     }"#;
 
     fs::write(modules_dir.join("core.json"), core_content).unwrap();
-    fs::write(modules_dir.join("infrastructure.json"), infrastructure_content).unwrap();
+    fs::write(
+        modules_dir.join("infrastructure.json"),
+        infrastructure_content,
+    )
+    .unwrap();
     fs::write(modules_dir.join("application.json"), application_content).unwrap();
 
     dir
@@ -128,9 +132,20 @@ fn test_performance_benchmarks() {
 
     let validation_speedup = full_time.as_secs_f64() / incremental_time.as_secs_f64();
 
-    println!("  Full validation:        {:?} ({} modules)", full_time, result1.validated_modules.len());
-    println!("  Incremental (no change): {:?} ({} modules)", incremental_time, result2.validated_modules.len());
-    println!("  Speedup:                {:.1}x faster", validation_speedup);
+    println!(
+        "  Full validation:        {:?} ({} modules)",
+        full_time,
+        result1.validated_modules.len()
+    );
+    println!(
+        "  Incremental (no change): {:?} ({} modules)",
+        incremental_time,
+        result2.validated_modules.len()
+    );
+    println!(
+        "  Speedup:                {:.1}x faster",
+        validation_speedup
+    );
     println!("  ✅ Incremental validation skips unchanged modules");
 
     // Benchmark 3: Configuration Loading Performance
@@ -161,9 +176,14 @@ fn test_performance_benchmarks() {
     // Summary
     println!("\n🎯 Performance Summary");
     println!("======================");
-    println!("✅ Caching provides {:.0}x speedup on repeated operations", speedup);
-    println!("✅ Incremental validation saves {:.0}% time on unchanged code",
-        (1.0 - incremental_time.as_secs_f64() / full_time.as_secs_f64()) * 100.0);
+    println!(
+        "✅ Caching provides {:.0}x speedup on repeated operations",
+        speedup
+    );
+    println!(
+        "✅ Incremental validation saves {:.0}% time on unchanged code",
+        (1.0 - incremental_time.as_secs_f64() / full_time.as_secs_f64()) * 100.0
+    );
     println!("✅ Configuration system adds minimal overhead");
     println!("\n🚀 Stage 5 Performance Optimizations Successfully Verified!");
 }

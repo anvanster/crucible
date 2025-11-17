@@ -96,10 +96,11 @@ impl Parser {
             source: e,
         })?;
 
-        let module: Module = serde_json::from_str(&content).map_err(|e| CrucibleError::ParseError {
-            file: format!("{}.json", name),
-            message: e.to_string(),
-        })?;
+        let module: Module =
+            serde_json::from_str(&content).map_err(|e| CrucibleError::ParseError {
+                file: format!("{}.json", name),
+                message: e.to_string(),
+            })?;
 
         // Cache the parsed module
         {

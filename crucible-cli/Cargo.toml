@@ -4,10 +4,22 @@ version.workspace = true
 authors.workspace = true
 edition.workspace = true
 license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+description.workspace = true
+keywords.workspace = true
+categories.workspace = true
+readme.workspace = true
 
 [[bin]]
 name = "crucible"
 path = "src/main.rs"
+
+[package.metadata.binstall]
+pkg-url = "{ repo }/releases/download/v{ version }/{ name }-{ target }{ archive-suffix }"
+bin-dir = "{ bin }{ binary-ext }"
+pkg-fmt = "tgz"
 
 [dependencies]
 crucible-core = { path = "../crucible-core" }

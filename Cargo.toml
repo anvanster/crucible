@@ -10,7 +10,13 @@ version = "0.1.0"
 authors = ["Crucible Contributors"]
 edition = "2021"
 license = "Apache-2.0"
-repository = "https://github.com/crucible-spec/crucible"
+repository = "https://github.com/anvanster/crucible"
+homepage = "https://github.com/anvanster/crucible"
+documentation = "https://github.com/anvanster/crucible/blob/main/README.md"
+description = "Architecture-first development framework for AI-native applications"
+keywords = ["architecture", "validation", "ai", "claude-code", "software-design"]
+categories = ["development-tools", "command-line-utilities"]
+readme = "README.md"
 
 [workspace.dependencies]
 serde = { version = "1.0", features = ["derive"] }

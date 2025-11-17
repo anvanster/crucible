@@ -90,7 +90,10 @@ impl ChangeTracker {
     }
 
     /// Get all modules affected by changes (changed + dependents)
-    pub fn get_affected_modules(&self, changed_modules: &HashMap<String, bool>) -> HashMap<String, bool> {
+    pub fn get_affected_modules(
+        &self,
+        changed_modules: &HashMap<String, bool>,
+    ) -> HashMap<String, bool> {
         let mut affected = changed_modules.clone();
         let mut to_process: Vec<String> = changed_modules.keys().cloned().collect();
 
@@ -146,7 +149,8 @@ impl Validator {
     /// Perform incremental validation - only validate changed modules and their dependents
     pub fn incremental_validate(&mut self, root_path: &Path) -> ValidationResult {
         // Extract data from tracker to avoid borrow issues
-        let (changed_modules, affected_modules) = if let Some(ref mut tracker) = self.change_tracker {
+        let (changed_modules, affected_modules) = if let Some(ref mut tracker) = self.change_tracker
+        {
             let changed = tracker.detect_changes(&self.project, root_path);
 
             if changed.is_empty() {
@@ -179,16 +183,19 @@ impl Validator {
         let mut result = self.validate_filtered(&filtered_project);
 
         // Add info about what was validated
-        result.info.insert(0, ValidationIssue {
-            rule: "incremental-validation".to_string(),
-            severity: Severity::Info,
-            message: format!(
-                "Incremental validation: {} modules changed, {} modules validated",
-                changed_modules.len(),
-                affected_modules.len()
-            ),
-            location: None,
-        });
+        result.info.insert(
+            0,
+            ValidationIssue {
+                rule: "incremental-validation".to_string(),
+                severity: Severity::Info,
+                message: format!(
+                    "Incremental validation: {} modules changed, {} modules validated",
+                    changed_modules.len(),
+                    affected_modules.len()
+                ),
+                location: None,
+            },
+        );
 
         // Update timestamps for successfully validated modules
         if result.valid {
@@ -202,7 +209,9 @@ impl Validator {
 
     /// Filter project to only include specified modules
     fn filter_project_modules(&self, module_names: &HashMap<String, bool>) -> Project {
-        let filtered_modules: Vec<_> = self.project.modules
+        let filtered_modules: Vec<_> = self
+            .project
+            .modules
             .iter()
             .filter(|m| module_names.contains_key(&m.module))
             .cloned()
@@ -228,7 +237,12 @@ impl Validator {
             errors: Vec::new(),
             warnings: Vec::new(),
             info: Vec::new(),
-            validated_modules: self.project.modules.iter().map(|m| m.module.clone()).collect(),
+            validated_modules: self
+                .project
+                .modules
+                .iter()
+                .map(|m| m.module.clone())
+                .collect(),
         };
 
         // Check for circular dependencies

@@ -251,7 +251,12 @@ fn test_change_tracker_dependencies() {
                 language: crucible_core::types::Language::Rust,
                 architecture_pattern: Some(crucible_core::types::ArchitecturePattern::Layered),
             },
-            modules: vec!["A".to_string(), "B".to_string(), "C".to_string(), "D".to_string()],
+            modules: vec![
+                "A".to_string(),
+                "B".to_string(),
+                "C".to_string(),
+                "D".to_string(),
+            ],
             strict_validation: false,
             metadata: None,
         },

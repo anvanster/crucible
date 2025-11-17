@@ -59,12 +59,10 @@ impl ArchitectureCache {
                 source: e,
             })?;
 
-            let modified = metadata
-                .modified()
-                .map_err(|e| CrucibleError::FileRead {
-                    path: path.display().to_string(),
-                    source: e,
-                })?;
+            let modified = metadata.modified().map_err(|e| CrucibleError::FileRead {
+                path: path.display().to_string(),
+                source: e,
+            })?;
 
             if modified <= *cached_time {
                 // Cache is still valid
@@ -86,12 +84,10 @@ impl ArchitectureCache {
             source: e,
         })?;
 
-        let modified = metadata
-            .modified()
-            .map_err(|e| CrucibleError::FileRead {
-                path: path.display().to_string(),
-                source: e,
-            })?;
+        let modified = metadata.modified().map_err(|e| CrucibleError::FileRead {
+            path: path.display().to_string(),
+            source: e,
+        })?;
 
         self.modules.insert(path, (module, modified));
         Ok(())
@@ -109,12 +105,10 @@ impl ArchitectureCache {
                 source: e,
             })?;
 
-            let modified = metadata
-                .modified()
-                .map_err(|e| CrucibleError::FileRead {
-                    path: manifest_path.display().to_string(),
-                    source: e,
-                })?;
+            let modified = metadata.modified().map_err(|e| CrucibleError::FileRead {
+                path: manifest_path.display().to_string(),
+                source: e,
+            })?;
 
             if modified <= *cached_time {
                 return Ok(Some(project.clone()));
@@ -135,12 +129,10 @@ impl ArchitectureCache {
             source: e,
         })?;
 
-        let modified = metadata
-            .modified()
-            .map_err(|e| CrucibleError::FileRead {
-                path: manifest_path.display().to_string(),
-                source: e,
-            })?;
+        let modified = metadata.modified().map_err(|e| CrucibleError::FileRead {
+            path: manifest_path.display().to_string(),
+            source: e,
+        })?;
 
         self.project = Some((project, modified));
         Ok(())
@@ -184,7 +176,7 @@ pub struct CacheStats {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     use std::collections::HashMap;
     use tempfile::TempDir;
 
