@@ -8,12 +8,13 @@ use std::fs;
 use std::path::Path;
 
 /// Integration mode determines the level of Claude Code engagement
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "lowercase")]
 pub enum IntegrationMode {
     /// Read-only architecture awareness
     Basic,
     /// Active validation and sync
+    #[default]
     Enhanced,
     /// Enforce all architectural rules
     Strict,
@@ -31,17 +32,12 @@ impl IntegrationMode {
     }
 }
 
-impl Default for IntegrationMode {
-    fn default() -> Self {
-        Self::Enhanced
-    }
-}
-
 /// Validation severity level
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "lowercase")]
 pub enum ValidationLevel {
     Error,
+    #[default]
     Warning,
     Info,
 }
@@ -58,25 +54,14 @@ impl ValidationLevel {
     }
 }
 
-impl Default for ValidationLevel {
-    fn default() -> Self {
-        Self::Warning
-    }
-}
-
 /// Output format for generated files
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum OutputFormat {
+    #[default]
     Json,
     Yaml,
     Markdown,
-}
-
-impl Default for OutputFormat {
-    fn default() -> Self {
-        Self::Json
-    }
 }
 
 /// Features configuration
