@@ -27,7 +27,7 @@ bin-dir = "{ bin }{ binary-ext }"
 pkg-fmt = "tgz"
 
 [dependencies]
-crucible-core = { version = "0.1.5", path = "../crucible-core" }
+crucible-core = { version = "0.1.6", path = "../crucible-core" }
 clap.workspace = true
 anyhow.workspace = true
 colored.workspace = true
