@@ -24,6 +24,63 @@ pub struct ValidationIssue {
     pub severity: Severity,
     pub message: String,
     pub location: Option<String>,
+    /// What was actually found (for comparison errors)
+    pub found: Option<String>,
+    /// What was expected (for comparison errors)
+    pub expected: Option<String>,
+    /// Suggestion for how to fix the issue
+    pub suggestion: Option<String>,
+    /// Link to relevant documentation
+    pub doc_link: Option<String>,
+}
+
+impl ValidationIssue {
+    /// Create a new validation issue with basic information
+    pub fn new(rule: String, severity: Severity, message: String, location: Option<String>) -> Self {
+        Self {
+            rule,
+            severity,
+            message,
+            location,
+            found: None,
+            expected: None,
+            suggestion: None,
+            doc_link: None,
+        }
+    }
+
+    /// Create a new validation issue with comparison information
+    pub fn with_comparison(
+        rule: String,
+        severity: Severity,
+        message: String,
+        location: Option<String>,
+        found: String,
+        expected: String,
+    ) -> Self {
+        Self {
+            rule,
+            severity,
+            message,
+            location,
+            found: Some(found),
+            expected: Some(expected),
+            suggestion: None,
+            doc_link: None,
+        }
+    }
+
+    /// Add a suggestion to the issue
+    pub fn with_suggestion(mut self, suggestion: String) -> Self {
+        self.suggestion = Some(suggestion);
+        self
+    }
+
+    /// Add a documentation link to the issue
+    pub fn with_doc_link(mut self, doc_link: String) -> Self {
+        self.doc_link = Some(doc_link);
+        self
+    }
 }
 
 /// Tracks module changes for incremental validation
@@ -165,12 +222,12 @@ impl Validator {
                     valid: true,
                     errors: Vec::new(),
                     warnings: Vec::new(),
-                    info: vec![ValidationIssue {
-                        rule: "incremental-validation".to_string(),
-                        severity: Severity::Info,
-                        message: "No modules changed since last validation".to_string(),
-                        location: None,
-                    }],
+                    info: vec![ValidationIssue::new(
+                        "incremental-validation".to_string(),
+                        Severity::Info,
+                        "No modules changed since last validation".to_string(),
+                        None,
+                    )],
                     validated_modules: Vec::new(),
                 };
             }
@@ -191,16 +248,16 @@ impl Validator {
         // Add info about what was validated
         result.info.insert(
             0,
-            ValidationIssue {
-                rule: "incremental-validation".to_string(),
-                severity: Severity::Info,
-                message: format!(
+            ValidationIssue::new(
+                "incremental-validation".to_string(),
+                Severity::Info,
+                format!(
                     "Incremental validation: {} modules changed, {} modules validated",
                     changed_modules.len(),
                     affected_modules.len()
                 ),
-                location: None,
-            },
+                None,
+            ),
         );
 
         // Update timestamps for successfully validated modules
@@ -367,12 +424,20 @@ impl Validator {
 
         // Check for cycles
         if is_cyclic_directed(&graph) {
-            issues.push(ValidationIssue {
-                rule: "no-circular-dependencies".to_string(),
-                severity: Severity::Error,
-                message: "Circular dependency detected in module graph".to_string(),
-                location: None,
-            });
+            issues.push(
+                ValidationIssue::new(
+                    "no-circular-dependencies".to_string(),
+                    Severity::Error,
+                    "Circular dependency detected in module graph".to_string(),
+                    None,
+                )
+                .with_suggestion(
+                    "Remove one of the dependencies creating the cycle. \
+                     Use 'crucible graph' to visualize the dependency structure."
+                        .to_string(),
+                )
+                .with_doc_link("https://github.com/anvanster/crucible#circular-dependencies".to_string()),
+            );
         }
 
         if issues.is_empty() {
@@ -409,14 +474,25 @@ impl Validator {
                         if let Some(to_layer) = module_layers.get(dep_name) {
                             // Check if this dependency is allowed
                             if !layer.can_depend_on.contains(to_layer) {
-                                issues.push(ValidationIssue {
-                                    rule: "respect-layer-boundaries".to_string(),
-                                    severity: Severity::Error,
-                                    message: format!(
-                                        "Layer '{from_layer}' cannot depend on layer '{to_layer}'"
-                                    ),
-                                    location: Some(format!("{} -> {}", module.module, dep_name)),
-                                });
+                                let allowed_layers = layer.can_depend_on.join(", ");
+                                issues.push(
+                                    ValidationIssue::with_comparison(
+                                        "respect-layer-boundaries".to_string(),
+                                        Severity::Error,
+                                        format!(
+                                            "Layer boundary violation: '{from_layer}' cannot depend on '{to_layer}'"
+                                        ),
+                                        Some(format!("{} -> {}", module.module, dep_name)),
+                                        format!("dependency on '{to_layer}' layer"),
+                                        format!("dependency on one of: {allowed_layers}"),
+                                    )
+                                    .with_suggestion(format!(
+                                        "Remove the dependency on '{dep_name}' from module '{}', \
+                                         or restructure your architecture to allow '{from_layer}' → '{to_layer}' dependencies.",
+                                        module.module
+                                    ))
+                                    .with_doc_link("https://github.com/anvanster/crucible/blob/main/docs/common-mistakes.md#layer-dependency-issues".to_string()),
+                                );
                             }
                         }
                     }
@@ -458,15 +534,34 @@ impl Validator {
                         // Check input types
                         for param in &method.inputs {
                             if !self.is_type_available(&param.param_type, &available_types) {
-                                issues.push(ValidationIssue {
-                                    rule: "all-types-must-exist".to_string(),
-                                    severity: Severity::Error,
-                                    message: format!("Type '{}' not found", param.param_type),
-                                    location: Some(format!(
-                                        "{}.{}.{}",
-                                        module.module, export_name, method_name
+                                // Try to find similar type names for suggestion
+                                let similar_types = self.find_similar_types(&param.param_type, &available_types);
+                                let mut issue = ValidationIssue::new(
+                                    "all-types-must-exist".to_string(),
+                                    Severity::Error,
+                                    format!("Type '{}' not found in parameter '{}'", param.param_type, param.name),
+                                    Some(format!(
+                                        "{}.{}.{} (parameter: {})",
+                                        module.module, export_name, method_name, param.name
                                     )),
-                                });
+                                )
+                                .with_doc_link("https://github.com/anvanster/crucible/blob/main/docs/type-system.md".to_string());
+
+                                if !similar_types.is_empty() {
+                                    issue = issue.with_suggestion(format!(
+                                        "Did you mean one of: {}? If using a type from another module, \
+                                         ensure it's listed in the dependencies field.",
+                                        similar_types.join(", ")
+                                    ));
+                                } else {
+                                    issue = issue.with_suggestion(
+                                        "Ensure the type is exported from a module listed in dependencies, \
+                                         or use a built-in type (string, number, boolean, void, Date)."
+                                            .to_string(),
+                                    );
+                                }
+
+                                issues.push(issue);
                             }
                         }
 
@@ -479,15 +574,34 @@ impl Validator {
                             } else {
                                 method.returns.return_type.clone()
                             };
-                            issues.push(ValidationIssue {
-                                rule: "all-types-must-exist".to_string(),
-                                severity: Severity::Error,
-                                message: format!("Type '{type_desc}' not found"),
-                                location: Some(format!(
-                                    "{}.{}.{}",
+
+                            let similar_types = self.find_similar_types(&type_desc, &available_types);
+                            let mut issue = ValidationIssue::new(
+                                "all-types-must-exist".to_string(),
+                                Severity::Error,
+                                format!("Return type '{type_desc}' not found"),
+                                Some(format!(
+                                    "{}.{}.{} (returns)",
                                     module.module, export_name, method_name
                                 )),
-                            });
+                            )
+                            .with_doc_link("https://github.com/anvanster/crucible/blob/main/docs/type-system.md".to_string());
+
+                            if !similar_types.is_empty() {
+                                issue = issue.with_suggestion(format!(
+                                    "Did you mean one of: {}? If using a type from another module, \
+                                     ensure it's listed in the dependencies field.",
+                                    similar_types.join(", ")
+                                ));
+                            } else {
+                                issue = issue.with_suggestion(
+                                    "Ensure the type is exported from a module listed in dependencies, \
+                                     or use a built-in type (string, number, boolean, void, Date, Promise<T>)."
+                                        .to_string(),
+                                );
+                            }
+
+                            issues.push(issue);
                         }
                     }
                 }
@@ -577,17 +691,25 @@ impl Validator {
                             let parts: Vec<&str> = call.split('.').collect();
 
                             if parts.len() < 2 {
-                                issues.push(ValidationIssue {
-                                    rule: "all-calls-must-exist".to_string(),
-                                    severity: Severity::Error,
-                                    message: format!(
-                                        "Invalid call format '{call}' (expected 'module.Export.method' or 'module.function')"
-                                    ),
-                                    location: Some(format!(
-                                        "{}.{}.{}",
-                                        module.module, export_name, method_name
-                                    )),
-                                });
+                                issues.push(
+                                    ValidationIssue::with_comparison(
+                                        "all-calls-must-exist".to_string(),
+                                        Severity::Error,
+                                        format!("Invalid call format: '{call}'"),
+                                        Some(format!(
+                                            "{}.{}.{}",
+                                            module.module, export_name, method_name
+                                        )),
+                                        format!("'{call}'"),
+                                        "'module.Export.method' or 'module.function'".to_string(),
+                                    )
+                                    .with_suggestion(
+                                        "Use format 'module.function' for function calls or \
+                                         'module.Export.method' for method calls."
+                                            .to_string(),
+                                    )
+                                    .with_doc_link("https://github.com/anvanster/crucible/blob/main/docs/schema-reference.md#method-calls".to_string()),
+                                );
                                 continue;
                             }
 
@@ -616,17 +738,24 @@ impl Validator {
                                 let target_method = parts[2];
                                 if let Some(self_methods) = &export.methods {
                                     if !self_methods.contains_key(target_method) {
-                                        issues.push(ValidationIssue {
-                                            rule: "all-calls-must-exist".to_string(),
-                                            severity: Severity::Error,
-                                            message: format!(
-                                                "Method '{target_method}' not found on '{export_name}'"
-                                            ),
-                                            location: Some(format!(
-                                                "{}.{}.{}",
-                                                module.module, export_name, method_name
-                                            )),
-                                        });
+                                        issues.push(
+                                            ValidationIssue::new(
+                                                "all-calls-must-exist".to_string(),
+                                                Severity::Error,
+                                                format!(
+                                                    "Method '{target_method}' not found on '{export_name}'"
+                                                ),
+                                                Some(format!(
+                                                    "{}.{}.{}",
+                                                    module.module, export_name, method_name
+                                                )),
+                                            )
+                                            .with_suggestion(format!(
+                                                "Ensure '{target_method}' is defined as a method in the '{}' export.",
+                                                export_name
+                                            ))
+                                            .with_doc_link("https://github.com/anvanster/crucible/blob/main/docs/schema-reference.md#method-calls".to_string()),
+                                        );
                                     }
                                 }
                                 continue;
@@ -637,15 +766,22 @@ impl Validator {
                                 // Function call: module.function
                                 let full_name = format!("{target_module}.{target_export}");
                                 if !available_exports.contains_key(&full_name) {
-                                    issues.push(ValidationIssue {
-                                        rule: "all-calls-must-exist".to_string(),
-                                        severity: Severity::Error,
-                                        message: format!("Call target '{call}' not found"),
-                                        location: Some(format!(
-                                            "{}.{}.{}",
-                                            module.module, export_name, method_name
-                                        )),
-                                    });
+                                    issues.push(
+                                        ValidationIssue::new(
+                                            "all-calls-must-exist".to_string(),
+                                            Severity::Error,
+                                            format!("Call target '{call}' not found"),
+                                            Some(format!(
+                                                "{}.{}.{}",
+                                                module.module, export_name, method_name
+                                            )),
+                                        )
+                                        .with_suggestion(format!(
+                                            "Ensure '{target_export}' is exported from module '{target_module}' \
+                                             and '{target_module}' is listed in dependencies."
+                                        ))
+                                        .with_doc_link("https://github.com/anvanster/crucible/blob/main/docs/schema-reference.md#dependencies".to_string()),
+                                    );
                                 }
                             } else if parts.len() == 3 {
                                 // Method call: module.Export.method
@@ -654,41 +790,65 @@ impl Validator {
 
                                 if let Some(export_methods) = available_exports.get(&full_export) {
                                     if !export_methods.contains_key(target_method) {
-                                        issues.push(ValidationIssue {
-                                            rule: "all-calls-must-exist".to_string(),
-                                            severity: Severity::Error,
-                                            message: format!(
-                                                "Method '{target_method}' not found on '{target_module}.{target_export}'"
+                                        issues.push(
+                                            ValidationIssue::new(
+                                                "all-calls-must-exist".to_string(),
+                                                Severity::Error,
+                                                format!(
+                                                    "Method '{target_method}' not found on '{target_module}.{target_export}'"
+                                                ),
+                                                Some(format!(
+                                                    "{}.{}.{}",
+                                                    module.module, export_name, method_name
+                                                )),
+                                            )
+                                            .with_suggestion(format!(
+                                                "Ensure '{target_method}' is defined as a method in export '{}' of module '{}'.",
+                                                target_export, target_module
+                                            ))
+                                            .with_doc_link("https://github.com/anvanster/crucible/blob/main/docs/schema-reference.md#methods".to_string()),
+                                        );
+                                    }
+                                } else {
+                                    issues.push(
+                                        ValidationIssue::new(
+                                            "all-calls-must-exist".to_string(),
+                                            Severity::Error,
+                                            format!(
+                                                "Export '{target_module}.{target_export}' not found"
                                             ),
-                                            location: Some(format!(
+                                            Some(format!(
                                                 "{}.{}.{}",
                                                 module.module, export_name, method_name
                                             )),
-                                        });
-                                    }
-                                } else {
-                                    issues.push(ValidationIssue {
-                                        rule: "all-calls-must-exist".to_string(),
-                                        severity: Severity::Error,
-                                        message: format!(
-                                            "Export '{target_module}.{target_export}' not found"
-                                        ),
-                                        location: Some(format!(
+                                        )
+                                        .with_suggestion(format!(
+                                            "Ensure '{target_export}' is exported from module '{target_module}' \
+                                             and '{target_module}' is listed in dependencies."
+                                        ))
+                                        .with_doc_link("https://github.com/anvanster/crucible/blob/main/docs/schema-reference.md#dependencies".to_string()),
+                                    );
+                                }
+                            } else {
+                                issues.push(
+                                    ValidationIssue::with_comparison(
+                                        "all-calls-must-exist".to_string(),
+                                        Severity::Error,
+                                        format!("Invalid call format: '{call}'"),
+                                        Some(format!(
                                             "{}.{}.{}",
                                             module.module, export_name, method_name
                                         )),
-                                    });
-                                }
-                            } else {
-                                issues.push(ValidationIssue {
-                                    rule: "all-calls-must-exist".to_string(),
-                                    severity: Severity::Error,
-                                    message: format!("Invalid call format '{call}'"),
-                                    location: Some(format!(
-                                        "{}.{}.{}",
-                                        module.module, export_name, method_name
-                                    )),
-                                });
+                                        format!("'{call}'"),
+                                        "'module.function' or 'module.Export.method'".to_string(),
+                                    )
+                                    .with_suggestion(
+                                        "Use format 'module.function' for function calls or \
+                                         'module.Export.method' for method calls."
+                                            .to_string(),
+                                    )
+                                    .with_doc_link("https://github.com/anvanster/crucible/blob/main/docs/schema-reference.md#method-calls".to_string()),
+                                );
                             }
                         }
                     }
@@ -730,14 +890,22 @@ impl Validator {
             // Check that all used modules are in dependencies
             for used_module in used_modules {
                 if !module.dependencies.contains_key(&used_module) {
-                    issues.push(ValidationIssue {
-                        rule: "used-dependencies-declared".to_string(),
-                        severity: Severity::Error,
-                        message: format!(
-                            "Module '{used_module}' is used but not declared in dependencies"
-                        ),
-                        location: Some(module.module.clone()),
-                    });
+                    issues.push(
+                        ValidationIssue::new(
+                            "used-dependencies-declared".to_string(),
+                            Severity::Error,
+                            format!(
+                                "Module '{used_module}' is used but not declared in dependencies"
+                            ),
+                            Some(module.module.clone()),
+                        )
+                        .with_suggestion(format!(
+                            "Add '{used_module}' to the dependencies field in module '{}'.\n\
+                             Example: \"dependencies\": {{\"{}user\": \"ExportName\", ... }}",
+                            module.module, used_module
+                        ))
+                        .with_doc_link("https://github.com/anvanster/crucible/blob/main/docs/schema-reference.md#dependencies".to_string()),
+                    );
                 }
             }
         }
@@ -772,12 +940,20 @@ impl Validator {
             // Check for unused dependencies
             for dep_name in module.dependencies.keys() {
                 if !used_modules.contains(dep_name) {
-                    issues.push(ValidationIssue {
-                        rule: "declared-dependencies-must-be-used".to_string(),
-                        severity: Severity::Warning,
-                        message: format!("Dependency '{dep_name}' is declared but not used"),
-                        location: Some(module.module.clone()),
-                    });
+                    issues.push(
+                        ValidationIssue::new(
+                            "declared-dependencies-must-be-used".to_string(),
+                            Severity::Warning,
+                            format!("Dependency '{dep_name}' is declared but not used"),
+                            Some(module.module.clone()),
+                        )
+                        .with_suggestion(format!(
+                            "Remove '{dep_name}' from the dependencies field in module '{}', \
+                             or add a method call that uses it.",
+                            module.module
+                        ))
+                        .with_doc_link("https://github.com/anvanster/crucible/blob/main/docs/schema-reference.md#dependencies".to_string()),
+                    );
                 }
             }
         }
@@ -788,4 +964,58 @@ impl Validator {
             Some(issues)
         }
     }
+
+    /// Find type names similar to the given type (for suggestions)
+    /// Uses simple Levenshtein distance for fuzzy matching
+    fn find_similar_types(
+        &self,
+        target_type: &str,
+        available_types: &HashMap<String, bool>,
+    ) -> Vec<String> {
+        let mut candidates: Vec<(String, usize)> = available_types
+            .keys()
+            .filter_map(|type_name| {
+                let distance = levenshtein_distance(target_type, type_name);
+                // Only suggest if distance is small relative to type name length
+                if distance <= 3 && distance < target_type.len() / 2 {
+                    Some((type_name.clone(), distance))
+                } else {
+                    None
+                }
+            })
+            .collect();
+
+        // Sort by distance (closest first) and take top 3
+        candidates.sort_by_key(|(_, dist)| *dist);
+        candidates.into_iter().take(3).map(|(name, _)| name).collect()
+    }
+}
+
+/// Calculate Levenshtein distance between two strings
+fn levenshtein_distance(s1: &str, s2: &str) -> usize {
+    let len1 = s1.chars().count();
+    let len2 = s2.chars().count();
+    let mut matrix = vec![vec![0; len2 + 1]; len1 + 1];
+
+    for i in 0..=len1 {
+        matrix[i][0] = i;
+    }
+    for j in 0..=len2 {
+        matrix[0][j] = j;
+    }
+
+    let s1_chars: Vec<char> = s1.chars().collect();
+    let s2_chars: Vec<char> = s2.chars().collect();
+
+    for i in 1..=len1 {
+        for j in 1..=len2 {
+            let cost = if s1_chars[i - 1] == s2_chars[j - 1] { 0 } else { 1 };
+            matrix[i][j] = std::cmp::min(
+                std::cmp::min(matrix[i - 1][j] + 1, matrix[i][j - 1] + 1),
+                matrix[i - 1][j - 1] + cost,
+            );
+        }
+    }
+
+    matrix[len1][len2]
 }

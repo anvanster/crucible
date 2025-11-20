@@ -941,9 +941,29 @@ fn validate_project(path: &Path, strict: bool) -> Result<()> {
     // Display results
     for error in &result.errors {
         println!("{} {}: {}", "✗".red(), error.rule.bold(), error.message);
+
         if let Some(location) = &error.location {
-            println!("    at {}", location.dimmed());
+            println!("    {} {}", "at".dimmed(), location.cyan());
         }
+
+        // Show found vs expected if available
+        if let (Some(found), Some(expected)) = (&error.found, &error.expected) {
+            println!("    {} {}", "Found:   ".dimmed(), found.yellow());
+            println!("    {} {}", "Expected:".dimmed(), expected.green());
+        }
+
+        // Show suggestion if available
+        if let Some(suggestion) = &error.suggestion {
+            println!();
+            println!("    {} {}", "Suggestion:".cyan().bold(), suggestion);
+        }
+
+        // Show documentation link if available
+        if let Some(doc_link) = &error.doc_link {
+            println!("    {} {}", "See:".dimmed(), doc_link.blue().underline());
+        }
+
+        println!(); // Add spacing between errors
     }
 
     for warning in &result.warnings {
@@ -954,9 +974,21 @@ fn validate_project(path: &Path, strict: bool) -> Result<()> {
                 warning.rule.bold(),
                 warning.message
             );
+
             if let Some(location) = &warning.location {
-                println!("    at {}", location.dimmed());
+                println!("    {} {}", "at".dimmed(), location.cyan());
             }
+
+            // Show suggestion for warnings too
+            if let Some(suggestion) = &warning.suggestion {
+                println!("    {} {}", "Suggestion:".cyan().bold(), suggestion);
+            }
+
+            if let Some(doc_link) = &warning.doc_link {
+                println!("    {} {}", "See:".dimmed(), doc_link.blue().underline());
+            }
+
+            println!(); // Add spacing
         }
     }
 
