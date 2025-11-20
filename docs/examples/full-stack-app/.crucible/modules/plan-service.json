@@ -1,0 +1,36 @@
+{
+  "module": "plan-service",
+  "version": "1.0.0",
+  "layer": "application",
+  "description": "Plan management service",
+  "exports": {
+    "PlanService": {
+      "type": "class",
+      "methods": {
+        "createPlan": {
+          "inputs": [
+            {"name": "projectPath", "type": "string"},
+            {"name": "specId", "type": "string"},
+            {"name": "content", "type": "string"}
+          ],
+          "returns": {"type": "Promise<void>"}
+        },
+        "loadPlan": {
+          "inputs": [
+            {"name": "projectPath", "type": "string"},
+            {"name": "specId", "type": "string"}
+          ],
+          "returns": {"type": "Promise<string>"}
+        },
+        "parsePlan": {
+          "inputs": [{"name": "content", "type": "string"}],
+          "returns": {"type": "Chapter[]"}
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "chapter": "Chapter",
+    "file-storage": "FileStorage"
+  }
+}

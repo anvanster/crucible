@@ -1,0 +1,55 @@
+{
+  "module": "project-browser-ui",
+  "version": "1.0.0",
+  "layer": "presentation",
+  "description": "Project browsing and management UI component",
+  "exports": {
+    "ProjectBrowser": {
+      "type": "function",
+      "inputs": [
+        {"name": "props", "type": "ProjectBrowserProps"}
+      ],
+      "returns": {"type": "JSX.Element"}
+    },
+    "ProjectBrowserProps": {
+      "type": "interface",
+      "properties": {
+        "onProjectSelect": {"type": "(path: string) => void"},
+        "onCreateProject": {"type": "() => void"}
+      }
+    },
+    "ProjectCard": {
+      "type": "function",
+      "inputs": [
+        {"name": "props", "type": "ProjectCardProps"}
+      ],
+      "returns": {"type": "JSX.Element"}
+    },
+    "ProjectCardProps": {
+      "type": "interface",
+      "properties": {
+        "projectPath": {"type": "string"},
+        "projectInfo": {"type": "ProjectInfo"},
+        "onClick": {"type": "() => void"}
+      }
+    },
+    "CreateProjectModal": {
+      "type": "function",
+      "inputs": [
+        {"name": "props", "type": "CreateProjectModalProps"}
+      ],
+      "returns": {"type": "JSX.Element"}
+    },
+    "CreateProjectModalProps": {
+      "type": "interface",
+      "properties": {
+        "onClose": {"type": "() => void"},
+        "onCreate": {"type": "(name: string, path: string) => void"}
+      }
+    }
+  },
+  "dependencies": {
+    "project-service": "ProjectService",
+    "project-config": "ProjectInfo"
+  }
+}

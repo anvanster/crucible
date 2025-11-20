@@ -1,0 +1,27 @@
+{
+  "module": "specify-command",
+  "version": "1.0.0",
+  "layer": "application",
+  "description": "Generate specification from story description command",
+  "exports": {
+    "SpecifyCommand": {
+      "type": "class",
+      "methods": {
+        "execute": {
+          "inputs": [],
+          "returns": {"type": "Promise<void>"}
+        },
+        "generateSpecification": {
+          "inputs": [{"name": "description", "type": "string"}],
+          "returns": {"type": "Promise<string>"}
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "spec-service": "SpecService",
+    "constitution-service": "ConstitutionService",
+    "claude-client": "ClaudeClient",
+    "file-storage": "FileStorage"
+  }
+}

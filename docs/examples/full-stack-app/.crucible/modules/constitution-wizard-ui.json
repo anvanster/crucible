@@ -1,0 +1,52 @@
+{
+  "module": "constitution-wizard-ui",
+  "version": "1.0.0",
+  "layer": "presentation",
+  "description": "Constitution creation wizard UI component",
+  "exports": {
+    "ConstitutionWizard": {
+      "type": "function",
+      "inputs": [
+        {"name": "props", "type": "ConstitutionWizardProps"}
+      ],
+      "returns": {"type": "JSX.Element"}
+    },
+    "ConstitutionWizardProps": {
+      "type": "interface",
+      "properties": {
+        "projectPath": {"type": "string"},
+        "onComplete": {"type": "() => void"},
+        "onCancel": {"type": "() => void"}
+      }
+    },
+    "ConstitutionEditor": {
+      "type": "function",
+      "inputs": [
+        {"name": "props", "type": "ConstitutionEditorProps"}
+      ],
+      "returns": {"type": "JSX.Element"}
+    },
+    "ConstitutionEditorProps": {
+      "type": "interface",
+      "properties": {
+        "projectPath": {"type": "string"},
+        "constitution": {"type": "string"},
+        "onSave": {"type": "() => void"},
+        "onCancel": {"type": "() => void"}
+      }
+    },
+    "WizardStep": {
+      "type": "interface",
+      "properties": {
+        "title": {"type": "string"},
+        "question": {"type": "string"},
+        "placeholder": {"type": "string"},
+        "field": {"type": "string"}
+      }
+    }
+  },
+  "dependencies": {
+    "constitution-service": "ConstitutionService",
+    "constitution-command": "ConstitutionCommand"
+  }
+}

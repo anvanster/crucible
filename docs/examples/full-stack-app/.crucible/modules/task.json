@@ -1,0 +1,39 @@
+{
+  "module": "task",
+  "version": "1.0.0",
+  "layer": "domain",
+  "description": "Task entity for actionable writing and research tasks",
+  "exports": {
+    "Task": {
+      "type": "interface",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "task_type": {
+          "type": "TaskType"
+        },
+        "chapter": {
+          "type": "number | null"
+        },
+        "completed": {
+          "type": "boolean"
+        },
+        "created": {
+          "type": "Date"
+        }
+      }
+    },
+    "TaskType": {
+      "type": "enum",
+      "values": ["Writing", "Research", "Validation", "Revision"]
+    }
+  },
+  "dependencies": {}
+}

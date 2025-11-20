@@ -1,0 +1,22 @@
+{
+  "module": "analyze-command",
+  "version": "1.0.0",
+  "layer": "application",
+  "description": "Analyze project structure and pacing command",
+  "exports": {
+    "AnalyzeCommand": {
+      "type": "class",
+      "methods": {
+        "execute": {
+          "inputs": [],
+          "returns": {"type": "Promise<void>"}
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "analysis-service": "AnalysisService",
+    "pacing-analyzer": "PacingAnalyzer",
+    "spec-service": "SpecService"
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "module": "check-command",
+  "version": "1.0.0",
+  "layer": "application",
+  "description": "Check consistency, plot, and characters command",
+  "exports": {
+    "CheckConsistencyCommand": {
+      "type": "class",
+      "methods": {
+        "execute": {
+          "inputs": [],
+          "returns": {"type": "Promise<void>"}
+        }
+      }
+    },
+    "CheckPlotCommand": {
+      "type": "class",
+      "methods": {
+        "execute": {
+          "inputs": [],
+          "returns": {"type": "Promise<void>"}
+        }
+      }
+    },
+    "CheckCharactersCommand": {
+      "type": "class",
+      "methods": {
+        "execute": {
+          "inputs": [],
+          "returns": {"type": "Promise<void>"}
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "analysis-service": "AnalysisService",
+    "consistency-checker": "ConsistencyChecker",
+    "consistency-issue": "ConsistencyReport"
+  }
+}

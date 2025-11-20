@@ -1,0 +1,41 @@
+{
+  "module": "file-storage",
+  "version": "1.0.0",
+  "layer": "infrastructure",
+  "description": "File system operations and storage management",
+  "exports": {
+    "FileStorage": {
+      "type": "class",
+      "methods": {
+        "readFile": {
+          "inputs": [{"name": "path", "type": "string"}],
+          "returns": {"type": "Promise<string>"}
+        },
+        "writeFile": {
+          "inputs": [
+            {"name": "path", "type": "string"},
+            {"name": "content", "type": "string"}
+          ],
+          "returns": {"type": "Promise<void>"}
+        },
+        "exists": {
+          "inputs": [{"name": "path", "type": "string"}],
+          "returns": {"type": "Promise<boolean>"}
+        },
+        "createDirectory": {
+          "inputs": [{"name": "path", "type": "string"}],
+          "returns": {"type": "Promise<void>"}
+        },
+        "listFiles": {
+          "inputs": [{"name": "directory", "type": "string"}],
+          "returns": {"type": "Promise<string[]>"}
+        },
+        "deleteFile": {
+          "inputs": [{"name": "path", "type": "string"}],
+          "returns": {"type": "Promise<void>"}
+        }
+      }
+    }
+  },
+  "dependencies": {}
+}

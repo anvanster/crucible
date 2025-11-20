@@ -1,0 +1,52 @@
+{
+  "module": "chapter",
+  "version": "1.0.0",
+  "layer": "domain",
+  "description": "Chapter structure with scenes and word count targets",
+  "exports": {
+    "Chapter": {
+      "type": "interface",
+      "properties": {
+        "number": {
+          "type": "number"
+        },
+        "title": {
+          "type": "string"
+        },
+        "pov": {
+          "type": "string | null"
+        },
+        "target_word_count": {
+          "type": "number"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "scenes": {
+          "type": "Scene[]"
+        }
+      }
+    },
+    "Scene": {
+      "type": "interface",
+      "properties": {
+        "number": {
+          "type": "number"
+        },
+        "description": {
+          "type": "string"
+        },
+        "target_word_count": {
+          "type": "number"
+        },
+        "location": {
+          "type": "string | null"
+        },
+        "characters": {
+          "type": "string[]"
+        }
+      }
+    }
+  },
+  "dependencies": {}
+}

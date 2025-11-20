@@ -1,0 +1,27 @@
+{
+  "module": "plan-command",
+  "version": "1.0.0",
+  "layer": "application",
+  "description": "Generate implementation plan from specification command",
+  "exports": {
+    "PlanCommand": {
+      "type": "class",
+      "methods": {
+        "execute": {
+          "inputs": [],
+          "returns": {"type": "Promise<void>"}
+        },
+        "generatePlan": {
+          "inputs": [{"name": "approach", "type": "string"}],
+          "returns": {"type": "Promise<string>"}
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "plan-service": "PlanService",
+    "spec-service": "SpecService",
+    "claude-client": "ClaudeClient",
+    "file-storage": "FileStorage"
+  }
+}

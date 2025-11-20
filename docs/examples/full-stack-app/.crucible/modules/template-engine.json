@@ -1,0 +1,33 @@
+{
+  "module": "template-engine",
+  "version": "1.0.0",
+  "layer": "infrastructure",
+  "description": "Template loading and rendering engine",
+  "exports": {
+    "TemplateEngine": {
+      "type": "class",
+      "methods": {
+        "loadTemplate": {
+          "inputs": [{"name": "name", "type": "TemplateName"}],
+          "returns": {"type": "Promise<string>"}
+        },
+        "renderTemplate": {
+          "inputs": [
+            {"name": "template", "type": "string"},
+            {"name": "variables", "type": "Record<string, any>"}
+          ],
+          "returns": {"type": "string"}
+        },
+        "getBuiltinTemplates": {
+          "inputs": [],
+          "returns": {"type": "TemplateName[]"}
+        }
+      }
+    },
+    "TemplateName": {
+      "type": "enum",
+      "values": ["Constitution", "Specification", "Plan", "Tasks", "GitIgnore"]
+    }
+  },
+  "dependencies": {}
+}

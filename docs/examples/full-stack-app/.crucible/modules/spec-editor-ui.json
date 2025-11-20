@@ -1,0 +1,73 @@
+{
+  "module": "spec-editor-ui",
+  "version": "1.0.0",
+  "layer": "presentation",
+  "description": "Specification editor UI component",
+  "exports": {
+    "SpecEditor": {
+      "type": "function",
+      "inputs": [
+        {"name": "props", "type": "SpecEditorProps"}
+      ],
+      "returns": {"type": "JSX.Element"}
+    },
+    "SpecEditorProps": {
+      "type": "interface",
+      "properties": {
+        "projectPath": {"type": "string"},
+        "specId": {"type": "string"},
+        "onSave": {"type": "(content: string) => void"}
+      }
+    },
+    "SpecList": {
+      "type": "function",
+      "inputs": [
+        {"name": "props", "type": "SpecListProps"}
+      ],
+      "returns": {"type": "JSX.Element"}
+    },
+    "SpecListProps": {
+      "type": "interface",
+      "properties": {
+        "specs": {"type": "SpecInfo[]"},
+        "onSpecSelect": {"type": "(specId: string) => void"},
+        "onCreateSpec": {"type": "() => void"}
+      }
+    },
+    "SpecifyDialog": {
+      "type": "function",
+      "inputs": [
+        {"name": "props", "type": "SpecifyDialogProps"}
+      ],
+      "returns": {"type": "JSX.Element"}
+    },
+    "SpecifyDialogProps": {
+      "type": "interface",
+      "properties": {
+        "projectPath": {"type": "string"},
+        "onComplete": {"type": "(specId: string) => void"},
+        "onCancel": {"type": "() => void"}
+      }
+    },
+    "MarkdownEditor": {
+      "type": "function",
+      "inputs": [
+        {"name": "props", "type": "MarkdownEditorProps"}
+      ],
+      "returns": {"type": "JSX.Element"}
+    },
+    "MarkdownEditorProps": {
+      "type": "interface",
+      "properties": {
+        "content": {"type": "string"},
+        "onChange": {"type": "(content: string) => void"},
+        "readOnly": {"type": "boolean"}
+      }
+    }
+  },
+  "dependencies": {
+    "spec-service": "SpecService",
+    "spec-info": "SpecInfo",
+    "specify-command": "SpecifyCommand"
+  }
+}

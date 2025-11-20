@@ -1,0 +1,86 @@
+{
+  "module": "plan-view-ui",
+  "version": "1.0.0",
+  "layer": "presentation",
+  "description": "Plan visualization UI component",
+  "exports": {
+    "PlanView": {
+      "type": "function",
+      "inputs": [
+        {"name": "props", "type": "PlanViewProps"}
+      ],
+      "returns": {"type": "JSX.Element"}
+    },
+    "PlanViewProps": {
+      "type": "interface",
+      "properties": {
+        "projectPath": {"type": "string"},
+        "specId": {"type": "string"}
+      }
+    },
+    "TimelineView": {
+      "type": "function",
+      "inputs": [
+        {"name": "props", "type": "TimelineViewProps"}
+      ],
+      "returns": {"type": "JSX.Element"}
+    },
+    "TimelineViewProps": {
+      "type": "interface",
+      "properties": {
+        "chapters": {"type": "Chapter[]"}
+      }
+    },
+    "ChapterCard": {
+      "type": "function",
+      "inputs": [
+        {"name": "props", "type": "ChapterCardProps"}
+      ],
+      "returns": {"type": "JSX.Element"}
+    },
+    "ChapterCardProps": {
+      "type": "interface",
+      "properties": {
+        "chapter": {"type": "Chapter"},
+        "index": {"type": "number"}
+      }
+    },
+    "TaskList": {
+      "type": "function",
+      "inputs": [
+        {"name": "props", "type": "TaskListProps"}
+      ],
+      "returns": {"type": "JSX.Element"}
+    },
+    "TaskListProps": {
+      "type": "interface",
+      "properties": {
+        "projectPath": {"type": "string"},
+        "specId": {"type": "string"},
+        "onTaskToggle": {"type": "(taskId: string) => void"}
+      }
+    },
+    "ConsistencyReport": {
+      "type": "function",
+      "inputs": [
+        {"name": "props", "type": "ConsistencyReportProps"}
+      ],
+      "returns": {"type": "JSX.Element"}
+    },
+    "ConsistencyReportProps": {
+      "type": "interface",
+      "properties": {
+        "projectPath": {"type": "string"},
+        "report": {"type": "ConsistencyReport | null"}
+      }
+    }
+  },
+  "dependencies": {
+    "plan-service": "PlanService",
+    "task-service": "TaskService",
+    "analysis-service": "AnalysisService",
+    "chapter": "Chapter",
+    "task": "Task",
+    "consistency-issue": "ConsistencyReport"
+  }
+}

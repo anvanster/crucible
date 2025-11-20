@@ -1,0 +1,54 @@
+{
+  "module": "spec-info",
+  "version": "1.0.0",
+  "layer": "domain",
+  "description": "Specification metadata and status tracking",
+  "exports": {
+    "SpecInfo": {
+      "type": "interface",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "status": {
+          "type": "SpecStatus"
+        },
+        "created": {
+          "type": "Date"
+        },
+        "updated": {
+          "type": "Date"
+        }
+      }
+    },
+    "SpecStatus": {
+      "type": "enum",
+      "values": ["Planning", "Writing", "Revision", "Complete"]
+    },
+    "SpecContent": {
+      "type": "interface",
+      "properties": {
+        "summary": {
+          "type": "string"
+        },
+        "chapters": {
+          "type": "Chapter[]"
+        },
+        "characters": {
+          "type": "Character[]"
+        },
+        "plot_threads": {
+          "type": "PlotThread[]"
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "chapter": "Chapter",
+    "character": "Character",
+    "plot-thread": "PlotThread"
+  }
+}

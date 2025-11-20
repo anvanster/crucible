@@ -1,0 +1,49 @@
+{
+  "module": "timeline-event",
+  "version": "1.0.0",
+  "layer": "domain",
+  "description": "Timeline event for chronological consistency tracking",
+  "exports": {
+    "TimelineEvent": {
+      "type": "interface",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "chapter": {
+          "type": "number"
+        },
+        "characters_involved": {
+          "type": "string[]"
+        },
+        "location": {
+          "type": "string | null"
+        }
+      }
+    },
+    "TimelineViolation": {
+      "type": "interface",
+      "properties": {
+        "event1": {
+          "type": "TimelineEvent"
+        },
+        "event2": {
+          "type": "TimelineEvent"
+        },
+        "violation_type": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "dependencies": {}
+}

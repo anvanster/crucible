@@ -1,0 +1,63 @@
+{
+  "module": "analysis-service",
+  "version": "1.0.0",
+  "layer": "application",
+  "description": "Analysis orchestration service",
+  "exports": {
+    "AnalysisService": {
+      "type": "class",
+      "methods": {
+        "checkConsistency": {
+          "inputs": [{"name": "projectPath", "type": "string"}],
+          "returns": {"type": "Promise<ConsistencyReport>"}
+        },
+        "analyzePacing": {
+          "inputs": [
+            {"name": "projectPath", "type": "string"},
+            {"name": "specId", "type": "string"}
+          ],
+          "returns": {"type": "Promise<PacingReport>"}
+        },
+        "analyzeCharacters": {
+          "inputs": [{"name": "projectPath", "type": "string"}],
+          "returns": {"type": "Promise<CharacterAnalysis>"}
+        }
+      }
+    },
+    "PacingReport": {
+      "type": "interface",
+      "properties": {
+        "chapters": {
+          "type": "Chapter[]"
+        },
+        "pacing_scores": {
+          "type": "number[]"
+        },
+        "recommendations": {
+          "type": "string[]"
+        }
+      }
+    },
+    "CharacterAnalysis": {
+      "type": "interface",
+      "properties": {
+        "characters": {
+          "type": "Character[]"
+        },
+        "appearances": {
+          "type": "CharacterAppearance[]"
+        },
+        "issues": {
+          "type": "ConsistencyIssue[]"
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "consistency-issue": "ConsistencyIssue,ConsistencyReport",
+    "consistency-checker": "ConsistencyChecker",
+    "pacing-analyzer": "PacingAnalyzer",
+    "character": "Character,CharacterAppearance",
+    "chapter": "Chapter"
+  }
+}

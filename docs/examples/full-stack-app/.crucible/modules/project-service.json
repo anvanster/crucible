@@ -1,0 +1,36 @@
+{
+  "module": "project-service",
+  "version": "1.0.0",
+  "layer": "application",
+  "description": "Project management service",
+  "exports": {
+    "ProjectService": {
+      "type": "class",
+      "methods": {
+        "createProject": {
+          "inputs": [
+            {"name": "name", "type": "string"},
+            {"name": "projectType", "type": "ProjectType"}
+          ],
+          "returns": {"type": "Promise<ProjectConfig>"}
+        },
+        "loadProject": {
+          "inputs": [{"name": "path", "type": "string"}],
+          "returns": {"type": "Promise<ProjectConfig>"}
+        },
+        "saveProject": {
+          "inputs": [{"name": "config", "type": "ProjectConfig"}],
+          "returns": {"type": "Promise<void>"}
+        },
+        "findProjectRoot": {
+          "inputs": [],
+          "returns": {"type": "Promise<string>"}
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "project-config": "ProjectConfig,ProjectType",
+    "file-storage": "FileStorage"
+  }
+}

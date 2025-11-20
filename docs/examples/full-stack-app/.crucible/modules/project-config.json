@@ -1,0 +1,67 @@
+{
+  "module": "project-config",
+  "version": "1.0.0",
+  "layer": "domain",
+  "description": "Core project configuration entity with settings and metadata",
+  "exports": {
+    "ProjectConfig": {
+      "type": "interface",
+      "properties": {
+        "version": {
+          "type": "string"
+        },
+        "project": {
+          "type": "ProjectInfo"
+        },
+        "settings": {
+          "type": "ProjectSettings"
+        },
+        "specs": {
+          "type": "SpecInfo[]"
+        }
+      }
+    },
+    "ProjectInfo": {
+      "type": "interface",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "project_type": {
+          "type": "ProjectType"
+        },
+        "created": {
+          "type": "Date"
+        },
+        "updated": {
+          "type": "Date"
+        }
+      }
+    },
+    "ProjectType": {
+      "type": "enum",
+      "values": ["Novel", "Screenplay", "Series"]
+    },
+    "ProjectSettings": {
+      "type": "interface",
+      "properties": {
+        "target_word_count": {
+          "type": "number"
+        },
+        "ai_model": {
+          "type": "string"
+        },
+        "auto_save": {
+          "type": "boolean"
+        },
+        "language": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "dependencies": {}
+}

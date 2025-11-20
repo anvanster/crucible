@@ -1,0 +1,38 @@
+{
+  "module": "git-repository",
+  "version": "1.0.0",
+  "layer": "infrastructure",
+  "description": "Git operations integration",
+  "exports": {
+    "GitRepository": {
+      "type": "class",
+      "methods": {
+        "init": {
+          "inputs": [{"name": "path", "type": "string"}],
+          "returns": {"type": "Promise<void>"}
+        },
+        "add": {
+          "inputs": [{"name": "files", "type": "string[]"}],
+          "returns": {"type": "Promise<void>"}
+        },
+        "commit": {
+          "inputs": [{"name": "message", "type": "string"}],
+          "returns": {"type": "Promise<void>"}
+        },
+        "status": {
+          "inputs": [],
+          "returns": {"type": "Promise<GitStatus>"}
+        }
+      }
+    },
+    "GitStatus": {
+      "type": "interface",
+      "properties": {
+        "modified": {"type": "string[]"},
+        "untracked": {"type": "string[]"},
+        "staged": {"type": "string[]"}
+      }
+    }
+  },
+  "dependencies": {}
+}

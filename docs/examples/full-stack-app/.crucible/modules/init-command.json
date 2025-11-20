@@ -1,0 +1,35 @@
+{
+  "module": "init-command",
+  "version": "1.0.0",
+  "layer": "application",
+  "description": "Initialize new Loom project command",
+  "exports": {
+    "InitCommand": {
+      "type": "class",
+      "methods": {
+        "execute": {
+          "inputs": [],
+          "returns": {"type": "Promise<void>"}
+        },
+        "createDirectoryStructure": {
+          "inputs": [],
+          "returns": {"type": "Promise<void>"}
+        },
+        "initGit": {
+          "inputs": [],
+          "returns": {"type": "Promise<void>"}
+        },
+        "createConfig": {
+          "inputs": [],
+          "returns": {"type": "Promise<void>"}
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "project-config": "ProjectConfig",
+    "git-repository": "GitRepository",
+    "file-storage": "FileStorage",
+    "template-engine": "TemplateEngine"
+  }
+}

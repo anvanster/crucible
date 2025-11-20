@@ -1,0 +1,38 @@
+{
+  "module": "constitution-service",
+  "version": "1.0.0",
+  "layer": "application",
+  "description": "Constitution management service",
+  "exports": {
+    "ConstitutionService": {
+      "type": "class",
+      "methods": {
+        "createConstitution": {
+          "inputs": [
+            {"name": "projectPath", "type": "string"},
+            {"name": "content", "type": "string"}
+          ],
+          "returns": {"type": "Promise<void>"}
+        },
+        "loadConstitution": {
+          "inputs": [{"name": "projectPath", "type": "string"}],
+          "returns": {"type": "Promise<string>"}
+        },
+        "hasConstitution": {
+          "inputs": [{"name": "projectPath", "type": "string"}],
+          "returns": {"type": "Promise<boolean>"}
+        },
+        "updateConstitution": {
+          "inputs": [
+            {"name": "projectPath", "type": "string"},
+            {"name": "content", "type": "string"}
+          ],
+          "returns": {"type": "Promise<void>"}
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "file-storage": "FileStorage"
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "module": "task-service",
+  "version": "1.0.0",
+  "layer": "application",
+  "description": "Task management service",
+  "exports": {
+    "TaskService": {
+      "type": "class",
+      "methods": {
+        "createTasks": {
+          "inputs": [
+            {"name": "projectPath", "type": "string"},
+            {"name": "specId", "type": "string"},
+            {"name": "tasks", "type": "Task[]"}
+          ],
+          "returns": {"type": "Promise<void>"}
+        },
+        "loadTasks": {
+          "inputs": [
+            {"name": "projectPath", "type": "string"},
+            {"name": "specId", "type": "string"}
+          ],
+          "returns": {"type": "Promise<Task[]>"}
+        },
+        "updateTask": {
+          "inputs": [
+            {"name": "projectPath", "type": "string"},
+            {"name": "specId", "type": "string"},
+            {"name": "task", "type": "Task"}
+          ],
+          "returns": {"type": "Promise<void>"}
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "task": "Task",
+    "file-storage": "FileStorage"
+  }
+}

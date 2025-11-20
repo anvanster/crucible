@@ -1,0 +1,46 @@
+{
+  "module": "spec-service",
+  "version": "1.0.0",
+  "layer": "application",
+  "description": "Specification management service",
+  "exports": {
+    "SpecService": {
+      "type": "class",
+      "methods": {
+        "createSpec": {
+          "inputs": [
+            {"name": "projectPath", "type": "string"},
+            {"name": "specId", "type": "string"},
+            {"name": "content", "type": "string"}
+          ],
+          "returns": {"type": "Promise<SpecInfo>"}
+        },
+        "loadSpec": {
+          "inputs": [
+            {"name": "projectPath", "type": "string"},
+            {"name": "specId", "type": "string"}
+          ],
+          "returns": {"type": "Promise<string>"}
+        },
+        "saveSpec": {
+          "inputs": [
+            {"name": "projectPath", "type": "string"},
+            {"name": "specId", "type": "string"},
+            {"name": "content", "type": "string"}
+          ],
+          "returns": {"type": "Promise<void>"}
+        },
+        "listSpecs": {
+          "inputs": [{"name": "projectPath", "type": "string"}],
+          "returns": {"type": "Promise<SpecInfo[]>"}
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "spec-info": "SpecInfo",
+    "file-storage": "FileStorage",
+    "chapter": "Chapter",
+    "character": "Character"
+  }
+}

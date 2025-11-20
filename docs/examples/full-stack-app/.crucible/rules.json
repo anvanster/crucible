@@ -1,0 +1,18 @@
+{
+  "architecture": {
+    "pattern": "layered",
+    "layers": [
+      {"name": "presentation", "can_depend_on": ["presentation", "application", "infrastructure", "domain"]},
+      {"name": "application", "can_depend_on": ["application", "infrastructure", "domain"]},
+      {"name": "infrastructure", "can_depend_on": ["infrastructure", "domain"]},
+      {"name": "domain", "can_depend_on": ["domain"]}
+    ]
+  },
+  "rules": [
+    {
+      "id": "no-circular-dependencies",
+      "enabled": true,
+      "severity": "error"
+    }
+  ]
+}

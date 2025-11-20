@@ -1,0 +1,30 @@
+{
+  "module": "clarify-command",
+  "version": "1.0.0",
+  "layer": "application",
+  "description": "Clarify ambiguities in specification command",
+  "exports": {
+    "ClarifyCommand": {
+      "type": "class",
+      "methods": {
+        "execute": {
+          "inputs": [],
+          "returns": {"type": "Promise<void>"}
+        },
+        "identifyAmbiguities": {
+          "inputs": [{"name": "specContent", "type": "string"}],
+          "returns": {"type": "Promise<string[]>"}
+        },
+        "resolveClarifications": {
+          "inputs": [{"name": "questions", "type": "string[]"}],
+          "returns": {"type": "Promise<string>"}
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "spec-service": "SpecService",
+    "claude-client": "ClaudeClient",
+    "file-storage": "FileStorage"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "module": "tasks-command",
+  "version": "1.0.0",
+  "layer": "application",
+  "description": "Generate actionable tasks from plan command",
+  "exports": {
+    "TasksCommand": {
+      "type": "class",
+      "methods": {
+        "execute": {
+          "inputs": [],
+          "returns": {"type": "Promise<void>"}
+        },
+        "generateTasks": {
+          "inputs": [{"name": "planContent", "type": "string"}],
+          "returns": {"type": "Promise<Task[]>"}
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "task-service": "TaskService",
+    "task": "Task",
+    "claude-client": "ClaudeClient",
+    "file-storage": "FileStorage"
+  }
+}

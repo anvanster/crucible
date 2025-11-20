@@ -1,0 +1,37 @@
+{
+  "module": "consistency-checker",
+  "version": "1.0.0",
+  "layer": "infrastructure",
+  "description": "Consistency checking algorithm implementation",
+  "exports": {
+    "ConsistencyChecker": {
+      "type": "class",
+      "methods": {
+        "analyzeDraft": {
+          "inputs": [{"name": "draftPath", "type": "string"}],
+          "returns": {"type": "Promise<ConsistencyReport>"}
+        },
+        "extractCharacters": {
+          "inputs": [{"name": "content", "type": "string"}],
+          "returns": {"type": "Character[]"}
+        },
+        "checkCharacterConsistency": {
+          "inputs": [{"name": "chapters", "type": "string[]"}],
+          "returns": {"type": "ConsistencyIssue[]"}
+        },
+        "checkTimeline": {
+          "inputs": [{"name": "chapters", "type": "string[]"}],
+          "returns": {"type": "ConsistencyIssue[]"}
+        },
+        "checkFacts": {
+          "inputs": [{"name": "chapters", "type": "string[]"}],
+          "returns": {"type": "ConsistencyIssue[]"}
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "consistency-issue": "ConsistencyIssue,ConsistencyReport",
+    "character": "Character"
+  }
+}

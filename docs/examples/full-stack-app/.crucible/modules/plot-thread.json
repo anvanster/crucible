@@ -1,0 +1,36 @@
+{
+  "module": "plot-thread",
+  "version": "1.0.0",
+  "layer": "domain",
+  "description": "Plot thread tracking from introduction to resolution",
+  "exports": {
+    "PlotThread": {
+      "type": "interface",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "introduction_chapter": {
+          "type": "number"
+        },
+        "resolution_chapter": {
+          "type": "number | null"
+        },
+        "status": {
+          "type": "PlotThreadStatus"
+        }
+      }
+    },
+    "PlotThreadStatus": {
+      "type": "enum",
+      "values": ["Active", "Resolved", "Abandoned"]
+    }
+  },
+  "dependencies": {}
+}

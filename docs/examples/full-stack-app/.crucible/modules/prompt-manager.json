@@ -1,0 +1,34 @@
+{
+  "module": "prompt-manager",
+  "version": "1.0.0",
+  "layer": "infrastructure",
+  "description": "Prompt template management and rendering",
+  "exports": {
+    "PromptManager": {
+      "type": "class",
+      "methods": {
+        "getConstitutionPrompt": {
+          "inputs": [{"name": "params", "type": "Record<string, any>"}],
+          "returns": {"type": "string"}
+        },
+        "getSpecificationPrompt": {
+          "inputs": [{"name": "params", "type": "Record<string, any>"}],
+          "returns": {"type": "string"}
+        },
+        "getPlanPrompt": {
+          "inputs": [{"name": "params", "type": "Record<string, any>"}],
+          "returns": {"type": "string"}
+        },
+        "getTasksPrompt": {
+          "inputs": [{"name": "params", "type": "Record<string, any>"}],
+          "returns": {"type": "string"}
+        },
+        "getConsistencyPrompt": {
+          "inputs": [{"name": "params", "type": "Record<string, any>"}],
+          "returns": {"type": "string"}
+        }
+      }
+    }
+  },
+  "dependencies": {}
+}

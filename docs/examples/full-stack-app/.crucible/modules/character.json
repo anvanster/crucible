@@ -1,0 +1,50 @@
+{
+  "module": "character",
+  "version": "1.0.0",
+  "layer": "domain",
+  "description": "Character entity with attributes and arc tracking",
+  "exports": {
+    "Character": {
+      "type": "interface",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "role": {
+          "type": "CharacterRole"
+        },
+        "description": {
+          "type": "string"
+        },
+        "attributes": {
+          "type": "Record<string, string>"
+        },
+        "arc": {
+          "type": "string | null"
+        }
+      }
+    },
+    "CharacterRole": {
+      "type": "enum",
+      "values": ["Protagonist", "Antagonist", "Supporting", "Minor"]
+    },
+    "CharacterAppearance": {
+      "type": "interface",
+      "properties": {
+        "character_name": {
+          "type": "string"
+        },
+        "chapter": {
+          "type": "number"
+        },
+        "scene": {
+          "type": "number"
+        },
+        "context": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "dependencies": {}
+}

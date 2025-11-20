@@ -1,0 +1,54 @@
+{
+  "module": "consistency-issue",
+  "version": "1.0.0",
+  "layer": "domain",
+  "description": "Consistency issue detected by analysis",
+  "exports": {
+    "ConsistencyIssue": {
+      "type": "interface",
+      "properties": {
+        "issue_type": {
+          "type": "IssueType"
+        },
+        "severity": {
+          "type": "Severity"
+        },
+        "description": {
+          "type": "string"
+        },
+        "locations": {
+          "type": "string[]"
+        },
+        "suggestion": {
+          "type": "string | null"
+        }
+      }
+    },
+    "IssueType": {
+      "type": "enum",
+      "values": ["Character", "Timeline", "Fact", "PlotHole"]
+    },
+    "Severity": {
+      "type": "enum",
+      "values": ["Error", "Warning", "Info"]
+    },
+    "ConsistencyReport": {
+      "type": "interface",
+      "properties": {
+        "character_issues": {
+          "type": "ConsistencyIssue[]"
+        },
+        "timeline_issues": {
+          "type": "ConsistencyIssue[]"
+        },
+        "fact_issues": {
+          "type": "ConsistencyIssue[]"
+        },
+        "plot_issues": {
+          "type": "ConsistencyIssue[]"
+        }
+      }
+    }
+  },
+  "dependencies": {}
+}

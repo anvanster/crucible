@@ -1,0 +1,30 @@
+{
+  "module": "constitution-command",
+  "version": "1.0.0",
+  "layer": "application",
+  "description": "Create or update project constitution command",
+  "exports": {
+    "ConstitutionCommand": {
+      "type": "class",
+      "methods": {
+        "execute": {
+          "inputs": [],
+          "returns": {"type": "Promise<void>"}
+        },
+        "guidedMode": {
+          "inputs": [],
+          "returns": {"type": "Promise<void>"}
+        },
+        "interactiveMode": {
+          "inputs": [],
+          "returns": {"type": "Promise<void>"}
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "constitution-service": "ConstitutionService",
+    "claude-client": "ClaudeClient",
+    "file-storage": "FileStorage"
+  }
+}
