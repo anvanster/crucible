@@ -1261,7 +1261,7 @@ fn claude_context(_format: &str) -> Result<()> {
 }
 
 fn show_docs(topic: Option<&str>, list: bool) -> Result<()> {
-    const DOCS_BASE_URL: &str = "https://github.com/anvanster/crucible/blob/main/docs";
+    const DOCS_BASE_URL: &str = "https://github.com/anvanster/crucible/blob/main/crucible-cli/docs";
 
     let docs = vec![
         ("quickstart", "QUICKSTART.md", "5-minute getting started guide"),
