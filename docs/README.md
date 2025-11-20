@@ -89,21 +89,62 @@ Complete documentation for the Crucible architecture-first development framework
 
 Based on user feedback, read in this order to maximize time savings:
 
+### Visual Navigation Map
+
+```
+                    ┌──────────────────────────────────────┐
+                    │   Crucible Documentation Start      │
+                    └───────────────┬──────────────────────┘
+                                    │
+                    ┌───────────────▼──────────────────┐
+                    │  New User? Start Here!           │
+                    │  QUICKSTART.md (5 minutes)       │
+                    └───────────────┬──────────────────┘
+                                    │
+          ┌─────────────────────────┼─────────────────────────┐
+          │                         │                         │
+┌─────────▼──────────┐  ┌──────────▼───────────┐  ┌─────────▼────────────┐
+│ Priority 1         │  │ Priority 2           │  │ Priority 3           │
+│ (80% time saved)   │  │ (Quality of life)    │  │ (Advanced)           │
+├────────────────────┤  ├──────────────────────┤  ├──────────────────────┤
+│ 1. Schema Ref      │  │ 4. CLI Reference     │  │ 6. Claude Code       │
+│    (2h saved)      │  │    (30min saved)     │  │    Integration       │
+│         │          │  │         │            │  │                      │
+│ 2. Example Project │  │ 5. Type System       │  │ 7. Contributing      │
+│    (2h saved)      │  │    (1h saved)        │  │                      │
+│         │          │  └──────────────────────┘  └──────────────────────┘
+│ 3. Common Mistakes │
+│    (3.5h saved)    │           ┌──────────────────────────────────┐
+└─────────┬──────────┘           │ Having Problems?                 │
+          │                      │ Jump to Common Mistakes first!   │
+          └──────────────────────►                                  │
+                                 │ → Error Decoder                  │
+                                 │ → 12 Common Fixes                │
+                                 └──────────────────────────────────┘
+
+Legend:
+  → Follow this path for fastest learning
+  ┌─┐ Read this document
+  │ │ Contains valuable reference info
+  └─┘
+```
+
 ### Priority 1 (Saves 80% of time)
 
-1. ✅ **[Schema Reference](./schema-reference.md)** - Understand correct format
-2. ✅ **[Example Project](./examples/full-stack-app/)** - See real-world usage
-3. ✅ **[Common Mistakes](./common-mistakes.md)** - Avoid common pitfalls
+1. ✅ **[5-Minute Quickstart](./QUICKSTART.md)** - Get started fast (NEW!)
+2. ✅ **[Schema Reference](./schema-reference.md)** - Understand correct format
+3. ✅ **[Example Project](./examples/full-stack-app/)** - See real-world usage
+4. ✅ **[Common Mistakes](./common-mistakes.md)** - Avoid common pitfalls
 
 ### Priority 2 (Quality of life)
 
-4. ✅ **[CLI Reference](./cli-reference.md)** - Learn all commands
-5. ✅ **[Type System](./type-system.md)** - Master type syntax
+5. ✅ **[CLI Reference](./cli-reference.md)** - Learn all commands
+6. ✅ **[Type System](./type-system.md)** - Master type syntax
 
 ### Priority 3 (Advanced usage)
 
-6. **Claude Code Integration** - See `.claude/commands/` for slash commands
-7. **Contributing** - See main README.md for development
+7. **Claude Code Integration** - See `.claude/commands/` for slash commands
+8. **Contributing** - See main README.md for development
 
 ---
 

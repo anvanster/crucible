@@ -79,6 +79,16 @@ enum Commands {
         #[command(subcommand)]
         command: ClaudeCommands,
     },
+
+    /// Open documentation
+    Docs {
+        /// Specific documentation to open (quickstart, schema, types, mistakes, cli, examples)
+        topic: Option<String>,
+
+        /// List all available documentation
+        #[arg(long)]
+        list: bool,
+    },
 }
 
 #[derive(Subcommand)]
@@ -181,6 +191,9 @@ fn main() -> Result<()> {
                 claude_context(&format)?;
             }
         },
+        Commands::Docs { topic, list } => {
+            show_docs(topic.as_deref(), list)?;
+        }
     }
 
     Ok(())
@@ -1243,6 +1256,119 @@ fn claude_context(_format: &str) -> Result<()> {
 
     let context = context_gen.generate_context_json()?;
     println!("{context}");
+
+    Ok(())
+}
+
+fn show_docs(topic: Option<&str>, list: bool) -> Result<()> {
+    const DOCS_BASE_URL: &str = "https://github.com/anvanster/crucible/blob/main/docs";
+
+    let docs = vec![
+        ("quickstart", "QUICKSTART.md", "5-minute getting started guide"),
+        ("schema", "schema-reference.md", "Complete JSON schema reference"),
+        ("types", "type-system.md", "Type syntax and examples"),
+        ("mistakes", "common-mistakes.md", "Common errors and fixes"),
+        ("cli", "cli-reference.md", "Command-line interface reference"),
+        ("examples", "examples/full-stack-app/README.md", "Full-stack application example"),
+        ("index", "README.md", "Documentation index and navigation"),
+    ];
+
+    if list {
+        println!("{}", "Crucible Documentation".cyan().bold());
+        println!();
+        for (name, _, description) in &docs {
+            println!("  {} - {}", name.green(), description);
+        }
+        println!();
+        println!("Usage:");
+        println!("  {} {}", "crucible docs".cyan(), "<topic>".yellow());
+        println!("  {} {}", "crucible docs".cyan(), "quickstart".yellow());
+        println!();
+        println!("View all documentation: {}", format!("{DOCS_BASE_URL}").blue().underline());
+        return Ok(());
+    }
+
+    if let Some(topic_name) = topic {
+        // Find the matching documentation
+        if let Some((_, file, description)) = docs.iter().find(|(name, _, _)| name == &topic_name) {
+            let url = format!("{DOCS_BASE_URL}/{file}");
+            println!();
+            println!("{} {}", "Opening:".cyan().bold(), description);
+            println!("{} {}", "URL:".dimmed(), url.blue().underline());
+            println!();
+
+            // Try to open in browser
+            #[cfg(target_os = "macos")]
+            {
+                std::process::Command::new("open").arg(&url).spawn()?;
+                println!("{}", "✓ Opened in your default browser".green());
+            }
+            #[cfg(target_os = "linux")]
+            {
+                std::process::Command::new("xdg-open").arg(&url).spawn()?;
+                println!("{}", "✓ Opened in your default browser".green());
+            }
+            #[cfg(target_os = "windows")]
+            {
+                std::process::Command::new("cmd").args(&["/C", "start", &url]).spawn()?;
+                println!("{}", "✓ Opened in your default browser".green());
+            }
+            #[cfg(not(any(target_os = "macos", target_os = "linux", target_os = "windows")))]
+            {
+                println!("{}", "⚠ Cannot open browser on this platform".yellow());
+                println!("Please visit: {}", url);
+            }
+        } else {
+            println!("{} Unknown topic: {}", "✗".red(), topic_name.yellow());
+            println!();
+            println!("Available topics:");
+            for (name, _, description) in &docs {
+                println!("  {} - {}", name.green(), description);
+            }
+            println!();
+            println!("Use {} to see all topics", "crucible docs --list".cyan());
+        }
+    } else {
+        // No topic specified - show index
+        let url = format!("{DOCS_BASE_URL}/README.md");
+        println!();
+        println!("{}", "Crucible Documentation".cyan().bold());
+        println!();
+        println!("Available documentation:");
+        for (name, _, description) in &docs {
+            println!("  {} - {}", name.green(), description);
+        }
+        println!();
+        println!("Usage:");
+        println!("  {} {}        - View this help", "crucible docs".cyan(), "--list".yellow());
+        println!("  {} {}   - Open specific topic", "crucible docs".cyan(), "<topic>".yellow());
+        println!();
+        println!("Opening documentation index...");
+        println!("{} {}", "URL:".dimmed(), url.blue().underline());
+        println!();
+
+        // Try to open in browser
+        #[cfg(target_os = "macos")]
+        {
+            std::process::Command::new("open").arg(&url).spawn()?;
+            println!("{}", "✓ Opened in your default browser".green());
+        }
+        #[cfg(target_os = "linux")]
+        {
+            std::process::Command::new("xdg-open").arg(&url).spawn()?;
+            println!("{}", "✓ Opened in your default browser".green());
+        }
+        #[cfg(target_os = "windows")]
+        {
+            std::process::Command::new("cmd").args(&["/C", "start", &url]).spawn()?;
+            println!("{}", "✓ Opened in your default browser".green());
+        }
+        #[cfg(not(any(target_os = "macos", target_os = "linux", target_os = "windows")))]
+        {
+            println!("{}", "⚠ Cannot open browser on this platform".yellow());
+            println!("Please visit: {}", url);
+        }
+    }
 
     Ok(())
 }

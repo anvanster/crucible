@@ -18,6 +18,62 @@ Complete reference for Crucible's JSON schema format with TypeScript-style type 
 
 Each module is defined in a separate JSON file in `.crucible/modules/`.
 
+### Visual Structure Overview
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ ModuleDefinition (.crucible/modules/my-module.json)            │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  module: string (REQUIRED)          ─┐                         │
+│  version: string (REQUIRED)          │ Basic Info              │
+│  layer: string (REQUIRED)            │                         │
+│  description?: string                ─┘                        │
+│                                                                 │
+│  exports: { [name: string]: Export } (REQUIRED)                │
+│    │                                                            │
+│    ├─► class Export                                            │
+│    │     ├─ type: "class"                                      │
+│    │     └─ methods: { [name: string]: Method }               │
+│    │          ├─ inputs: Parameter[]                           │
+│    │          ├─ returns: ReturnType                           │
+│    │          ├─ throws?: string[]                             │
+│    │          ├─ calls?: string[]                              │
+│    │          └─ effects?: string[]                            │
+│    │                                                            │
+│    ├─► function Export                                         │
+│    │     ├─ type: "function"                                   │
+│    │     ├─ inputs: Parameter[]                                │
+│    │     └─ returns: ReturnType                                │
+│    │                                                            │
+│    ├─► interface Export                                        │
+│    │     ├─ type: "interface"                                  │
+│    │     └─ properties: { [name: string]: Property }          │
+│    │          ├─ type: string                                  │
+│    │          ├─ required?: boolean                            │
+│    │          └─ description?: string                          │
+│    │                                                            │
+│    ├─► type Export (alias)                                     │
+│    │     ├─ type: "type"                                       │
+│    │     └─ properties: { [name: string]: Property }          │
+│    │                                                            │
+│    └─► enum Export                                             │
+│          ├─ type: "enum"                                       │
+│          └─ values: string[]                                   │
+│                                                                 │
+│  dependencies?: { [module: string]: string }                   │
+│    ├─ "user": "User"                    (single export)        │
+│    └─ "user-service": "User,UserDTO"    (multiple exports)     │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+Key:
+  REQUIRED fields must be present
+  ? optional fields can be omitted
+  [name: string] means a map/object with string keys
+  string[] means an array of strings
+```
+
 ### ModuleDefinition
 
 ```typescript

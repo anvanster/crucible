@@ -1,260 +1,464 @@
 # Full-Stack Application Example
 
-Complete real-world example of a Crucible architecture with 34 modules across 4 layers.
+**33-module production-quality architecture** demonstrating Crucible best practices.
 
-## Overview
+This is a real-world application architecture (Loom - an AI-assisted writing tool) adapted as a comprehensive Crucible example.
 
-This example demonstrates a full-stack TypeScript application using a layered architecture pattern. The project is a content management system with analysis capabilities.
+---
 
-## Architecture
+## 📊 Architecture Overview
+
+### 4-Layer Architecture
 
 ```
-Presentation Layer (UI Components)
-    ↓
-Application Layer (Services & Use Cases)
-    ↓
-Infrastructure Layer (External Systems)
-    ↓
-Domain Layer (Business Entities)
+┌──────────────────────────────────────────────────────────────────┐
+│  Presentation Layer (4 modules)                                   │
+│  React components, UI wizards, views                              │
+│                                                                   │
+│  • project-browser-ui      • constitution-wizard-ui              │
+│  • spec-editor-ui          • plan-view-ui                        │
+└───────────────────────────┬──────────────────────────────────────┘
+                            │ depends on
+┌───────────────────────────▼──────────────────────────────────────┐
+│  Application Layer (12 modules)                                   │
+│  Commands (CLI), Services (business logic)                        │
+│                                                                   │
+│  Commands:                    Services:                           │
+│  • init-command               • project-service                   │
+│  • constitution-command       • spec-service                      │
+│  • specify-command            • constitution-service              │
+│  • clarify-command            • plan-service                      │
+│  • plan-command               • task-service                      │
+│  • tasks-command              • analysis-service                  │
+│  • check-command                                                  │
+│  • analyze-command                                                │
+└───────────────────────────┬──────────────────────────────────────┘
+                            │ depends on
+┌───────────────────────────▼──────────────────────────────────────┐
+│  Infrastructure Layer (8 modules)                                 │
+│  External integrations, algorithms, storage                       │
+│                                                                   │
+│  • claude-client           • prompt-manager                       │
+│  • git-repository          • file-storage                         │
+│  • template-engine         • consistency-checker                  │
+│  • pacing-analyzer                                                │
+└───────────────────────────┬──────────────────────────────────────┘
+                            │ depends on
+┌───────────────────────────▼──────────────────────────────────────┐
+│  Domain Layer (8 modules)                                         │
+│  Core entities, business rules, no external dependencies          │
+│                                                                   │
+│  • project-config          • spec-info                            │
+│  • chapter                 • character                            │
+│  • plot-thread             • timeline-event                       │
+│  • task                    • consistency-issue                    │
+└──────────────────────────────────────────────────────────────────┘
 ```
 
-### Layer Dependency Rules
+**Total:** 33 modules | **Language:** TypeScript | **Pattern:** Relaxed Layered Architecture
 
-- **Presentation** can depend on: Presentation, Application, Infrastructure, Domain
-- **Application** can depend on: Application, Infrastructure, Domain
-- **Infrastructure** can depend on: Infrastructure, Domain
-- **Domain** can depend on: Domain (only other domain entities)
+### Detailed Dependency Flow Example
 
-## Module Count by Layer
+Here's how dependencies flow through the layers in a typical operation:
 
-- **Domain**: 8 modules (entities and value objects)
-- **Infrastructure**: 6 modules (repositories, external clients, utilities)
-- **Application**: 6 modules (services and use cases)
-- **Presentation**: 4 modules (UI components)
-- **CLI**: 10 modules (command-line interface)
+```
+User Action: "Create a new chapter specification"
 
-**Total**: 34 modules
+┌─────────────────────────────────────────────────────────────────┐
+│ PRESENTATION                                                     │
+│ spec-editor-ui.tsx                                              │
+│   └─ User clicks "Save"                                         │
+│      └─ Calls SpecService.createSpec(data)                      │
+└────────────────────────────┬────────────────────────────────────┘
+                             │
+                             ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ APPLICATION                                                      │
+│ spec-service.ts                                                 │
+│   └─ createSpec(data: CreateSpecDTO): Promise<SpecInfo>        │
+│      ├─ Validates using SpecInfo domain rules                   │
+│      ├─ Calls FileStorage.write()                               │
+│      └─ Calls GitRepository.commit()                            │
+└────────────────────────────┬────────────────────────────────────┘
+                             │
+                             ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ INFRASTRUCTURE                                                   │
+│ file-storage.ts           git-repository.ts                     │
+│   └─ write(path, data)      └─ commit(message)                  │
+│      └─ fs.writeFile()         └─ git commit                    │
+└────────────────────────────┬────────────────────────────────────┘
+                             │
+                             ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ DOMAIN                                                           │
+│ spec-info.ts                                                    │
+│   └─ interface SpecInfo {                                       │
+│        id: string;          ◄────── Used throughout            │
+│        type: SpecType;              all layers                  │
+│        content: string;                                         │
+│      }                                                           │
+└─────────────────────────────────────────────────────────────────┘
 
-## Module Categories
-
-### Domain Layer (`domain`)
-
-Core business entities and value objects:
-
-- `project-config` - Main configuration entity
-- `spec-info` - Specification metadata
-- `chapter` - Content chapter entity
-- `character` - Character entity
-- `plot-thread` - Story arc entity
-- `timeline-event` - Event tracking
-- `task` - Task entity
-- `consistency-issue` - Issue tracking
-
-### Infrastructure Layer (`infrastructure`)
-
-External system integrations:
-
-- `claude-client` - AI service client
-- `prompt-manager` - Template management
-- `git-repository` - Version control interface
-- `file-storage` - File system operations
-- `template-engine` - Template processing
-- `consistency-checker` - Validation engine
-
-### Application Layer (`application`)
-
-Business logic and use cases:
-
-- `project-service` - Project management
-- `spec-service` - Specification handling
-- `constitution-service` - Configuration management
-- `plan-service` - Planning operations
-- `task-service` - Task management
-- `analysis-service` - Analysis orchestration
-
-### Presentation Layer (`presentation`)
-
-User interface components:
-
-- `project-browser-ui` - Project browsing component
-- `constitution-wizard-ui` - Configuration wizard
-- `spec-editor-ui` - Specification editor
-- `plan-view-ui` - Planning interface
-
-### CLI Layer (`application`)
-
-Command-line interface:
-
-- `init-command` - Project initialization
-- `constitution-command` - Configuration management
-- `specify-command` - Specification creation
-- `clarify-command` - Clarification workflows
-- `plan-command` - Planning operations
-- `tasks-command` - Task management
-- `check-command` - Consistency checking
-- `analyze-command` - Analysis operations
-- `pacing-analyzer` - Pacing analysis utility
-
-## Key Patterns Demonstrated
-
-### 1. Domain Entity
-
-See: `modules/chapter.json`
-
-Simple domain entity with properties:
-```json
-{
-  "module": "chapter",
-  "layer": "domain",
-  "exports": {
-    "Chapter": {
-      "type": "interface",
-      "properties": {...}
-    }
-  }
-}
+Key Architectural Principles:
+  ✓ Domain layer has NO dependencies (pure business logic)
+  ✓ Infrastructure depends ONLY on Domain
+  ✓ Application coordinates Infrastructure and Domain
+  ✓ Presentation depends on Application (and can skip to Domain)
+  ✓ Relaxed layering allows services to call other services
 ```
 
-### 2. Application Service
+### Allowed vs Forbidden Dependencies
 
-See: `modules/analysis-service.json`
+```
+┌──────────────────────────┐  ┌──────────────────────────┐
+│   ALLOWED ✓              │  │   FORBIDDEN ✗            │
+├──────────────────────────┤  ├──────────────────────────┤
+│                          │  │                          │
+│  Presentation            │  │  Domain                  │
+│      ↓                   │  │      ↓                   │
+│  Application             │  │  Infrastructure  ✗✗✗    │
+│      ↓                   │  │                          │
+│  Infrastructure          │  │  Domain                  │
+│      ↓                   │  │      ↓                   │
+│  Domain                  │  │  Application     ✗✗✗    │
+│                          │  │                          │
+│  Application             │  │  Infrastructure          │
+│      ↓                   │  │      ↓                   │
+│  Application  (same)     │  │  Presentation    ✗✗✗    │
+│  (Relaxed Layering)      │  │                          │
+│                          │  │                          │
+└──────────────────────────┘  └──────────────────────────┘
 
-Service with methods and complex dependencies:
-```json
-{
-  "module": "analysis-service",
-  "layer": "application",
-  "exports": {
-    "AnalysisService": {
-      "type": "class",
-      "methods": {...}
-    }
-  },
-  "dependencies": {
-    "consistency-checker": "ConsistencyChecker",
-    "chapter": "Chapter"
-  }
-}
+Relaxed Layering Rule:
+  Each layer can depend on:
+    - Itself (intra-layer dependencies)
+    - Any layer below it
+
+  But NEVER on layers above it!
 ```
 
-### 3. Infrastructure Component
+---
 
-See: `modules/claude-client.json`
+## 🎯 What This Example Demonstrates
 
-External service client:
-```json
-{
-  "module": "claude-client",
-  "layer": "infrastructure",
-  "exports": {
-    "ClaudeClient": {
-      "type": "class",
-      "methods": {...}
-    }
-  }
-}
+### Core Patterns
+
+✅ **4-Layer Architecture** - Domain → Infrastructure → Application → Presentation
+✅ **Relaxed Layering** - Allows intra-layer dependencies (e.g., services can call other services)
+✅ **Domain-Driven Design** - Rich domain entities with value objects
+✅ **Command Pattern** - CLI commands in application layer
+✅ **Service Pattern** - Business logic encapsulation
+✅ **Repository Pattern** - Data access abstraction
+✅ **React Components as Functions** - Modern React patterns
+✅ **Complex Dependencies** - Multiple exports from same module
+
+### Advanced Features
+
+✅ **Generic Types** - `Promise<T>`, `Array<T>`, `Map<K,V>`
+✅ **Union Types** - `User | null`, `Success | Error`
+✅ **Array Types** - `Chapter[]`, `string[]`, `number[]`
+✅ **Nullable Types** - Optional properties with `| null`
+✅ **Cross-Module Dependencies** - Services depend on repositories and domain entities
+✅ **Method Calls** - Tracked across modules for validation
+
+---
+
+## 📁 Project Structure
+
+```
+.crucible/
+├── manifest.json              # 33 modules, strict validation
+├── rules.json                 # 4-layer relaxed architecture
+└── modules/
+    ├── # Domain Layer (8 modules)
+    ├── project-config.json    # Core project configuration entity
+    ├── spec-info.json         # Specification metadata
+    ├── chapter.json           # Chapter entity with metadata
+    ├── character.json         # Character with appearances
+    ├── plot-thread.json       # Plot thread tracking
+    ├── timeline-event.json    # Timeline events
+    ├── task.json              # Task entity
+    ├── consistency-issue.json # Consistency tracking
+    │
+    ├── # Infrastructure Layer (8 modules)
+    ├── claude-client.json     # AI integration (Claude API)
+    ├── prompt-manager.json    # Prompt template management
+    ├── git-repository.json    # Git operations
+    ├── file-storage.json      # File system operations
+    ├── template-engine.json   # Template processing
+    ├── consistency-checker.json # Consistency validation
+    ├── pacing-analyzer.json   # Story pacing analysis
+    │
+    ├── # Application Layer (12 modules)
+    ├── init-command.json      # Initialize project
+    ├── constitution-command.json # Define project rules
+    ├── specify-command.json   # Create specifications
+    ├── clarify-command.json   # Clarify specifications
+    ├── plan-command.json      # Generate writing plan
+    ├── tasks-command.json     # List tasks
+    ├── check-command.json     # Check consistency
+    ├── analyze-command.json   # Analyze story
+    ├── project-service.json   # Project management logic
+    ├── spec-service.json      # Specification logic
+    ├── constitution-service.json # Constitution logic
+    ├── plan-service.json      # Planning logic
+    ├── task-service.json      # Task management logic
+    ├── analysis-service.json  # Analysis logic
+    │
+    └── # Presentation Layer (4 modules)
+        ├── project-browser-ui.json    # Project browsing interface
+        ├── constitution-wizard-ui.json # Constitution setup wizard
+        ├── spec-editor-ui.json        # Specification editor
+        └── plan-view-ui.json          # Plan visualization
 ```
 
-### 4. React Component
+---
 
-See: `modules/constitution-wizard-ui.json`
+## 🗺️ How to Explore This Example
 
-UI component with props:
-```json
-{
-  "module": "constitution-wizard-ui",
-  "layer": "presentation",
-  "exports": {
-    "ConstitutionWizard": {
-      "type": "function",
-      "inputs": [...],
-      "returns": {"type": "JSX.Element"}
-    }
-  }
-}
+### Quick Tour (10 minutes)
+
+Follow this sequence to understand the architecture:
+
+#### 1. **Start with Domain** (2 min)
+
+```bash
+# Read the core entity
+cat .crucible/modules/project-config.json
 ```
 
-### 5. Multiple Exports
+**What to notice:**
+- Simple interface with properties
+- No dependencies (domain is independent)
+- Enum types for ProjectType
+- Nested objects (ProjectInfo, ProjectSettings)
 
-See: `modules/consistency-issue.json`
+#### 2. **See Infrastructure** (2 min)
 
-Module exporting both interface and enum:
-```json
-{
-  "exports": {
-    "ConsistencyIssue": {"type": "interface"},
-    "IssueSeverity": {"type": "enum"}
-  }
-}
+```bash
+# Check external integration
+cat .crucible/modules/claude-client.json
 ```
 
-### 6. Complex Dependencies
+**What to notice:**
+- Class with methods
+- Dependencies on domain entities
+- Promise return types
+- Method calls to external service
 
-See: `modules/analysis-service.json`
+#### 3. **Review Application Services** (3 min)
 
-Multiple exports from same module:
-```json
-{
-  "dependencies": {
-    "consistency-issue": "ConsistencyIssue,ConsistencyReport",
-    "character": "Character,CharacterAppearance"
-  }
-}
+```bash
+# Complex service example
+cat .crucible/modules/analysis-service.json
 ```
 
-## Validation
+**What to notice:**
+- Multiple interface exports (PacingReport, CharacterAnalysis)
+- Complex dependencies (6 different modules!)
+- Multiple exports from same module: `"character": "Character,CharacterAppearance"`
+- Array return types: `Chapter[]`, `number[]`
+- Calls to infrastructure and domain
 
-Run validation to verify the architecture:
+#### 4. **Examine UI Components** (3 min)
+
+```bash
+# React component example
+cat .crucible/modules/constitution-wizard-ui.json
+```
+
+**What to notice:**
+- React.FC<Props> pattern
+- Props interface
+- Dependencies on application services
+- React-specific types (JSX.Element, React.ReactNode)
+
+### Deep Dive (30 minutes)
+
+Choose a vertical slice and follow the complete flow:
+
+#### Example: "Create a New Specification" Flow
+
+**User Action → UI → Service → Repository → Domain**
+
+1. **UI Layer**: `spec-editor-ui.json`
+   - User interacts with editor
+   - Calls `SpecService.createSpec()`
+
+2. **Application Layer**: `spec-service.json`
+   - Validates input
+   - Coordinates with domain
+   - Calls `FileStorage.write()` and `GitRepository.commit()`
+
+3. **Infrastructure Layer**: `file-storage.json`, `git-repository.json`
+   - Persists specification to file
+   - Commits to git
+
+4. **Domain Layer**: `spec-info.json`
+   - Core SpecInfo entity
+   - Business rules
+
+**Trace this flow:**
+```bash
+# Follow the dependency chain
+grep -l "spec-service" .crucible/modules/*.json
+grep -l "file-storage" .crucible/modules/*.json
+grep -l "spec-info" .crucible/modules/*.json
+```
+
+---
+
+## 📖 Learning Objectives
+
+### For Beginners
+
+**Start with these files to learn:**
+
+1. **Domain entities**: `chapter.json`, `character.json`
+   - Learn interface definitions
+   - See property types and required fields
+   - Understand enums
+
+2. **Simple services**: `task-service.json`
+   - Learn class exports
+   - See method definitions
+   - Understand inputs and returns
+
+3. **Dependencies**: `analysis-service.json`
+   - Learn how to declare dependencies
+   - See multiple exports from same module
+   - Understand cross-layer dependencies
+
+### For Intermediate Users
+
+**Study these patterns:**
+
+1. **Complex type patterns**: `analysis-service.json`
+   - Generic types: `Promise<T>`
+   - Array types: `Chapter[]`, `ConsistencyIssue[]`
+   - Union types: `Success | Error`
+   - Multiple interface exports
+
+2. **Service coordination**: `plan-service.json`
+   - Multiple method calls
+   - Dependency orchestration
+   - Error handling patterns
+
+3. **React patterns**: `constitution-wizard-ui.json`
+   - Component props
+   - State management types
+   - Event handlers
+
+### For Advanced Users
+
+**Explore these designs:**
+
+1. **Architectural patterns**:
+   - Command pattern in CLI modules
+   - Repository pattern in infrastructure
+   - Service pattern in application layer
+   - Component pattern in presentation
+
+2. **Relaxed layering** (`rules.json`):
+   ```json
+   {"name": "application", "can_depend_on": ["application", "infrastructure", "domain"]}
+   ```
+   This allows services to call other services (intra-layer dependencies).
+
+3. **Complex dependency graphs**:
+   - See how `analysis-service` coordinates 6 different modules
+   - Understand the trade-offs
+
+---
+
+## 🔍 Validation
+
+This example validates successfully:
 
 ```bash
 crucible validate --path .crucible
 ```
 
-Expected output:
+**Expected output:**
 ```
-Validating architecture...
-  34 modules found
+Validating  architecture...
+  33 modules found
 Architecture is valid!
 ```
 
-## Structure
+**What's being validated:**
+- ✅ All types exist and are imported correctly
+- ✅ Layer boundaries are respected (no domain → application dependencies)
+- ✅ No circular dependencies
+- ✅ Method calls target existing exports
+- ✅ Dependencies are declared for all used modules
 
+---
+
+## 🎨 Design Decisions
+
+### Why Relaxed Layering?
+
+Traditional strict layering would prevent services from calling other services:
 ```
-.crucible/
-├── manifest.json           # Project manifest (34 modules)
-├── rules.json             # Architecture rules (4-layer)
-└── modules/               # Module definitions
-    ├── project-config.json
-    ├── chapter.json
-    ├── analysis-service.json
-    ├── claude-client.json
-    ├── constitution-wizard-ui.json
-    └── ... (29 more modules)
+application layer can only depend on [infrastructure, domain]
 ```
 
-## Learning Path
+This example uses relaxed layering:
+```
+application layer can depend on [application, infrastructure, domain]
+```
 
-1. **Start Simple** - Review `chapter.json` (simple domain entity)
-2. **Add Behavior** - Check `project-service.json` (service with methods)
-3. **Complex Dependencies** - Study `analysis-service.json` (multiple dependencies)
-4. **UI Components** - Examine `constitution-wizard-ui.json` (React patterns)
-5. **Full Architecture** - Review `manifest.json` and `rules.json`
+**Benefits:**
+- Services can coordinate (e.g., `plan-service` calls `spec-service`)
+- More natural for complex business logic
+- Reduces need for orchestrator services
 
-## Common Patterns
+**Trade-off:**
+- Must be careful to avoid circular dependencies (Crucible still prevents these!)
 
-### Domain Entity Pattern
+### Why So Many Modules?
+
+This represents a real production application with:
+- **8 CLI commands** - Each command is a module
+- **6 services** - Each service encapsulates business logic
+- **8 domain entities** - Core business concepts
+- **8 infrastructure components** - External integrations
+- **4 UI components** - React interfaces
+
+In practice, you might start with 5-10 modules and grow organically.
+
+### React Components as Functions
+
+Modern React uses function components:
+```json
+"ConstitutionWizardUI": {
+  "type": "function",
+  "inputs": [{"name": "props", "type": "ConstitutionWizardProps"}],
+  "returns": {"type": "JSX.Element"}
+}
+```
+
+Not class components.
+
+---
+
+## 💡 Common Patterns to Copy
+
+### Pattern 1: Domain Entity
 
 ```json
 {
-  "module": "entity-name",
+  "module": "my-entity",
   "version": "1.0.0",
   "layer": "domain",
   "exports": {
-    "EntityName": {
+    "MyEntity": {
       "type": "interface",
       "properties": {
-        "id": {"type": "string"},
-        "name": {"type": "string"}
+        "id": {"type": "string", "required": true},
+        "name": {"type": "string", "required": true}
       }
     }
   },
@@ -262,56 +466,103 @@ Architecture is valid!
 }
 ```
 
-### Service Pattern
+### Pattern 2: Service with Repository
 
 ```json
 {
-  "module": "entity-service",
+  "module": "my-service",
   "version": "1.0.0",
   "layer": "application",
   "exports": {
-    "EntityService": {
+    "MyService": {
       "type": "class",
       "methods": {
         "create": {
           "inputs": [{"name": "data", "type": "CreateDTO"}],
-          "returns": {"type": "Promise<Entity>"}
+          "returns": {"type": "Promise<MyEntity>"},
+          "calls": ["my-repository.MyRepository.save"]
         }
       }
     }
   },
   "dependencies": {
-    "entity": "Entity"
+    "my-entity": "MyEntity",
+    "my-repository": "MyRepository"
   }
 }
 ```
 
-### Repository Pattern
+### Pattern 3: Multiple Exports from Dependency
 
 ```json
 {
-  "module": "entity-repository",
-  "version": "1.0.0",
-  "layer": "infrastructure",
-  "exports": {
-    "EntityRepository": {
-      "type": "class",
-      "methods": {
-        "save": {
-          "inputs": [{"name": "entity", "type": "Entity"}],
-          "returns": {"type": "Promise<void>"}
-        }
-      }
-    }
-  },
   "dependencies": {
-    "entity": "Entity"
+    "character": "Character,CharacterAppearance,CharacterRelationship"
   }
 }
 ```
 
-## See Also
+### Pattern 4: React Component
 
-- [Schema Reference](../../schema-reference.md)
-- [Common Mistakes](../../common-mistakes.md)
-- [Type System](../../type-system.md)
+```json
+{
+  "module": "my-component-ui",
+  "version": "1.0.0",
+  "layer": "presentation",
+  "exports": {
+    "MyComponentUI": {
+      "type": "function",
+      "inputs": [{"name": "props", "type": "MyComponentProps"}],
+      "returns": {"type": "JSX.Element"}
+    },
+    "MyComponentProps": {
+      "type": "interface",
+      "properties": {
+        "title": {"type": "string", "required": true},
+        "onSave": {"type": "(data: MyData) => void", "required": true}
+      }
+    }
+  },
+  "dependencies": {
+    "my-service": "MyService"
+  }
+}
+```
+
+---
+
+## 📚 Related Documentation
+
+- **[5-Minute Quickstart](../../QUICKSTART.md)** - Get started fast
+- **[Schema Reference](../../schema-reference.md)** - Complete JSON format guide
+- **[Type System](../../type-system.md)** - All type patterns
+- **[Common Mistakes](../../common-mistakes.md)** - Error solutions
+- **[CLI Reference](../../cli-reference.md)** - Command documentation
+
+---
+
+## 🎯 Next Steps
+
+After exploring this example:
+
+1. **Copy patterns** you like into your own project
+2. **Simplify for your needs** - You probably don't need 33 modules!
+3. **Validate frequently** - `crucible validate` as you build
+4. **Start small** - Begin with 5-10 modules, grow organically
+5. **Use Claude Code** - Try `/crucible:architecture` to design new features
+
+---
+
+## 📝 Notes
+
+- This example uses **TypeScript** but patterns apply to **Rust, Python, Go, Java**
+- The **Loom** project is a real AI-assisted writing tool
+- Architecture demonstrates **production-quality** patterns
+- All 33 modules **validate successfully**
+- Designed for **learning and reference**, not necessarily the perfect architecture for every project
+
+---
+
+**Questions?** See [Common Mistakes](../../common-mistakes.md) or [Schema Reference](../../schema-reference.md).
+
+**Ready to build?** Start with the [5-Minute Quickstart](../../QUICKSTART.md)!
