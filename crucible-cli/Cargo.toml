@@ -15,14 +15,14 @@ include = [
     "src/**/*",
     "Cargo.toml",
     ".claude/commands/*.md",
-    "../docs/README.md",
-    "../docs/QUICKSTART.md",
-    "../docs/schema-reference.md",
-    "../docs/type-system.md",
-    "../docs/common-mistakes.md",
-    "../docs/cli-reference.md",
-    "../docs/feedback.md",
-    "../docs/examples/**/*",
+    "docs/README.md",
+    "docs/QUICKSTART.md",
+    "docs/schema-reference.md",
+    "docs/type-system.md",
+    "docs/common-mistakes.md",
+    "docs/cli-reference.md",
+    "docs/feedback.md",
+    "docs/examples/**/*",
 ]
 
 [[bin]]
