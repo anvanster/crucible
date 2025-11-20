@@ -21,7 +21,6 @@ include = [
     "docs/type-system.md",
     "docs/common-mistakes.md",
     "docs/cli-reference.md",
-    "docs/feedback.md",
     "docs/examples/**/*",
 ]
 
@@ -35,7 +34,7 @@ bin-dir = "{ bin }{ binary-ext }"
 pkg-fmt = "tgz"
 
 [dependencies]
-crucible-core = { version = "0.1.6", path = "../crucible-core" }
+crucible-core = { version = "0.1.7", path = "../crucible-core" }
 clap.workspace = true
 anyhow.workspace = true
 colored.workspace = true
