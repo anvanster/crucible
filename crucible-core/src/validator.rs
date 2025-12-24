@@ -1,6 +1,6 @@
 //! Architecture validation engine
 
-use crate::types::{Project, ReturnType, Severity};
+use crate::types::{ExportType, Project, ReturnType, Severity};
 use petgraph::algo::is_cyclic_directed;
 use petgraph::graph::DiGraph;
 use std::collections::HashMap;
@@ -384,6 +384,20 @@ impl Validator {
 
         // Check that all declared dependencies are used (warning only)
         if let Some(issues) = self.check_declared_dependencies() {
+            for issue in issues {
+                match issue.severity {
+                    Severity::Error => {
+                        result.valid = false;
+                        result.errors.push(issue);
+                    }
+                    Severity::Warning => result.warnings.push(issue),
+                    Severity::Info => result.info.push(issue),
+                }
+            }
+        }
+
+        // Check event and trait structure
+        if let Some(issues) = self.check_event_trait_structure() {
             for issue in issues {
                 match issue.severity {
                     Severity::Error => {
@@ -954,6 +968,136 @@ impl Validator {
                         ))
                         .with_doc_link("https://github.com/anvanster/crucible/blob/main/docs/schema-reference.md#dependencies".to_string()),
                     );
+                }
+            }
+        }
+
+        if issues.is_empty() {
+            None
+        } else {
+            Some(issues)
+        }
+    }
+
+    /// Validate event and trait export types have correct structure
+    fn check_event_trait_structure(&self) -> Option<Vec<ValidationIssue>> {
+        let mut issues = Vec::new();
+
+        for module in &self.project.modules {
+            for (export_name, export) in &module.exports {
+                match export.export_type {
+                    ExportType::Event => {
+                        // Events should have payload, not methods
+                        if export.methods.is_some() && export.methods.as_ref().unwrap().len() > 0 {
+                            issues.push(
+                                ValidationIssue::new(
+                                    "event-structure".to_string(),
+                                    Severity::Warning,
+                                    format!("Event '{}' has methods defined. Events should define payload, not methods.", export_name),
+                                    Some(format!("{}.{}", module.module, export_name)),
+                                )
+                                .with_suggestion(
+                                    "Remove methods from the event and define the event data in the 'payload' field instead.".to_string(),
+                                )
+                                .with_doc_link("https://github.com/anvanster/crucible/blob/main/crucible-cli/docs/schema-reference.md#events".to_string()),
+                            );
+                        }
+
+                        // Validate payload types exist
+                        if let Some(payload) = &export.payload {
+                            for (field_name, prop) in payload {
+                                if !self.is_type_available(&prop.prop_type, &HashMap::new()) {
+                                    issues.push(
+                                        ValidationIssue::new(
+                                            "all-types-must-exist".to_string(),
+                                            Severity::Error,
+                                            format!(
+                                                "Type '{}' not found in event payload field '{}'",
+                                                prop.prop_type, field_name
+                                            ),
+                                            Some(format!("{}.{}.payload.{}", module.module, export_name, field_name)),
+                                        )
+                                        .with_suggestion(
+                                            "Ensure the type is exported from a module listed in dependencies, \
+                                             or use a built-in type (string, number, boolean, Date)."
+                                                .to_string(),
+                                        )
+                                        .with_doc_link("https://github.com/anvanster/crucible/blob/main/crucible-cli/docs/type-system.md".to_string()),
+                                    );
+                                }
+                            }
+                        }
+                    }
+                    ExportType::Trait => {
+                        // Traits should have methods, not properties
+                        if export.properties.is_some() && export.properties.as_ref().unwrap().len() > 0 {
+                            issues.push(
+                                ValidationIssue::new(
+                                    "trait-structure".to_string(),
+                                    Severity::Warning,
+                                    format!("Trait '{}' has properties defined. Traits should only define methods.", export_name),
+                                    Some(format!("{}.{}", module.module, export_name)),
+                                )
+                                .with_suggestion(
+                                    "Remove properties from the trait. Traits should only contain method signatures. \
+                                     Use 'interface' if you need properties.".to_string(),
+                                )
+                                .with_doc_link("https://github.com/anvanster/crucible/blob/main/crucible-cli/docs/schema-reference.md#traits".to_string()),
+                            );
+                        }
+
+                        // Traits should have at least one method
+                        if export.methods.is_none() || export.methods.as_ref().unwrap().is_empty() {
+                            issues.push(
+                                ValidationIssue::new(
+                                    "trait-structure".to_string(),
+                                    Severity::Warning,
+                                    format!("Trait '{}' has no methods defined. Traits should define at least one method.", export_name),
+                                    Some(format!("{}.{}", module.module, export_name)),
+                                )
+                                .with_suggestion(
+                                    "Add at least one method to the trait.".to_string(),
+                                )
+                                .with_doc_link("https://github.com/anvanster/crucible/blob/main/crucible-cli/docs/schema-reference.md#traits".to_string()),
+                            );
+                        }
+
+                        // Traits should not have payload
+                        if export.payload.is_some() {
+                            issues.push(
+                                ValidationIssue::new(
+                                    "trait-structure".to_string(),
+                                    Severity::Error,
+                                    format!("Trait '{}' has payload defined. Payload is only valid for events.", export_name),
+                                    Some(format!("{}.{}", module.module, export_name)),
+                                )
+                                .with_suggestion(
+                                    "Remove the 'payload' field from the trait. Use 'event' type if you need a payload.".to_string(),
+                                )
+                                .with_doc_link("https://github.com/anvanster/crucible/blob/main/crucible-cli/docs/schema-reference.md#traits".to_string()),
+                            );
+                        }
+                    }
+                    _ => {
+                        // For non-event types, payload should not be used
+                        if export.payload.is_some() {
+                            issues.push(
+                                ValidationIssue::new(
+                                    "export-structure".to_string(),
+                                    Severity::Error,
+                                    format!(
+                                        "Export '{}' has payload defined but is not an event type.",
+                                        export_name
+                                    ),
+                                    Some(format!("{}.{}", module.module, export_name)),
+                                )
+                                .with_suggestion(
+                                    "Remove the 'payload' field or change the type to 'event'.".to_string(),
+                                )
+                                .with_doc_link("https://github.com/anvanster/crucible/blob/main/crucible-cli/docs/schema-reference.md#events".to_string()),
+                            );
+                        }
+                    }
                 }
             }
         }

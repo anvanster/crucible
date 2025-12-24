@@ -1,0 +1,100 @@
+{
+  "module": "domain-events",
+  "version": "1.0.0",
+  "layer": "domain",
+  "description": "Domain events for the Loom writing assistant",
+
+  "exports": {
+    "ProjectCreated": {
+      "type": "event",
+      "payload": {
+        "projectId": {"type": "string", "required": true},
+        "name": {"type": "string", "required": true},
+        "createdAt": {"type": "Date", "required": true}
+      }
+    },
+
+    "ChapterAdded": {
+      "type": "event",
+      "payload": {
+        "projectId": {"type": "string", "required": true},
+        "chapterId": {"type": "string", "required": true},
+        "title": {"type": "string", "required": true},
+        "orderIndex": {"type": "number", "required": true}
+      }
+    },
+
+    "ChapterCompleted": {
+      "type": "event",
+      "payload": {
+        "projectId": {"type": "string", "required": true},
+        "chapterId": {"type": "string", "required": true},
+        "completedAt": {"type": "Date", "required": true},
+        "wordCount": {"type": "number", "required": true}
+      }
+    },
+
+    "CharacterCreated": {
+      "type": "event",
+      "payload": {
+        "projectId": {"type": "string", "required": true},
+        "characterId": {"type": "string", "required": true},
+        "name": {"type": "string", "required": true},
+        "role": {"type": "string", "required": false}
+      }
+    },
+
+    "PlotThreadCreated": {
+      "type": "event",
+      "payload": {
+        "projectId": {"type": "string", "required": true},
+        "threadId": {"type": "string", "required": true},
+        "name": {"type": "string", "required": true},
+        "description": {"type": "string", "required": false}
+      }
+    },
+
+    "PlotThreadResolved": {
+      "type": "event",
+      "payload": {
+        "projectId": {"type": "string", "required": true},
+        "threadId": {"type": "string", "required": true},
+        "resolvedInChapter": {"type": "string", "required": true},
+        "resolvedAt": {"type": "Date", "required": true}
+      }
+    },
+
+    "ConsistencyIssueDetected": {
+      "type": "event",
+      "payload": {
+        "projectId": {"type": "string", "required": true},
+        "issueId": {"type": "string", "required": true},
+        "severity": {"type": "string", "required": true},
+        "description": {"type": "string", "required": true},
+        "affectedChapters": {"type": "string[]", "required": false}
+      }
+    },
+
+    "ConsistencyIssueResolved": {
+      "type": "event",
+      "payload": {
+        "projectId": {"type": "string", "required": true},
+        "issueId": {"type": "string", "required": true},
+        "resolvedAt": {"type": "Date", "required": true},
+        "resolution": {"type": "string", "required": false}
+      }
+    },
+
+    "AnalysisCompleted": {
+      "type": "event",
+      "payload": {
+        "projectId": {"type": "string", "required": true},
+        "analysisType": {"type": "string", "required": true},
+        "completedAt": {"type": "Date", "required": true},
+        "issuesFound": {"type": "number", "required": true}
+      }
+    }
+  },
+
+  "dependencies": {}
+}

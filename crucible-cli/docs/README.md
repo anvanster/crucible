@@ -13,19 +13,21 @@ Complete documentation for the Crucible architecture-first development framework
 
 2. **[Schema Reference](./schema-reference.md)** - Complete JSON schema documentation
    - TypeScript-style interface definitions
-   - All required and optional fields
+   - All 7 export types: class, function, interface, type, enum, event, trait
+   - Async method support for traits
    - Valid enum values
    - Complete examples
 
-3. **[Example Project](./examples/full-stack-app/)** - Real-world 33-module example
+3. **[Example Project](./examples/full-stack-app/)** - Real-world 35-module example
    - 4-layer architecture (domain, infrastructure, application, presentation)
    - TypeScript full-stack application
+   - Includes domain events and trait definitions
    - Demonstrates all major patterns
 
 ### Problem Solving
 
 4. **[Common Mistakes](./common-mistakes.md)** - Migration guide and error fixes
-   - 12 most common mistakes with fixes
+   - 16 most common mistakes with fixes
    - Batch fix scripts
    - Error message decoder
    - Time-saving migration patterns
@@ -75,11 +77,11 @@ Complete documentation for the Crucible architecture-first development framework
 
 | Document | Purpose | Length | Time Saved |
 |----------|---------|--------|------------|
-| Schema Reference | Complete JSON schema with TS interfaces | ~800 lines | 2 hours |
-| Common Mistakes | Migration guide with fixes | ~500 lines | 3.5 hours |
+| Schema Reference | Complete JSON schema with TS interfaces | ~1000 lines | 2 hours |
+| Common Mistakes | Migration guide with fixes | ~600 lines | 3.5 hours |
 | Type System | Type syntax and examples | ~600 lines | 1 hour |
 | CLI Reference | Command documentation | ~700 lines | 30 min |
-| Example Project | Real-world 33-module app | 33 modules | 2 hours |
+| Example Project | Real-world 35-module app | 35 modules | 2 hours |
 
 **Total Time Saved**: ~9 hours per new user (based on feedback.md)
 
@@ -211,6 +213,17 @@ Legend:
 
 **...infrastructure components**
 - [Example: claude-client.json](./examples/full-stack-app/.crucible/modules/claude-client.json)
+
+**...domain events**
+- [Example: domain-events.json](./examples/full-stack-app/.crucible/modules/domain-events.json)
+- See [Schema Reference - Event Export](./schema-reference.md#event-export)
+
+**...traits (behavioral contracts)**
+- [Example: core-traits.json](./examples/full-stack-app/.crucible/modules/core-traits.json)
+- See [Schema Reference - Trait Export](./schema-reference.md#trait-export)
+
+**...async methods**
+- [Example: core-traits.json](./examples/full-stack-app/.crucible/modules/core-traits.json) - Repository and AIClient traits with async methods
 
 ---
 

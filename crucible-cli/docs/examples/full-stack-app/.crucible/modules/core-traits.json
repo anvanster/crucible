@@ -1,0 +1,242 @@
+{
+  "module": "core-traits",
+  "version": "1.0.0",
+  "layer": "domain",
+  "description": "Core behavioral traits for the Loom application",
+
+  "exports": {
+    "Repository": {
+      "type": "trait",
+      "methods": {
+        "findById": {
+          "inputs": [{"name": "id", "type": "string"}],
+          "returns": {"type": "object | null"},
+          "async": true
+        },
+        "findAll": {
+          "inputs": [],
+          "returns": {"type": "object[]"},
+          "async": true
+        },
+        "save": {
+          "inputs": [{"name": "entity", "type": "object"}],
+          "returns": {"type": "object"},
+          "async": true
+        },
+        "delete": {
+          "inputs": [{"name": "id", "type": "string"}],
+          "returns": {"type": "void"},
+          "async": true
+        }
+      }
+    },
+
+    "Analyzer": {
+      "type": "trait",
+      "methods": {
+        "analyze": {
+          "inputs": [{"name": "input", "type": "AnalysisInput"}],
+          "returns": {"type": "AnalysisResult"},
+          "async": true
+        },
+        "getCapabilities": {
+          "inputs": [],
+          "returns": {"type": "string[]"},
+          "async": false
+        }
+      }
+    },
+
+    "EventHandler": {
+      "type": "trait",
+      "methods": {
+        "handle": {
+          "inputs": [{"name": "event", "type": "DomainEvent"}],
+          "returns": {"type": "void"},
+          "async": true
+        },
+        "canHandle": {
+          "inputs": [{"name": "eventType", "type": "string"}],
+          "returns": {"type": "boolean"},
+          "async": false
+        }
+      }
+    },
+
+    "CommandHandler": {
+      "type": "trait",
+      "methods": {
+        "execute": {
+          "inputs": [{"name": "command", "type": "Command"}],
+          "returns": {"type": "Result"},
+          "async": true
+        },
+        "validate": {
+          "inputs": [{"name": "command", "type": "Command"}],
+          "returns": {"type": "ValidationResult"},
+          "async": false
+        }
+      }
+    },
+
+    "AIClient": {
+      "type": "trait",
+      "methods": {
+        "complete": {
+          "inputs": [
+            {"name": "prompt", "type": "string"},
+            {"name": "options", "type": "CompletionOptions", "optional": true}
+          ],
+          "returns": {"type": "string"},
+          "async": true
+        },
+        "chat": {
+          "inputs": [
+            {"name": "messages", "type": "ChatMessage[]"},
+            {"name": "options", "type": "ChatOptions", "optional": true}
+          ],
+          "returns": {"type": "ChatResponse"},
+          "async": true
+        },
+        "isAvailable": {
+          "inputs": [],
+          "returns": {"type": "boolean"},
+          "async": true
+        }
+      }
+    },
+
+    "StorageProvider": {
+      "type": "trait",
+      "methods": {
+        "read": {
+          "inputs": [{"name": "path", "type": "string"}],
+          "returns": {"type": "string"},
+          "async": true
+        },
+        "write": {
+          "inputs": [
+            {"name": "path", "type": "string"},
+            {"name": "content", "type": "string"}
+          ],
+          "returns": {"type": "void"},
+          "async": true
+        },
+        "exists": {
+          "inputs": [{"name": "path", "type": "string"}],
+          "returns": {"type": "boolean"},
+          "async": true
+        },
+        "delete": {
+          "inputs": [{"name": "path", "type": "string"}],
+          "returns": {"type": "void"},
+          "async": true
+        },
+        "list": {
+          "inputs": [{"name": "directory", "type": "string"}],
+          "returns": {"type": "string[]"},
+          "async": true
+        }
+      }
+    },
+
+    "AnalysisInput": {
+      "type": "interface",
+      "properties": {
+        "projectId": {"type": "string", "required": true},
+        "scope": {"type": "string", "required": false},
+        "options": {"type": "object", "required": false}
+      }
+    },
+
+    "AnalysisResult": {
+      "type": "interface",
+      "properties": {
+        "success": {"type": "boolean", "required": true},
+        "findings": {"type": "Finding[]", "required": true},
+        "summary": {"type": "string", "required": false}
+      }
+    },
+
+    "Finding": {
+      "type": "interface",
+      "properties": {
+        "type": {"type": "string", "required": true},
+        "severity": {"type": "string", "required": true},
+        "message": {"type": "string", "required": true},
+        "location": {"type": "string", "required": false}
+      }
+    },
+
+    "DomainEvent": {
+      "type": "interface",
+      "properties": {
+        "type": {"type": "string", "required": true},
+        "timestamp": {"type": "Date", "required": true},
+        "aggregateId": {"type": "string", "required": true}
+      }
+    },
+
+    "Command": {
+      "type": "interface",
+      "properties": {
+        "type": {"type": "string", "required": true},
+        "payload": {"type": "object", "required": true}
+      }
+    },
+
+    "Result": {
+      "type": "interface",
+      "properties": {
+        "success": {"type": "boolean", "required": true},
+        "data": {"type": "object", "required": false},
+        "error": {"type": "string", "required": false}
+      }
+    },
+
+    "ValidationResult": {
+      "type": "interface",
+      "properties": {
+        "valid": {"type": "boolean", "required": true},
+        "errors": {"type": "string[]", "required": false}
+      }
+    },
+
+    "CompletionOptions": {
+      "type": "interface",
+      "properties": {
+        "maxTokens": {"type": "number", "required": false},
+        "temperature": {"type": "number", "required": false},
+        "stopSequences": {"type": "string[]", "required": false}
+      }
+    },
+
+    "ChatMessage": {
+      "type": "interface",
+      "properties": {
+        "role": {"type": "string", "required": true},
+        "content": {"type": "string", "required": true}
+      }
+    },
+
+    "ChatOptions": {
+      "type": "interface",
+      "properties": {
+        "maxTokens": {"type": "number", "required": false},
+        "temperature": {"type": "number", "required": false},
+        "systemPrompt": {"type": "string", "required": false}
+      }
+    },
+
+    "ChatResponse": {
+      "type": "interface",
+      "properties": {
+        "content": {"type": "string", "required": true},
+        "tokensUsed": {"type": "number", "required": false},
+        "finishReason": {"type": "string", "required": false}
+      }
+    }
+  },
+
+  "dependencies": {}
+}

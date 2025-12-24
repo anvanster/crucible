@@ -1,6 +1,6 @@
 # Common Mistakes and How to Fix Them
 
-Migration guide for users transitioning to Crucible or fixing validation errors.
+Migration guide for users transitioning to Crucible or fixing validation errors. Covers 16 common mistakes with solutions.
 
 ## Table of Contents
 
@@ -9,6 +9,7 @@ Migration guide for users transitioning to Crucible or fixing validation errors.
 - [Type Structure Mistakes](#type-structure-mistakes)
 - [Dependency Format Errors](#dependency-format-errors)
 - [Export Type Restrictions](#export-type-restrictions)
+- [Event and Trait Mistakes](#event-and-trait-mistakes)
 - [Layer Dependency Issues](#layer-dependency-issues)
 - [Quick Fix Patterns](#quick-fix-patterns)
 
@@ -365,7 +366,7 @@ Dependency 'user-service' is declared but not used at module-name
 
 **Error Message:**
 ```
-unknown variant 'react-component', expected one of 'class', 'function', 'interface', 'type', 'enum'
+unknown variant 'react-component', expected one of 'class', 'function', 'interface', 'type', 'enum', 'event', 'trait'
 ```
 
 **Incorrect:**
@@ -399,7 +400,7 @@ unknown variant 'react-component', expected one of 'class', 'function', 'interfa
 }
 ```
 
-**Why:** Crucible only supports 5 export types: `class`, `function`, `interface`, `type`, `enum`.
+**Why:** Crucible supports 7 export types: `class`, `function`, `interface`, `type`, `enum`, `event`, `trait`.
 
 **React Component Pattern:**
 - Use `function` for functional components
@@ -444,9 +445,176 @@ Function exports should use 'inputs' and 'returns', not 'properties'
 
 ---
 
+## Event and Trait Mistakes
+
+### ❌ Mistake 11: Using Methods on Event Export
+
+**Error Message:**
+```
+Event exports should use 'payload', not 'methods'
+```
+
+**Incorrect:**
+```json
+{
+  "UserCreated": {
+    "type": "event",
+    "methods": {
+      "getData": {
+        "inputs": [],
+        "returns": {"type": "object"}
+      }
+    }
+  }
+}
+```
+
+**Correct:**
+```json
+{
+  "UserCreated": {
+    "type": "event",
+    "payload": {
+      "userId": {"type": "string", "required": true},
+      "email": {"type": "string", "required": true},
+      "createdAt": {"type": "Date", "required": true}
+    }
+  }
+}
+```
+
+**Why:** Events represent immutable facts that have occurred. They carry data via `payload`, not behavior via `methods`.
+
+---
+
+### ❌ Mistake 12: Using Properties on Trait Export
+
+**Error Message:**
+```
+Trait exports should use 'methods', not 'properties'
+```
+
+**Incorrect:**
+```json
+{
+  "Repository": {
+    "type": "trait",
+    "properties": {
+      "connection": {"type": "Connection"}
+    }
+  }
+}
+```
+
+**Correct:**
+```json
+{
+  "Repository": {
+    "type": "trait",
+    "methods": {
+      "findById": {
+        "inputs": [{"name": "id", "type": "string"}],
+        "returns": {"type": "object | null"},
+        "async": true
+      },
+      "save": {
+        "inputs": [{"name": "entity", "type": "object"}],
+        "returns": {"type": "object"},
+        "async": true
+      }
+    }
+  }
+}
+```
+
+**Why:** Traits define behavioral contracts (like Rust traits or Go interfaces). They specify methods that implementors must provide, not data properties.
+
+---
+
+### ❌ Mistake 13: Missing Async Flag on Trait Methods
+
+**Error Message:**
+```
+Method 'findById' appears to be async but missing 'async: true' flag
+```
+
+**Incorrect:**
+```json
+{
+  "Repository": {
+    "type": "trait",
+    "methods": {
+      "findById": {
+        "inputs": [{"name": "id", "type": "string"}],
+        "returns": {"type": "Promise<User>"}
+      }
+    }
+  }
+}
+```
+
+**Correct:**
+```json
+{
+  "Repository": {
+    "type": "trait",
+    "methods": {
+      "findById": {
+        "inputs": [{"name": "id", "type": "string"}],
+        "returns": {"type": "User | null"},
+        "async": true
+      }
+    }
+  }
+}
+```
+
+**Why:** Use the `async: true` flag instead of wrapping return types in `Promise<T>`. The code generator handles async wrapping based on the target language.
+
+**Note:** The `async` flag works on any method, not just traits. It's especially useful for traits where you want consistent async behavior across implementations.
+
+---
+
+### ❌ Mistake 14: Using Payload on Non-Event Types
+
+**Error Message:**
+```
+Only event exports can have 'payload' field
+```
+
+**Incorrect:**
+```json
+{
+  "UserDTO": {
+    "type": "interface",
+    "payload": {
+      "id": {"type": "string"},
+      "name": {"type": "string"}
+    }
+  }
+}
+```
+
+**Correct:**
+```json
+{
+  "UserDTO": {
+    "type": "interface",
+    "properties": {
+      "id": {"type": "string", "required": true},
+      "name": {"type": "string", "required": true}
+    }
+  }
+}
+```
+
+**Why:** The `payload` field is specific to event exports. For interfaces and types, use `properties`.
+
+---
+
 ## Layer Dependency Issues
 
-### ❌ Mistake 11: Restrictive Layer Rules
+### ❌ Mistake 15: Restrictive Layer Rules
 
 **Error Message:**
 ```
@@ -507,7 +675,7 @@ Layer boundary violation: domain module 'user' cannot depend on domain module 'r
 
 ---
 
-### ❌ Mistake 12: Wrong Layer Dependency Direction
+### ❌ Mistake 16: Wrong Layer Dependency Direction
 
 **Error Message:**
 ```
@@ -659,7 +827,11 @@ This order minimizes circular dependency issues during migration.
 | `expected struct Property` | Used string instead of object for property | [Mistake 5](#-mistake-5-simple-string-for-property-types) |
 | `expected struct ReturnType` | Used string instead of object for return | [Mistake 6](#-mistake-6-simple-string-for-return-type) |
 | `unknown variant 'X'` | Invalid export type | [Mistake 9](#-mistake-9-invalid-export-type) |
-| `Layer boundary violation` | Wrong dependency direction or restrictive rules | [Mistake 11](#-mistake-11-restrictive-layer-rules), [Mistake 12](#-mistake-12-wrong-layer-dependency-direction) |
+| `Event exports should use 'payload'` | Used methods/properties on event | [Mistake 11](#-mistake-11-using-methods-on-event-export) |
+| `Trait exports should use 'methods'` | Used properties on trait | [Mistake 12](#-mistake-12-using-properties-on-trait-export) |
+| `Method appears to be async` | Missing async flag | [Mistake 13](#-mistake-13-missing-async-flag-on-trait-methods) |
+| `Only event exports can have 'payload'` | Used payload on non-event | [Mistake 14](#-mistake-14-using-payload-on-non-event-types) |
+| `Layer boundary violation` | Wrong dependency direction or restrictive rules | [Mistake 15](#-mistake-15-restrictive-layer-rules), [Mistake 16](#-mistake-16-wrong-layer-dependency-direction) |
 
 ---
 
@@ -685,6 +857,8 @@ If you encounter an error not covered here:
 3. ❌ `properties: "string"` → ✅ `properties: {type: "string"}` (30 minutes to batch fix)
 4. ❌ `parameters` → ✅ `inputs` (10 minutes to batch fix)
 5. ❌ Layer rules without intra-layer deps (15 minutes + understanding)
+6. ❌ `methods` on events → ✅ `payload` (5 minutes to fix)
+7. ❌ `properties` on traits → ✅ `methods` (10 minutes to restructure)
 
 **Total typical migration time:**
 - With this guide: **~30 minutes**

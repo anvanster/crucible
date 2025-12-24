@@ -1,0 +1,78 @@
+{
+  "module": "repository",
+  "version": "1.0.0",
+  "layer": "domain",
+  "description": "Repository trait defining data access patterns",
+
+  "exports": {
+    "Repository": {
+      "type": "trait",
+      "methods": {
+        "findById": {
+          "inputs": [
+            {"name": "id", "type": "string"}
+          ],
+          "returns": {"type": "object | null"},
+          "async": true
+        },
+        "findAll": {
+          "inputs": [],
+          "returns": {"type": "object[]"},
+          "async": true
+        },
+        "save": {
+          "inputs": [
+            {"name": "entity", "type": "object"}
+          ],
+          "returns": {"type": "object"},
+          "async": true
+        },
+        "delete": {
+          "inputs": [
+            {"name": "id", "type": "string"}
+          ],
+          "returns": {"type": "void"},
+          "async": true
+        },
+        "exists": {
+          "inputs": [
+            {"name": "id", "type": "string"}
+          ],
+          "returns": {"type": "boolean"},
+          "async": true
+        }
+      }
+    },
+
+    "EventPublisher": {
+      "type": "trait",
+      "methods": {
+        "publish": {
+          "inputs": [
+            {"name": "event", "type": "DomainEvent"}
+          ],
+          "returns": {"type": "Promise<void>"},
+          "async": true
+        },
+        "publishAll": {
+          "inputs": [
+            {"name": "events", "type": "DomainEvent[]"}
+          ],
+          "returns": {"type": "Promise<void>"},
+          "async": true
+        }
+      }
+    },
+
+    "DomainEvent": {
+      "type": "interface",
+      "properties": {
+        "type": {"type": "string", "required": true},
+        "timestamp": {"type": "Date", "required": true},
+        "aggregateId": {"type": "string", "required": true}
+      }
+    }
+  },
+
+  "dependencies": {}
+}

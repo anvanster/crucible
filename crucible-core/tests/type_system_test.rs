@@ -11,7 +11,6 @@ use crucible_core::types::Module;
 // =============================================================================
 
 #[test]
-#[ignore] // Remove this when implementing
 fn test_builtin_primitive_types_recognized() {
     // Given: Common primitive types
     let primitives = vec!["string", "number", "boolean", "void"];
@@ -27,7 +26,6 @@ fn test_builtin_primitive_types_recognized() {
 }
 
 #[test]
-#[ignore]
 fn test_builtin_object_types_recognized() {
     // Given: Common built-in object types
     let objects = vec!["Date", "Buffer", "Error", "RegExp"];
@@ -43,7 +41,6 @@ fn test_builtin_object_types_recognized() {
 }
 
 #[test]
-#[ignore]
 fn test_builtin_special_types_recognized() {
     // Given: Special TypeScript types
     let special = vec!["object", "any", "unknown", "null", "undefined"];
@@ -56,7 +53,6 @@ fn test_builtin_special_types_recognized() {
 }
 
 #[test]
-#[ignore]
 fn test_custom_types_not_builtin() {
     // Given: Custom type names
     let custom = vec!["Patient", "User", "CustomType"];
@@ -76,7 +72,6 @@ fn test_custom_types_not_builtin() {
 // =============================================================================
 
 #[test]
-#[ignore]
 fn test_parse_nullable_type() {
     // Given: TypeParser with JSON-like params
     let parser = TypeParser::new();
@@ -92,7 +87,6 @@ fn test_parse_nullable_type() {
 }
 
 #[test]
-#[ignore]
 fn test_parse_non_nullable_type() {
     // Given: TypeParser with JSON-like params
     let parser = TypeParser::new();
@@ -106,7 +100,6 @@ fn test_parse_non_nullable_type() {
 }
 
 #[test]
-#[ignore]
 fn test_validate_nullable_type_exists() {
     // Given: Modules with a Patient type
     let modules = vec![create_patient_module()];
@@ -126,7 +119,6 @@ fn test_validate_nullable_type_exists() {
 // =============================================================================
 
 #[test]
-#[ignore]
 fn test_parse_array_shorthand_syntax() {
     // Given: Array shorthand syntax
     let type_str = "Patient[]";
@@ -142,7 +134,6 @@ fn test_parse_array_shorthand_syntax() {
 }
 
 #[test]
-#[ignore]
 fn test_parse_nested_array_syntax() {
     // Given: Nested array syntax
     let type_str = "Patient[][]";
@@ -159,7 +150,6 @@ fn test_parse_nested_array_syntax() {
 }
 
 #[test]
-#[ignore]
 fn test_parse_array_long_form() {
     // Given: TypeParser with array items
     let parser = TypeParser::new();
@@ -177,7 +167,6 @@ fn test_parse_array_long_form() {
 }
 
 #[test]
-#[ignore]
 fn test_validate_array_type() {
     // Given: Modules with a Patient type
     let modules = vec![create_patient_module()];
@@ -197,7 +186,6 @@ fn test_validate_array_type() {
 // =============================================================================
 
 #[test]
-#[ignore]
 fn test_parse_partial_generic() {
     // Given: TypeParser with type args
     let parser = TypeParser::new();
@@ -215,7 +203,6 @@ fn test_parse_partial_generic() {
 }
 
 #[test]
-#[ignore]
 fn test_generic_types_recognized() {
     // Given: Common generic utility types
     let generics = vec!["Partial", "Omit", "Pick", "Record", "Promise"];
@@ -228,7 +215,6 @@ fn test_generic_types_recognized() {
 }
 
 #[test]
-#[ignore]
 fn test_validate_partial_type() {
     // Given: Modules with a Patient type
     let modules = vec![create_patient_module()];
@@ -256,7 +242,6 @@ fn test_validate_partial_type() {
 }
 
 #[test]
-#[ignore]
 fn test_validate_promise_type() {
     // Given: Modules with a Patient type
     let modules = vec![create_patient_module()];
@@ -288,7 +273,6 @@ fn test_validate_promise_type() {
 // =============================================================================
 
 #[test]
-#[ignore]
 fn test_validate_complex_type_combinations() {
     // Given: Modules with various types
     let modules = vec![create_patient_module()];
@@ -345,6 +329,7 @@ fn create_patient_module() -> Module {
             properties: Some(properties),
             values: None,
             dependencies: None,
+            payload: None,
         },
     );
 

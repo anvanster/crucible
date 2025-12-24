@@ -8,7 +8,9 @@
   "modules": [
     "api",
     "todo",
-    "auth"
+    "auth",
+    "todo-events",
+    "repository"
   ],
   "strict_validation": true,
   "metadata": {

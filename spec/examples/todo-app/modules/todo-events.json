@@ -1,0 +1,48 @@
+{
+  "module": "todo-events",
+  "version": "1.0.0",
+  "layer": "domain",
+  "description": "Domain events for todo operations",
+
+  "exports": {
+    "TodoCreated": {
+      "type": "event",
+      "payload": {
+        "todoId": {"type": "string", "required": true},
+        "userId": {"type": "string", "required": true},
+        "title": {"type": "string", "required": true},
+        "createdAt": {"type": "Date", "required": true}
+      }
+    },
+
+    "TodoCompleted": {
+      "type": "event",
+      "payload": {
+        "todoId": {"type": "string", "required": true},
+        "userId": {"type": "string", "required": true},
+        "completedAt": {"type": "Date", "required": true}
+      }
+    },
+
+    "TodoDeleted": {
+      "type": "event",
+      "payload": {
+        "todoId": {"type": "string", "required": true},
+        "userId": {"type": "string", "required": true},
+        "deletedAt": {"type": "Date", "required": true}
+      }
+    },
+
+    "TodoUpdated": {
+      "type": "event",
+      "payload": {
+        "todoId": {"type": "string", "required": true},
+        "userId": {"type": "string", "required": true},
+        "changes": {"type": "string[]", "required": true, "description": "List of changed field names"},
+        "updatedAt": {"type": "Date", "required": true}
+      }
+    }
+  },
+
+  "dependencies": {}
+}

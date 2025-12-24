@@ -6,6 +6,8 @@
     "architecture_pattern": "layered"
   },
   "modules": [
+    "domain-events",
+    "core-traits",
     "project-config",
     "spec-info",
     "chapter",

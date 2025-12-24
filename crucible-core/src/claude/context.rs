@@ -392,6 +392,7 @@ mod tests {
                 properties: None,
                 values: None,
                 dependencies: None,
+                payload: None,
             },
         );
 

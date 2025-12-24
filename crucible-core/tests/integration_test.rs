@@ -267,3 +267,300 @@ fn test_empty_project_validation() {
     assert!(result.valid);
     assert!(result.errors.is_empty());
 }
+
+// =============================================================================
+// Event Type Validation Tests
+// =============================================================================
+
+#[test]
+fn test_event_type_valid() {
+    let dir = tempdir().unwrap();
+    let manifest = r#"{"version": "0.1.0", "project": {"name": "test", "language": "typescript"}, "modules": ["events"]}"#;
+    fs::write(dir.path().join("manifest.json"), manifest).unwrap();
+    fs::create_dir(dir.path().join("modules")).unwrap();
+
+    // Valid event with payload
+    let events_module = r#"{
+        "module": "events",
+        "version": "1.0.0",
+        "exports": {
+            "UserCreated": {
+                "type": "event",
+                "payload": {
+                    "userId": {"type": "string", "required": true},
+                    "email": {"type": "string", "required": true},
+                    "createdAt": {"type": "Date", "required": true}
+                }
+            }
+        },
+        "dependencies": {}
+    }"#;
+    fs::write(dir.path().join("modules/events.json"), events_module).unwrap();
+
+    let parser = Parser::new(dir.path());
+    let project = parser.parse_project().unwrap();
+    let validator = Validator::new(project);
+    let result = validator.validate();
+
+    assert!(result.valid, "Event type should be valid: {:?}", result.errors);
+}
+
+#[test]
+fn test_event_with_methods_warns() {
+    let dir = tempdir().unwrap();
+    let manifest = r#"{"version": "0.1.0", "project": {"name": "test", "language": "typescript"}, "modules": ["events"]}"#;
+    fs::write(dir.path().join("manifest.json"), manifest).unwrap();
+    fs::create_dir(dir.path().join("modules")).unwrap();
+
+    // Event with methods (should warn)
+    let events_module = r#"{
+        "module": "events",
+        "version": "1.0.0",
+        "exports": {
+            "BadEvent": {
+                "type": "event",
+                "payload": {
+                    "data": {"type": "string", "required": true}
+                },
+                "methods": {
+                    "doSomething": {
+                        "inputs": [],
+                        "returns": {"type": "void"}
+                    }
+                }
+            }
+        },
+        "dependencies": {}
+    }"#;
+    fs::write(dir.path().join("modules/events.json"), events_module).unwrap();
+
+    let parser = Parser::new(dir.path());
+    let project = parser.parse_project().unwrap();
+    let validator = Validator::new(project);
+    let result = validator.validate();
+
+    // Should have a warning about event having methods
+    assert!(!result.warnings.is_empty(), "Should warn about event with methods");
+    assert!(result.warnings.iter().any(|w| w.rule == "event-structure"));
+}
+
+#[test]
+fn test_event_payload_type_validation() {
+    let dir = tempdir().unwrap();
+    let manifest = r#"{"version": "0.1.0", "project": {"name": "test", "language": "typescript"}, "modules": ["events"]}"#;
+    fs::write(dir.path().join("manifest.json"), manifest).unwrap();
+    fs::create_dir(dir.path().join("modules")).unwrap();
+
+    // Event with invalid payload type
+    let events_module = r#"{
+        "module": "events",
+        "version": "1.0.0",
+        "exports": {
+            "BadEvent": {
+                "type": "event",
+                "payload": {
+                    "data": {"type": "NonExistentType", "required": true}
+                }
+            }
+        },
+        "dependencies": {}
+    }"#;
+    fs::write(dir.path().join("modules/events.json"), events_module).unwrap();
+
+    let parser = Parser::new(dir.path());
+    let project = parser.parse_project().unwrap();
+    let validator = Validator::new(project);
+    let result = validator.validate();
+
+    assert!(!result.valid, "Event with non-existent payload type should fail");
+    assert!(result.errors.iter().any(|e| e.rule == "all-types-must-exist"));
+}
+
+// =============================================================================
+// Trait Type Validation Tests
+// =============================================================================
+
+#[test]
+fn test_trait_type_valid() {
+    let dir = tempdir().unwrap();
+    let manifest = r#"{"version": "0.1.0", "project": {"name": "test", "language": "typescript"}, "modules": ["traits"]}"#;
+    fs::write(dir.path().join("manifest.json"), manifest).unwrap();
+    fs::create_dir(dir.path().join("modules")).unwrap();
+
+    // Valid trait with async methods
+    let traits_module = r#"{
+        "module": "traits",
+        "version": "1.0.0",
+        "exports": {
+            "Repository": {
+                "type": "trait",
+                "methods": {
+                    "findById": {
+                        "inputs": [{"name": "id", "type": "string"}],
+                        "returns": {"type": "object"},
+                        "async": true
+                    },
+                    "save": {
+                        "inputs": [{"name": "entity", "type": "object"}],
+                        "returns": {"type": "void"},
+                        "async": true
+                    }
+                }
+            }
+        },
+        "dependencies": {}
+    }"#;
+    fs::write(dir.path().join("modules/traits.json"), traits_module).unwrap();
+
+    let parser = Parser::new(dir.path());
+    let project = parser.parse_project().unwrap();
+    let validator = Validator::new(project);
+    let result = validator.validate();
+
+    assert!(result.valid, "Trait type should be valid: {:?}", result.errors);
+}
+
+#[test]
+fn test_trait_without_methods_warns() {
+    let dir = tempdir().unwrap();
+    let manifest = r#"{"version": "0.1.0", "project": {"name": "test", "language": "typescript"}, "modules": ["traits"]}"#;
+    fs::write(dir.path().join("manifest.json"), manifest).unwrap();
+    fs::create_dir(dir.path().join("modules")).unwrap();
+
+    // Trait without methods (should warn)
+    let traits_module = r#"{
+        "module": "traits",
+        "version": "1.0.0",
+        "exports": {
+            "EmptyTrait": {
+                "type": "trait",
+                "methods": {}
+            }
+        },
+        "dependencies": {}
+    }"#;
+    fs::write(dir.path().join("modules/traits.json"), traits_module).unwrap();
+
+    let parser = Parser::new(dir.path());
+    let project = parser.parse_project().unwrap();
+    let validator = Validator::new(project);
+    let result = validator.validate();
+
+    // Should have a warning about trait without methods
+    assert!(!result.warnings.is_empty(), "Should warn about trait without methods");
+    assert!(result.warnings.iter().any(|w| w.rule == "trait-structure"));
+}
+
+#[test]
+fn test_trait_with_properties_warns() {
+    let dir = tempdir().unwrap();
+    let manifest = r#"{"version": "0.1.0", "project": {"name": "test", "language": "typescript"}, "modules": ["traits"]}"#;
+    fs::write(dir.path().join("manifest.json"), manifest).unwrap();
+    fs::create_dir(dir.path().join("modules")).unwrap();
+
+    // Trait with properties (should warn)
+    let traits_module = r#"{
+        "module": "traits",
+        "version": "1.0.0",
+        "exports": {
+            "BadTrait": {
+                "type": "trait",
+                "methods": {
+                    "doSomething": {
+                        "inputs": [],
+                        "returns": {"type": "void"}
+                    }
+                },
+                "properties": {
+                    "name": {"type": "string", "required": true}
+                }
+            }
+        },
+        "dependencies": {}
+    }"#;
+    fs::write(dir.path().join("modules/traits.json"), traits_module).unwrap();
+
+    let parser = Parser::new(dir.path());
+    let project = parser.parse_project().unwrap();
+    let validator = Validator::new(project);
+    let result = validator.validate();
+
+    // Should have a warning about trait with properties
+    assert!(!result.warnings.is_empty(), "Should warn about trait with properties");
+    assert!(result.warnings.iter().any(|w| w.rule == "trait-structure"));
+}
+
+#[test]
+fn test_trait_with_payload_errors() {
+    let dir = tempdir().unwrap();
+    let manifest = r#"{"version": "0.1.0", "project": {"name": "test", "language": "typescript"}, "modules": ["traits"]}"#;
+    fs::write(dir.path().join("manifest.json"), manifest).unwrap();
+    fs::create_dir(dir.path().join("modules")).unwrap();
+
+    // Trait with payload (should error - payload is for events only)
+    let traits_module = r#"{
+        "module": "traits",
+        "version": "1.0.0",
+        "exports": {
+            "BadTrait": {
+                "type": "trait",
+                "methods": {
+                    "doSomething": {
+                        "inputs": [],
+                        "returns": {"type": "void"}
+                    }
+                },
+                "payload": {
+                    "data": {"type": "string", "required": true}
+                }
+            }
+        },
+        "dependencies": {}
+    }"#;
+    fs::write(dir.path().join("modules/traits.json"), traits_module).unwrap();
+
+    let parser = Parser::new(dir.path());
+    let project = parser.parse_project().unwrap();
+    let validator = Validator::new(project);
+    let result = validator.validate();
+
+    // Should have an error about trait with payload
+    assert!(!result.valid, "Trait with payload should fail validation");
+    assert!(result.errors.iter().any(|e| e.rule == "trait-structure"));
+}
+
+#[test]
+fn test_non_event_with_payload_errors() {
+    let dir = tempdir().unwrap();
+    let manifest = r#"{"version": "0.1.0", "project": {"name": "test", "language": "typescript"}, "modules": ["types"]}"#;
+    fs::write(dir.path().join("manifest.json"), manifest).unwrap();
+    fs::create_dir(dir.path().join("modules")).unwrap();
+
+    // Interface with payload (should error - payload is for events only)
+    let types_module = r#"{
+        "module": "types",
+        "version": "1.0.0",
+        "exports": {
+            "BadInterface": {
+                "type": "interface",
+                "properties": {
+                    "name": {"type": "string", "required": true}
+                },
+                "payload": {
+                    "data": {"type": "string", "required": true}
+                }
+            }
+        },
+        "dependencies": {}
+    }"#;
+    fs::write(dir.path().join("modules/types.json"), types_module).unwrap();
+
+    let parser = Parser::new(dir.path());
+    let project = parser.parse_project().unwrap();
+    let validator = Validator::new(project);
+    let result = validator.validate();
+
+    // Should have an error about non-event with payload
+    assert!(!result.valid, "Non-event with payload should fail validation");
+    assert!(result.errors.iter().any(|e| e.rule == "export-structure"));
+}

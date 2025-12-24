@@ -111,8 +111,95 @@ impl Generator {
                     }
                     output.push_str("}\n\n");
                 }
-                _ => {
-                    // TODO: Implement other export types
+                ExportType::Type => {
+                    // Type alias - generate as TypeScript type
+                    output.push_str(&format!("export type {name} = {{\n"));
+                    if let Some(props) = &export.properties {
+                        for (prop_name, prop) in props {
+                            let optional = if prop.required { "" } else { "?" };
+                            output.push_str(&format!(
+                                "  {}{}: {};\n",
+                                prop_name, optional, prop.prop_type
+                            ));
+                        }
+                    }
+                    output.push_str("};\n\n");
+                }
+                ExportType::Event => {
+                    // Domain event - generate as TypeScript type with payload
+                    output.push_str(&format!("/**\n * Domain Event: {name}\n */\n"));
+                    output.push_str(&format!("export type {name} = {{\n"));
+                    output.push_str(&format!("  readonly type: '{name}';\n"));
+                    output.push_str("  readonly timestamp: Date;\n");
+                    if let Some(payload) = &export.payload {
+                        output.push_str("  readonly payload: {\n");
+                        for (field_name, prop) in payload {
+                            let optional = if prop.required { "" } else { "?" };
+                            output.push_str(&format!(
+                                "    {}{}: {};\n",
+                                field_name, optional, prop.prop_type
+                            ));
+                        }
+                        output.push_str("  };\n");
+                    }
+                    output.push_str("};\n\n");
+
+                    // Generate event factory function
+                    output.push_str(&format!("export function create{name}("));
+                    if let Some(payload) = &export.payload {
+                        let params: Vec<String> = payload
+                            .iter()
+                            .filter(|(_, prop)| prop.required)
+                            .map(|(name, prop)| format!("{}: {}", name, prop.prop_type))
+                            .collect();
+                        output.push_str(&params.join(", "));
+                    }
+                    output.push_str(&format!("): {name} {{\n"));
+                    output.push_str("  return {\n");
+                    output.push_str(&format!("    type: '{name}',\n"));
+                    output.push_str("    timestamp: new Date(),\n");
+                    if let Some(payload) = &export.payload {
+                        output.push_str("    payload: {\n");
+                        for (field_name, _) in payload {
+                            output.push_str(&format!("      {field_name},\n"));
+                        }
+                        output.push_str("    },\n");
+                    }
+                    output.push_str("  };\n");
+                    output.push_str("}\n\n");
+                }
+                ExportType::Trait => {
+                    // Trait - generate as TypeScript interface with optional async methods
+                    output.push_str(&format!("/**\n * Trait: {name}\n */\n"));
+                    output.push_str(&format!("export interface {name} {{\n"));
+                    if let Some(methods) = &export.methods {
+                        for (method_name, method) in methods {
+                            // Parameters
+                            let params: Vec<String> = method
+                                .inputs
+                                .iter()
+                                .map(|p| {
+                                    let optional = if p.optional { "?" } else { "" };
+                                    format!("{}{}: {}", p.name, optional, p.param_type)
+                                })
+                                .collect();
+
+                            // Return type - wrap in Promise if async
+                            let return_type = if method.is_async {
+                                format!("Promise<{}>", method.returns.return_type)
+                            } else {
+                                method.returns.return_type.clone()
+                            };
+
+                            output.push_str(&format!(
+                                "  {}({}): {};\n",
+                                method_name,
+                                params.join(", "),
+                                return_type
+                            ));
+                        }
+                    }
+                    output.push_str("}\n\n");
                 }
             }
         }
@@ -171,6 +258,7 @@ mod tests {
                 properties: Some(props),
                 values: None,
                 dependencies: None,
+                payload: None,
             },
         );
 
@@ -219,6 +307,7 @@ mod tests {
                 throws: vec![],
                 calls: vec![],
                 effects: vec![],
+                is_async: false,
             },
         );
 
@@ -231,6 +320,7 @@ mod tests {
                 properties: None,
                 values: None,
                 dependencies: None,
+                payload: None,
             },
         );
 
@@ -287,6 +377,7 @@ mod tests {
                 throws: vec![],
                 calls: vec![],
                 effects: vec![],
+                is_async: false,
             },
         );
 
@@ -299,6 +390,7 @@ mod tests {
                 properties: None,
                 values: None,
                 dependencies: None,
+                payload: None,
             },
         );
 
@@ -340,6 +432,7 @@ mod tests {
                     "Pending".to_string(),
                 ]),
                 dependencies: None,
+                payload: None,
             },
         );
 
@@ -471,6 +564,7 @@ mod tests {
                 throws: vec![],
                 calls: vec![],
                 effects: vec![],
+                is_async: false,
             },
         );
 
@@ -483,6 +577,7 @@ mod tests {
                 properties: None,
                 values: None,
                 dependencies: None,
+                payload: None,
             },
         );
 
@@ -506,5 +601,197 @@ mod tests {
         let output = generator.generate_typescript_module(module_ref).unwrap();
 
         assert!(output.contains("execute(): void {"));
+    }
+
+    #[test]
+    fn test_generate_event() {
+        let mut payload = HashMap::new();
+        payload.insert(
+            "imageId".to_string(),
+            Property {
+                prop_type: "ImageId".to_string(),
+                required: true,
+                description: None,
+            },
+        );
+        payload.insert(
+            "timestamp".to_string(),
+            Property {
+                prop_type: "DateTime".to_string(),
+                required: false,
+                description: None,
+            },
+        );
+
+        let mut exports = HashMap::new();
+        exports.insert(
+            "VMImagePulled".to_string(),
+            Export {
+                export_type: ExportType::Event,
+                methods: None,
+                properties: None,
+                values: None,
+                dependencies: None,
+                payload: Some(payload),
+            },
+        );
+
+        let module = Module {
+            module: "events".to_string(),
+            version: "1.0.0".to_string(),
+            layer: None,
+            description: None,
+            exports,
+            dependencies: HashMap::new(),
+        };
+
+        let project = Project {
+            manifest: create_test_manifest(),
+            modules: vec![module],
+            rules: None,
+        };
+
+        let generator = Generator::new(project);
+        let module_ref = &generator.project.modules[0];
+        let output = generator.generate_typescript_module(module_ref).unwrap();
+
+        assert!(output.contains("Domain Event: VMImagePulled"));
+        assert!(output.contains("export type VMImagePulled = {"));
+        assert!(output.contains("readonly type: 'VMImagePulled';"));
+        assert!(output.contains("readonly timestamp: Date;"));
+        assert!(output.contains("imageId: ImageId;"));
+        assert!(output.contains("export function createVMImagePulled("));
+    }
+
+    #[test]
+    fn test_generate_trait() {
+        let mut methods = HashMap::new();
+        methods.insert(
+            "plan".to_string(),
+            Method {
+                inputs: vec![Parameter {
+                    name: "request".to_string(),
+                    param_type: "BuildRequest".to_string(),
+                    optional: false,
+                    description: None,
+                }],
+                returns: ReturnType {
+                    return_type: "BuildPlan".to_string(),
+                    inner: None,
+                },
+                throws: vec![],
+                calls: vec![],
+                effects: vec![],
+                is_async: true,
+            },
+        );
+        methods.insert(
+            "validate".to_string(),
+            Method {
+                inputs: vec![],
+                returns: ReturnType {
+                    return_type: "boolean".to_string(),
+                    inner: None,
+                },
+                throws: vec![],
+                calls: vec![],
+                effects: vec![],
+                is_async: false,
+            },
+        );
+
+        let mut exports = HashMap::new();
+        exports.insert(
+            "Orchestrate".to_string(),
+            Export {
+                export_type: ExportType::Trait,
+                methods: Some(methods),
+                properties: None,
+                values: None,
+                dependencies: None,
+                payload: None,
+            },
+        );
+
+        let module = Module {
+            module: "traits".to_string(),
+            version: "1.0.0".to_string(),
+            layer: None,
+            description: None,
+            exports,
+            dependencies: HashMap::new(),
+        };
+
+        let project = Project {
+            manifest: create_test_manifest(),
+            modules: vec![module],
+            rules: None,
+        };
+
+        let generator = Generator::new(project);
+        let module_ref = &generator.project.modules[0];
+        let output = generator.generate_typescript_module(module_ref).unwrap();
+
+        assert!(output.contains("Trait: Orchestrate"));
+        assert!(output.contains("export interface Orchestrate {"));
+        assert!(output.contains("plan(request: BuildRequest): Promise<BuildPlan>;"));
+        assert!(output.contains("validate(): boolean;"));
+    }
+
+    #[test]
+    fn test_generate_type() {
+        let mut props = HashMap::new();
+        props.insert(
+            "id".to_string(),
+            Property {
+                prop_type: "string".to_string(),
+                required: true,
+                description: None,
+            },
+        );
+        props.insert(
+            "name".to_string(),
+            Property {
+                prop_type: "string".to_string(),
+                required: true,
+                description: None,
+            },
+        );
+
+        let mut exports = HashMap::new();
+        exports.insert(
+            "UserId".to_string(),
+            Export {
+                export_type: ExportType::Type,
+                methods: None,
+                properties: Some(props),
+                values: None,
+                dependencies: None,
+                payload: None,
+            },
+        );
+
+        let module = Module {
+            module: "types".to_string(),
+            version: "1.0.0".to_string(),
+            layer: None,
+            description: None,
+            exports,
+            dependencies: HashMap::new(),
+        };
+
+        let project = Project {
+            manifest: create_test_manifest(),
+            modules: vec![module],
+            rules: None,
+        };
+
+        let generator = Generator::new(project);
+        let module_ref = &generator.project.modules[0];
+        let output = generator.generate_typescript_module(module_ref).unwrap();
+
+        assert!(output.contains("export type UserId = {"));
+        assert!(output.contains("id: string;"));
+        assert!(output.contains("name: string;"));
     }
 }

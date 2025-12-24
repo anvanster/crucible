@@ -57,9 +57,23 @@ Each module is defined in a separate JSON file in `.crucible/modules/`.
 │    │     ├─ type: "type"                                       │
 │    │     └─ properties: { [name: string]: Property }          │
 │    │                                                            │
-│    └─► enum Export                                             │
-│          ├─ type: "enum"                                       │
-│          └─ values: string[]                                   │
+│    ├─► enum Export                                             │
+│    │     ├─ type: "enum"                                       │
+│    │     └─ values: string[]                                   │
+│    │                                                            │
+│    ├─► event Export (domain events)                            │
+│    │     ├─ type: "event"                                      │
+│    │     └─ payload: { [name: string]: Property }              │
+│    │          ├─ type: string                                  │
+│    │          ├─ required?: boolean                            │
+│    │          └─ description?: string                          │
+│    │                                                            │
+│    └─► trait Export (Rust-style traits)                        │
+│          ├─ type: "trait"                                      │
+│          └─ methods: { [name: string]: Method }               │
+│               ├─ inputs: Parameter[]                           │
+│               ├─ returns: ReturnType                           │
+│               └─ async?: boolean                               │
 │                                                                 │
 │  dependencies?: { [module: string]: string }                   │
 │    ├─ "user": "User"                    (single export)        │
@@ -107,9 +121,9 @@ interface ModuleDefinition {
 ```typescript
 interface Export {
   // Required: Type of export
-  type: 'class' | 'function' | 'interface' | 'type' | 'enum';
+  type: 'class' | 'function' | 'interface' | 'type' | 'enum' | 'event' | 'trait';
 
-  // For classes and functions: method definitions
+  // For classes, functions, and traits: method definitions
   methods?: { [methodName: string]: Method };
 
   // For interfaces and types: property definitions
@@ -117,6 +131,9 @@ interface Export {
 
   // For enums: allowed values
   values?: string[];
+
+  // For events: payload data carried by the event
+  payload?: { [fieldName: string]: Property };
 
   // Optional: Module dependencies specific to this export
   dependencies?: Dependency[];
@@ -142,6 +159,11 @@ interface Method {
 
   // Optional: Side effects (file I/O, network, etc.)
   effects?: string[];
+
+  // Optional: Is this method async? (default: false)
+  // For TypeScript: wraps return type in Promise<T>
+  // For Rust: generates async fn signature
+  async?: boolean;
 }
 ```
 
@@ -414,6 +436,104 @@ interface Rule {
     "type": "enum",
     "values": ["admin", "editor", "viewer"]
   }
+}
+```
+
+### Event Export
+
+Domain events represent significant state changes in the system. They carry typed payload data.
+
+```json
+{
+  "UserCreated": {
+    "type": "event",
+    "payload": {
+      "userId": {"type": "string", "required": true},
+      "email": {"type": "string", "required": true},
+      "timestamp": {"type": "Date", "required": false}
+    }
+  },
+  "OrderPlaced": {
+    "type": "event",
+    "payload": {
+      "orderId": {"type": "OrderId", "required": true},
+      "items": {"type": "OrderItem[]", "required": true},
+      "total": {"type": "number", "required": true}
+    }
+  }
+}
+```
+
+**Generated TypeScript:**
+```typescript
+export type UserCreated = {
+  readonly type: 'UserCreated';
+  readonly timestamp: Date;
+  readonly payload: {
+    userId: string;
+    email: string;
+    timestamp?: Date;
+  };
+};
+
+export function createUserCreated(userId: string, email: string): UserCreated {
+  return {
+    type: 'UserCreated',
+    timestamp: new Date(),
+    payload: { userId, email },
+  };
+}
+```
+
+### Trait Export
+
+Traits define behavioral contracts (similar to Rust traits or TypeScript interfaces with methods). They support async methods for asynchronous operations.
+
+```json
+{
+  "Repository": {
+    "type": "trait",
+    "methods": {
+      "findById": {
+        "inputs": [{"name": "id", "type": "string"}],
+        "returns": {"type": "Entity"},
+        "async": true
+      },
+      "save": {
+        "inputs": [{"name": "entity", "type": "Entity"}],
+        "returns": {"type": "void"},
+        "async": true
+      },
+      "validate": {
+        "inputs": [{"name": "entity", "type": "Entity"}],
+        "returns": {"type": "boolean"},
+        "async": false
+      }
+    }
+  },
+  "EventHandler": {
+    "type": "trait",
+    "methods": {
+      "handle": {
+        "inputs": [{"name": "event", "type": "DomainEvent"}],
+        "returns": {"type": "Result<void, Error>"},
+        "async": true
+      }
+    }
+  }
+}
+```
+
+**Generated TypeScript:**
+```typescript
+export interface Repository {
+  findById(id: string): Promise<Entity>;
+  save(entity: Entity): Promise<void>;
+  validate(entity: Entity): boolean;
+}
+
+export interface EventHandler {
+  handle(event: DomainEvent): Promise<Result<void, Error>>;
 }
 ```
 
@@ -816,6 +936,74 @@ Ensure dependencies respect layer boundaries defined in `rules.json`:
         "label": {"type": "string"},
         "onClick": {"type": "() => void"},
         "disabled": {"type": "boolean", "required": false}
+      }
+    }
+  },
+  "dependencies": {}
+}
+```
+
+### Domain Event
+
+```json
+{
+  "module": "user-events",
+  "version": "1.0.0",
+  "layer": "domain",
+  "exports": {
+    "UserCreated": {
+      "type": "event",
+      "payload": {
+        "userId": {"type": "UserId", "required": true},
+        "email": {"type": "string", "required": true},
+        "name": {"type": "string", "required": true}
+      }
+    },
+    "UserDeleted": {
+      "type": "event",
+      "payload": {
+        "userId": {"type": "UserId", "required": true},
+        "deletedAt": {"type": "Date", "required": true}
+      }
+    }
+  },
+  "dependencies": {
+    "user": "UserId"
+  }
+}
+```
+
+### Repository Trait
+
+```json
+{
+  "module": "repository-trait",
+  "version": "1.0.0",
+  "layer": "domain",
+  "exports": {
+    "Repository": {
+      "type": "trait",
+      "methods": {
+        "findById": {
+          "inputs": [{"name": "id", "type": "string"}],
+          "returns": {"type": "T"},
+          "async": true
+        },
+        "findAll": {
+          "inputs": [],
+          "returns": {"type": "T[]"},
+          "async": true
+        },
+        "save": {
+          "inputs": [{"name": "entity", "type": "T"}],
+          "returns": {"type": "void"},
+          "async": true
+        },
+        "delete": {
+          "inputs": [{"name": "id", "type": "string"}],
+          "returns": {"type": "void"},
+          "async": true
+        }
       }
     }
   },

@@ -156,6 +156,41 @@ cp .crucible/modules/user-service.json .crucible/modules/product-service.json
 crucible validate
 ```
 
+**Create domain events:**
+```json
+{
+  "ProductCreated": {
+    "type": "event",
+    "payload": {
+      "productId": {"type": "string", "required": true},
+      "name": {"type": "string", "required": true},
+      "createdAt": {"type": "Date", "required": true}
+    }
+  }
+}
+```
+
+**Create a trait (behavioral contract):**
+```json
+{
+  "Repository": {
+    "type": "trait",
+    "methods": {
+      "findById": {
+        "inputs": [{"name": "id", "type": "string"}],
+        "returns": {"type": "object | null"},
+        "async": true
+      },
+      "save": {
+        "inputs": [{"name": "entity", "type": "object"}],
+        "returns": {"type": "object"},
+        "async": true
+      }
+    }
+  }
+}
+```
+
 **View dependency graph:**
 ```bash
 crucible graph
@@ -172,9 +207,9 @@ crucible graph
 ### Deep Dives (20-30 minutes each)
 
 1. **Master the Schema** → [Schema Reference](./schema-reference.md)
-   - Learn all export types (class, function, interface, type, enum)
-   - Understand method definitions and type syntax
-   - See complete examples
+   - Learn all export types (class, function, interface, type, enum, event, trait)
+   - Understand method definitions, async support, and type syntax
+   - See complete examples including domain events and traits
 
 2. **Avoid Common Mistakes** → [Common Mistakes](./common-mistakes.md)
    - 12 most common errors with fixes

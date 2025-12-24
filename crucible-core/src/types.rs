@@ -66,9 +66,12 @@ pub struct Export {
     pub values: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub dependencies: Option<Vec<Dependency>>,
+    /// Payload for event types - defines the data carried by the event
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub payload: Option<HashMap<String, Property>>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "lowercase")]
 pub enum ExportType {
     Class,
@@ -76,6 +79,10 @@ pub enum ExportType {
     Interface,
     Type,
     Enum,
+    /// Domain events with typed payloads
+    Event,
+    /// Rust-style traits with async method support
+    Trait,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -88,6 +95,9 @@ pub struct Method {
     pub calls: Vec<String>,
     #[serde(default)]
     pub effects: Vec<String>,
+    /// Whether the method is async (for Rust traits, TypeScript async functions, etc.)
+    #[serde(default, rename = "async")]
+    pub is_async: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -288,6 +298,7 @@ mod tests {
                 properties: None,
                 values: None,
                 dependencies: None,
+                payload: None,
             },
         );
 
@@ -447,5 +458,74 @@ mod tests {
         let module: Module = serde_json::from_str(json).unwrap();
         assert!(module.layer.is_none());
         assert!(module.dependencies.is_empty());
+    }
+
+    #[test]
+    fn test_event_export_type_serialization() {
+        assert_eq!(
+            serde_json::to_string(&ExportType::Event).unwrap(),
+            r#""event""#
+        );
+        assert_eq!(
+            serde_json::to_string(&ExportType::Trait).unwrap(),
+            r#""trait""#
+        );
+    }
+
+    #[test]
+    fn test_event_with_payload() {
+        let json = r#"{
+            "type": "event",
+            "payload": {
+                "imageId": {"type": "ImageId", "required": true},
+                "timestamp": {"type": "DateTime", "required": false}
+            }
+        }"#;
+
+        let export: Export = serde_json::from_str(json).unwrap();
+        assert!(matches!(export.export_type, ExportType::Event));
+        assert!(export.payload.is_some());
+        let payload = export.payload.unwrap();
+        assert!(payload.contains_key("imageId"));
+        assert!(payload.contains_key("timestamp"));
+        assert!(payload.get("imageId").unwrap().required);
+        assert!(!payload.get("timestamp").unwrap().required);
+    }
+
+    #[test]
+    fn test_trait_with_async_methods() {
+        let json = r#"{
+            "type": "trait",
+            "methods": {
+                "plan": {
+                    "inputs": [{"name": "request", "type": "BuildRequest"}],
+                    "returns": {"type": "Result<BuildPlan, OrchestratorError>"},
+                    "async": true
+                },
+                "validate": {
+                    "inputs": [],
+                    "returns": {"type": "bool"},
+                    "async": false
+                }
+            }
+        }"#;
+
+        let export: Export = serde_json::from_str(json).unwrap();
+        assert!(matches!(export.export_type, ExportType::Trait));
+        assert!(export.methods.is_some());
+        let methods = export.methods.unwrap();
+        assert!(methods.get("plan").unwrap().is_async);
+        assert!(!methods.get("validate").unwrap().is_async);
+    }
+
+    #[test]
+    fn test_method_async_default() {
+        let json = r#"{
+            "inputs": [],
+            "returns": {"type": "void"}
+        }"#;
+
+        let method: Method = serde_json::from_str(json).unwrap();
+        assert!(!method.is_async);
     }
 }
