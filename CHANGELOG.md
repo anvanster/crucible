@@ -5,6 +5,45 @@ All notable changes to Crucible will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.9] - 2025-12-23
+
+### Added
+- **Event Export Type**: Domain events with typed payloads for domain-driven design
+  - Generates TypeScript type with readonly `type`, `timestamp`, and `payload` fields
+  - Generates factory function (`createEventName`) for easy event instantiation
+  - Validates payload field types exist in the project
+  - Warns if methods are defined (events should use payload, not methods)
+  - Example: `{ "type": "event", "payload": { "userId": { "type": "string" } } }`
+
+- **Trait Export Type**: Behavioral contracts with async method support
+  - Generates TypeScript interface with method signatures
+  - Supports `async` flag that wraps return types in `Promise<T>`
+  - Validates traits have methods (not properties or payload)
+  - Warns if properties defined (use interface instead)
+  - Example: `{ "type": "trait", "methods": { "save": { "async": true, ... } } }`
+
+- **New Example Modules**: Domain-driven design examples
+  - `domain-events.json`: 9 domain events for full-stack app example
+  - `core-traits.json`: 6 traits with supporting interfaces (Repository, Analyzer, EventHandler, etc.)
+  - `todo-events.json`: 4 todo domain events (TodoCreated, TodoCompleted, etc.)
+  - `repository.json`: Repository and EventPublisher trait examples
+
+- **Enhanced Type System Tests**: Enabled 16 previously ignored type system tests
+  - Built-in type recognition (primitives, objects, special types)
+  - Nullable type parsing and validation
+  - Array syntax support (shorthand and long form)
+  - Generic type support (Partial, Promise, etc.)
+
+- **Integration Tests for Events/Traits**: 8 new validation tests
+  - Event type validation (valid events, payload type checking)
+  - Trait type validation (valid traits, structure warnings)
+  - Structure enforcement (payload only for events, methods for traits)
+
+### Changed
+- **Validator**: Added `check_event_trait_structure()` for enforcing correct usage of Event and Trait types
+- **Generator**: TypeScript code generation now supports Event and Trait export types
+- **Types**: Added `payload` field to `Export` struct, `is_async` field to `Method` struct
+
 ## [0.1.8] - 2025-01-20
 
 ### Fixed
