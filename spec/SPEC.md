@@ -31,6 +31,10 @@ Crucible is an open standard for defining application architecture in a structur
 │   └── api.json
 ├── types/                # Shared type definitions
 │   └── common.json
+├── compliance/           # Compliance framework definitions
+│   ├── hipaa.json        # HIPAA compliance rules
+│   ├── pci-dss.json      # PCI-DSS compliance rules
+│   └── soc2.json         # SOC2 compliance rules
 └── rules.json           # Architectural constraints
 ```
 
@@ -339,6 +343,10 @@ Effects declare side effects that functions perform:
 - `session.delete` - Deletes user session
 - `session.read` - Reads session data
 
+### Logging Effects
+- `logging` - General logging operations
+- `audit.log` - Security/compliance audit logging
+
 ## Call References
 
 Function calls reference other functions in the architecture:
@@ -494,13 +502,74 @@ For existing projects:
    - Address violations
    - Increase strictness
 
+## Annotations
+
+Annotations provide metadata for compliance validation and behavioral requirements.
+
+### Property Annotations
+Property annotations mark sensitive data fields:
+- `@phi` - Protected Health Information (HIPAA)
+- `@pii` - Personally Identifiable Information
+- `@pci` - Payment Card Industry data
+- `@encrypted` - Requires encryption at rest
+- `@encrypted_storage` - Must be stored encrypted
+- `@restricted` - Access restrictions apply
+
+### Method Annotations
+Method annotations declare behavioral requirements:
+- `@requires-auth` - Authentication required
+- `@audit-log` - Requires audit trail
+- `@rate-limited` - Rate limiting enforced
+- `@phi-access` - Accesses PHI data
+- `@admin-only` - Admin authorization required
+
+## Compliance Frameworks
+
+Crucible supports pluggable compliance frameworks for validating architecture against regulatory requirements.
+
+### Compliance Definition (compliance/*.json)
+
+```json
+{
+  "compliance_framework": "HIPAA",
+  "version": "1.0.0",
+  "description": "HIPAA compliance rules for healthcare applications",
+  "requirements": [
+    {
+      "id": "164.312(a)(1)",
+      "category": "Access Control",
+      "subcategory": "Access Control and Audit Controls"
+    }
+  ],
+  "rules": [
+    {
+      "id": "no-phi-in-logs",
+      "requirement_id": "164.312(a)(1)",
+      "severity": "error",
+      "description": "PHI data must not be logged without encryption",
+      "rationale": "HIPAA requires protection of PHI in all contexts",
+      "validates": {
+        "type": "effect_check",
+        "when_effect": ["logging"],
+        "forbidden_data": ["@phi", "@pii"]
+      }
+    }
+  ]
+}
+```
+
+### Validation Check Types
+- `effect_check` - Validates effects don't expose sensitive data
+- `storage_check` - Validates storage requirements for data types
+- `effect_requirement` - Requires specific effects for certain operations
+- `data_access_check` - Validates data access patterns
+
 ## Future Considerations (Post v0.1)
 
 - **Concurrency annotations** - Race condition detection
 - **Performance constraints** - Complexity bounds, timing requirements
 - **State machines** - Formal state transition definitions
 - **Test coverage requirements** - Architectural-level test specifications
-- **Security annotations** - Authentication, authorization requirements
 - **Observability hooks** - Logging, metrics, tracing declarations
 
 ## Contributing

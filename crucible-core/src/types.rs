@@ -98,6 +98,9 @@ pub struct Method {
     /// Whether the method is async (for Rust traits, TypeScript async functions, etc.)
     #[serde(default, rename = "async")]
     pub is_async: bool,
+    /// Compliance and metadata annotations (e.g., @requires-auth, @audit-log, @rate-limited)
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub annotations: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -127,6 +130,9 @@ pub struct Property {
     pub required: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
+    /// Compliance and metadata annotations (e.g., @phi, @pii, @encrypted)
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub annotations: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -200,6 +206,92 @@ pub struct CustomRule {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pattern: Option<String>,
     pub severity: Severity,
+}
+
+// ============================================================================
+// Compliance Framework Types
+// ============================================================================
+
+/// A compliance framework definition (e.g., HIPAA, PCI-DSS, SOC2)
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ComplianceFramework {
+    pub compliance_framework: String,
+    pub version: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub requirements: Vec<ComplianceRequirement>,
+    pub rules: Vec<ComplianceRule>,
+}
+
+/// A compliance requirement reference (e.g., HIPAA 164.312(a)(1))
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ComplianceRequirement {
+    pub id: String,
+    pub category: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub subcategory: Option<String>,
+}
+
+/// A compliance rule that validates architecture against requirements
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ComplianceRule {
+    pub id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub requirement_id: Option<String>,
+    pub severity: Severity,
+    pub description: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rationale: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub violation_cost: Option<String>,
+    pub validates: ValidationCheck,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub examples: Option<ComplianceExamples>,
+}
+
+/// Examples of compliant and non-compliant code
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ComplianceExamples {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub violation: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub compliant: Option<String>,
+}
+
+/// A validation check that defines how to validate compliance
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ValidationCheck {
+    #[serde(rename = "type")]
+    pub check_type: ValidationCheckType,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub when_effect: Vec<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub when_accessing: Vec<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub forbidden_data: Vec<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub required_annotations: Vec<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub required_effects: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub recommend_fields: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub warn_if_all_fields: Option<bool>,
+}
+
+/// Types of validation checks
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum ValidationCheckType {
+    /// Check that effects don't expose sensitive data
+    EffectCheck,
+    /// Check storage requirements for data types
+    StorageCheck,
+    /// Require specific effects for certain operations
+    EffectRequirement,
+    /// Check data access patterns
+    DataAccessCheck,
 }
 
 fn default_strict() -> bool {
@@ -527,5 +619,111 @@ mod tests {
 
         let method: Method = serde_json::from_str(json).unwrap();
         assert!(!method.is_async);
+    }
+
+    #[test]
+    fn test_property_with_annotations() {
+        let json = r#"{
+            "type": "string",
+            "annotations": ["@phi", "@encrypted"]
+        }"#;
+
+        let prop: Property = serde_json::from_str(json).unwrap();
+        assert_eq!(prop.annotations.len(), 2);
+        assert!(prop.annotations.contains(&"@phi".to_string()));
+        assert!(prop.annotations.contains(&"@encrypted".to_string()));
+    }
+
+    #[test]
+    fn test_method_with_annotations() {
+        let json = r#"{
+            "inputs": [],
+            "returns": {"type": "void"},
+            "annotations": ["@requires-auth", "@audit-log"]
+        }"#;
+
+        let method: Method = serde_json::from_str(json).unwrap();
+        assert_eq!(method.annotations.len(), 2);
+        assert!(method.annotations.contains(&"@requires-auth".to_string()));
+        assert!(method.annotations.contains(&"@audit-log".to_string()));
+    }
+
+    #[test]
+    fn test_compliance_framework_deserialization() {
+        let json = r#"{
+            "compliance_framework": "HIPAA",
+            "version": "1.0.0",
+            "description": "HIPAA compliance rules",
+            "requirements": [
+                {
+                    "id": "164.312(a)(1)",
+                    "category": "Access Control"
+                }
+            ],
+            "rules": [
+                {
+                    "id": "no-phi-in-logs",
+                    "requirement_id": "164.312(a)(1)",
+                    "severity": "error",
+                    "description": "PHI must not be logged",
+                    "validates": {
+                        "type": "effect_check",
+                        "when_effect": ["logging"],
+                        "forbidden_data": ["@phi"]
+                    }
+                }
+            ]
+        }"#;
+
+        let framework: ComplianceFramework = serde_json::from_str(json).unwrap();
+        assert_eq!(framework.compliance_framework, "HIPAA");
+        assert_eq!(framework.version, "1.0.0");
+        assert_eq!(framework.requirements.len(), 1);
+        assert_eq!(framework.rules.len(), 1);
+        assert_eq!(framework.rules[0].id, "no-phi-in-logs");
+        assert_eq!(framework.rules[0].severity, Severity::Error);
+    }
+
+    #[test]
+    fn test_validation_check_types() {
+        assert_eq!(
+            serde_json::to_string(&ValidationCheckType::EffectCheck).unwrap(),
+            r#""effect_check""#
+        );
+        assert_eq!(
+            serde_json::to_string(&ValidationCheckType::StorageCheck).unwrap(),
+            r#""storage_check""#
+        );
+        assert_eq!(
+            serde_json::to_string(&ValidationCheckType::EffectRequirement).unwrap(),
+            r#""effect_requirement""#
+        );
+        assert_eq!(
+            serde_json::to_string(&ValidationCheckType::DataAccessCheck).unwrap(),
+            r#""data_access_check""#
+        );
+    }
+
+    #[test]
+    fn test_compliance_rule_with_examples() {
+        let json = r#"{
+            "id": "test-rule",
+            "severity": "warning",
+            "description": "Test rule",
+            "validates": {
+                "type": "storage_check",
+                "required_annotations": ["@encrypted"]
+            },
+            "examples": {
+                "violation": "unencrypted PHI storage",
+                "compliant": "encrypted PHI storage"
+            }
+        }"#;
+
+        let rule: ComplianceRule = serde_json::from_str(json).unwrap();
+        assert!(rule.examples.is_some());
+        let examples = rule.examples.unwrap();
+        assert_eq!(examples.violation.unwrap(), "unencrypted PHI storage");
+        assert_eq!(examples.compliant.unwrap(), "encrypted PHI storage");
     }
 }

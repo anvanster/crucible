@@ -238,6 +238,7 @@ mod tests {
                 prop_type: "string".to_string(),
                 required: true,
                 description: None,
+                annotations: vec![],
             },
         );
         props.insert(
@@ -246,6 +247,7 @@ mod tests {
                 prop_type: "number".to_string(),
                 required: false,
                 description: None,
+                annotations: vec![],
             },
         );
 
@@ -308,6 +310,7 @@ mod tests {
                 calls: vec![],
                 effects: vec![],
                 is_async: false,
+                annotations: vec![],
             },
         );
 
@@ -378,6 +381,7 @@ mod tests {
                 calls: vec![],
                 effects: vec![],
                 is_async: false,
+                annotations: vec![],
             },
         );
 
@@ -565,6 +569,7 @@ mod tests {
                 calls: vec![],
                 effects: vec![],
                 is_async: false,
+                annotations: vec![],
             },
         );
 
@@ -612,6 +617,7 @@ mod tests {
                 prop_type: "ImageId".to_string(),
                 required: true,
                 description: None,
+                annotations: vec![],
             },
         );
         payload.insert(
@@ -620,6 +626,7 @@ mod tests {
                 prop_type: "DateTime".to_string(),
                 required: false,
                 description: None,
+                annotations: vec![],
             },
         );
 
@@ -683,6 +690,7 @@ mod tests {
                 calls: vec![],
                 effects: vec![],
                 is_async: true,
+                annotations: vec![],
             },
         );
         methods.insert(
@@ -697,6 +705,7 @@ mod tests {
                 calls: vec![],
                 effects: vec![],
                 is_async: false,
+                annotations: vec![],
             },
         );
 
@@ -747,6 +756,7 @@ mod tests {
                 prop_type: "string".to_string(),
                 required: true,
                 description: None,
+                annotations: vec![],
             },
         );
         props.insert(
@@ -755,6 +765,7 @@ mod tests {
                 prop_type: "string".to_string(),
                 required: true,
                 description: None,
+                annotations: vec![],
             },
         );
 

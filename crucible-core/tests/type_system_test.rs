@@ -309,6 +309,7 @@ fn create_patient_module() -> Module {
             prop_type: "string".to_string(),
             required: true,
             description: None,
+            annotations: vec![],
         },
     );
 
@@ -318,6 +319,7 @@ fn create_patient_module() -> Module {
             prop_type: "string".to_string(),
             required: true,
             description: None,
+            annotations: vec![],
         },
     );
 

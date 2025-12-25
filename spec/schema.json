@@ -172,7 +172,9 @@
                     "network.request", "network.listen",
                     "file.read", "file.write",
                     "state.read", "state.write",
-                    "session.create", "session.delete", "session.read"
+                    "session.create", "session.delete", "session.read",
+                    "logging",
+                    "audit.log"
                   ]
                 }
               }
@@ -241,6 +243,13 @@
         "effects": {
           "type": "array",
           "items": {"type": "string"}
+        },
+        "annotations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Compliance and metadata annotations (e.g., @requires-auth, @audit-log, @rate-limited)"
         }
       }
     },
@@ -291,6 +300,13 @@
         },
         "description": {
           "type": "string"
+        },
+        "annotations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Compliance and metadata annotations (e.g., @phi, @pii, @encrypted)"
         }
       }
     },
@@ -386,6 +402,97 @@
             }
           }
         }
+      }
+    },
+    "complianceFramework": {
+      "$id": "#/definitions/complianceFramework",
+      "type": "object",
+      "required": ["compliance_framework", "version", "rules"],
+      "properties": {
+        "compliance_framework": {
+          "type": "string",
+          "description": "Framework name (e.g., HIPAA, PCI-DSS, SOC2)"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "description": {"type": "string"},
+        "requirements": {
+          "type": "array",
+          "items": {"$ref": "#/definitions/complianceRequirement"}
+        },
+        "rules": {
+          "type": "array",
+          "items": {"$ref": "#/definitions/complianceRule"}
+        }
+      }
+    },
+    "complianceRequirement": {
+      "$id": "#/definitions/complianceRequirement",
+      "type": "object",
+      "required": ["id", "category"],
+      "properties": {
+        "id": {"type": "string"},
+        "category": {"type": "string"},
+        "subcategory": {"type": "string"}
+      }
+    },
+    "complianceRule": {
+      "$id": "#/definitions/complianceRule",
+      "type": "object",
+      "required": ["id", "severity", "description", "validates"],
+      "properties": {
+        "id": {"type": "string"},
+        "requirement_id": {"type": "string"},
+        "severity": {
+          "type": "string",
+          "enum": ["error", "warning", "info"]
+        },
+        "description": {"type": "string"},
+        "rationale": {"type": "string"},
+        "violation_cost": {"type": "string"},
+        "validates": {"$ref": "#/definitions/validationCheck"},
+        "examples": {
+          "type": "object",
+          "properties": {
+            "violation": {"type": "string"},
+            "compliant": {"type": "string"}
+          }
+        }
+      }
+    },
+    "validationCheck": {
+      "$id": "#/definitions/validationCheck",
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["effect_check", "storage_check", "effect_requirement", "data_access_check"]
+        },
+        "when_effect": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "when_accessing": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "forbidden_data": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "required_annotations": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "required_effects": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "recommend_fields": {"type": "string"},
+        "warn_if_all_fields": {"type": "boolean"}
       }
     }
   }
