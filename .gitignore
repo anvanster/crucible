@@ -20,3 +20,6 @@ Thumbs.db
 # Test outputs
 test-output/
 generated/
+
+# Private compliance crate (has separate git repo)
+crucible-compliance/
