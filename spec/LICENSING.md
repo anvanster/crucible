@@ -203,7 +203,7 @@ No header required (CC0 doesn't require it), but you may optionally include:
 Include in source files:
 
 ```rust
-// Copyright 2025 Crucible Contributors
+// Copyright 2025 Andrey Vasilevsky
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.

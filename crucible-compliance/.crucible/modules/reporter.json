@@ -1,0 +1,84 @@
+{
+  "module": "reporter",
+  "version": "0.1.0",
+  "description": "Report formatting and output for compliance validation results",
+  "exports": {
+    "OutputFormat": {
+      "type": "enum",
+      "description": "Available output formats for reports",
+      "values": [
+        "Text",
+        "Json",
+        "Sarif",
+        "Markdown"
+      ]
+    },
+    "ReportConfig": {
+      "type": "type",
+      "description": "Configuration for report generation",
+      "properties": {
+        "format": {
+          "type": "OutputFormat",
+          "required": true
+        },
+        "include_suggestions": {
+          "type": "boolean",
+          "required": false,
+          "description": "Include fix suggestions in output"
+        },
+        "include_examples": {
+          "type": "boolean",
+          "required": false,
+          "description": "Include code examples in output"
+        },
+        "color": {
+          "type": "boolean",
+          "required": false,
+          "description": "Use colored output for terminal"
+        }
+      }
+    },
+    "Reporter": {
+      "type": "class",
+      "description": "Formats and outputs validation reports",
+      "methods": {
+        "new": {
+          "inputs": [
+            {"name": "config", "type": "ReportConfig"}
+          ],
+          "returns": {"type": "Reporter"},
+          "effects": []
+        },
+        "format": {
+          "inputs": [
+            {"name": "report", "type": "ValidationReport"}
+          ],
+          "returns": {"type": "string"},
+          "effects": [],
+          "description": "Format report as string"
+        },
+        "write": {
+          "inputs": [
+            {"name": "report", "type": "ValidationReport"},
+            {"name": "writer", "type": "Write"}
+          ],
+          "returns": {"type": "Result<void, IoError>"},
+          "effects": ["file.write"],
+          "description": "Write report to output"
+        },
+        "print": {
+          "inputs": [
+            {"name": "report", "type": "ValidationReport"}
+          ],
+          "returns": {"type": "void"},
+          "effects": ["logging"],
+          "description": "Print report to stdout"
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "types": "^0.1.0",
+    "validator": "^0.1.0"
+  }
+}

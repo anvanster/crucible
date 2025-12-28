@@ -11,6 +11,10 @@ description = "Core library for Crucible architecture validation framework"
 keywords.workspace = true
 categories.workspace = true
 readme.workspace = true
+include = [
+    "src/**/*",
+    "Cargo.toml",
+]
 
 [dependencies]
 serde.workspace = true

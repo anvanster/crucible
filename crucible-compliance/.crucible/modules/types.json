@@ -1,0 +1,121 @@
+{
+  "module": "types",
+  "version": "0.1.0",
+  "description": "External type definitions from dependencies",
+  "exports": {
+    "Severity": {
+      "type": "enum",
+      "description": "Severity level from crucible-core",
+      "values": ["Error", "Warning", "Info"]
+    },
+    "ComplianceFramework": {
+      "type": "interface",
+      "description": "Compliance framework definition from crucible-core",
+      "properties": {
+        "compliance_framework": {"type": "string", "required": true},
+        "version": {"type": "string", "required": true},
+        "description": {"type": "string", "required": false},
+        "requirements": {"type": "Array<ComplianceRequirement>", "required": true},
+        "rules": {"type": "Array<ComplianceRule>", "required": true}
+      }
+    },
+    "ComplianceRequirement": {
+      "type": "interface",
+      "description": "Compliance requirement reference",
+      "properties": {
+        "id": {"type": "string", "required": true},
+        "category": {"type": "string", "required": true},
+        "subcategory": {"type": "string", "required": false}
+      }
+    },
+    "ComplianceRule": {
+      "type": "interface",
+      "description": "Compliance rule definition",
+      "properties": {
+        "id": {"type": "string", "required": true},
+        "requirement_id": {"type": "string", "required": false},
+        "severity": {"type": "Severity", "required": true},
+        "description": {"type": "string", "required": true},
+        "validates": {"type": "ValidationCheck", "required": true}
+      }
+    },
+    "ValidationCheck": {
+      "type": "interface",
+      "description": "Validation check configuration",
+      "properties": {
+        "check_type": {"type": "ValidationCheckType", "required": true}
+      }
+    },
+    "ValidationCheckType": {
+      "type": "enum",
+      "description": "Types of validation checks",
+      "values": ["EffectCheck", "StorageCheck", "EffectRequirement", "DataAccessCheck"]
+    },
+    "Project": {
+      "type": "interface",
+      "description": "Crucible project from crucible-core",
+      "properties": {
+        "manifest": {"type": "Manifest", "required": true},
+        "modules": {"type": "Array<Module>", "required": true}
+      }
+    },
+    "Manifest": {
+      "type": "interface",
+      "description": "Project manifest",
+      "properties": {
+        "version": {"type": "string", "required": true},
+        "project": {"type": "ProjectConfig", "required": true}
+      }
+    },
+    "ProjectConfig": {
+      "type": "interface",
+      "properties": {
+        "name": {"type": "string", "required": true},
+        "language": {"type": "string", "required": true}
+      }
+    },
+    "Module": {
+      "type": "interface",
+      "description": "Module definition",
+      "properties": {
+        "module": {"type": "string", "required": true},
+        "version": {"type": "string", "required": true},
+        "exports": {"type": "Map<string, Export>", "required": true}
+      }
+    },
+    "Export": {
+      "type": "interface",
+      "properties": {
+        "export_type": {"type": "ExportType", "required": true}
+      }
+    },
+    "ExportType": {
+      "type": "enum",
+      "values": ["Class", "Function", "Interface", "Type", "Enum", "Event", "Trait"]
+    },
+    "Path": {
+      "type": "interface",
+      "description": "Filesystem path (std::path::Path)",
+      "properties": {}
+    },
+    "Write": {
+      "type": "trait",
+      "description": "IO writer trait (std::io::Write)",
+      "methods": {
+        "write": {
+          "inputs": [{"name": "buf", "type": "Array<number>"}],
+          "returns": {"type": "Result<number, IoError>"}
+        }
+      }
+    },
+    "IoError": {
+      "type": "interface",
+      "description": "IO error type",
+      "properties": {
+        "kind": {"type": "string", "required": true},
+        "message": {"type": "string", "required": true}
+      }
+    }
+  },
+  "dependencies": {}
+}

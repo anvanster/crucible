@@ -16,6 +16,10 @@ your-project/
 │   │   └── api.json
 │   ├── types/                       # Shared type definitions (optional)
 │   │   └── common.json
+│   ├── compliance/                  # Compliance framework definitions (optional)
+│   │   ├── hipaa.json               # HIPAA compliance rules
+│   │   ├── pci-dss.json             # PCI-DSS compliance rules
+│   │   └── soc2.json                # SOC2 compliance rules
 │   └── rules.json                   # Validation rules
 │
 ├── src/                             # Your application code
@@ -108,6 +112,45 @@ your-project/
 - Custom validation rules
 
 **Example**: See `example-rules.json`
+
+### `.crucible/compliance/*.json` (Optional)
+**Purpose**: Compliance framework definitions for regulatory validation
+**Contains**:
+- Framework metadata (name, version, description)
+- Regulatory requirements mapping
+- Validation rules for compliance checking
+
+**Example**:
+```json
+{
+  "compliance_framework": "HIPAA",
+  "version": "1.0.0",
+  "description": "HIPAA compliance rules for healthcare applications",
+  "requirements": [
+    {
+      "id": "164.312(a)(1)",
+      "category": "Access Control"
+    }
+  ],
+  "rules": [
+    {
+      "id": "no-phi-in-logs",
+      "severity": "error",
+      "description": "PHI data must not be logged",
+      "validates": {
+        "type": "effect_check",
+        "when_effect": ["logging"],
+        "forbidden_data": ["@phi"]
+      }
+    }
+  ]
+}
+```
+
+**Supported Frameworks**:
+- `hipaa.json` - HIPAA (Healthcare)
+- `pci-dss.json` - PCI-DSS (Payment Card Industry)
+- `soc2.json` - SOC2 (SaaS/Enterprise)
 
 ## Module Organization Patterns
 
@@ -383,6 +426,8 @@ jobs:
         run: cargo install crucible-cli
       - name: Validate Architecture
         run: crucible validate --strict
+      - name: Check Compliance (optional)
+        run: crucible comply --framework hipaa --strict
 ```
 
 ### Pre-commit Hook

@@ -1264,12 +1264,28 @@ fn show_docs(topic: Option<&str>, list: bool) -> Result<()> {
     const DOCS_BASE_URL: &str = "https://github.com/anvanster/crucible/blob/main/crucible-cli/docs";
 
     let docs = vec![
-        ("quickstart", "QUICKSTART.md", "5-minute getting started guide"),
-        ("schema", "schema-reference.md", "Complete JSON schema reference"),
+        (
+            "quickstart",
+            "QUICKSTART.md",
+            "5-minute getting started guide",
+        ),
+        (
+            "schema",
+            "schema-reference.md",
+            "Complete JSON schema reference",
+        ),
         ("types", "type-system.md", "Type syntax and examples"),
         ("mistakes", "common-mistakes.md", "Common errors and fixes"),
-        ("cli", "cli-reference.md", "Command-line interface reference"),
-        ("examples", "examples/full-stack-app/README.md", "Full-stack application example"),
+        (
+            "cli",
+            "cli-reference.md",
+            "Command-line interface reference",
+        ),
+        (
+            "examples",
+            "examples/full-stack-app/README.md",
+            "Full-stack application example",
+        ),
         ("index", "README.md", "Documentation index and navigation"),
     ];
 
@@ -1284,7 +1300,10 @@ fn show_docs(topic: Option<&str>, list: bool) -> Result<()> {
         println!("  {} {}", "crucible docs".cyan(), "<topic>".yellow());
         println!("  {} {}", "crucible docs".cyan(), "quickstart".yellow());
         println!();
-        println!("View all documentation: {}", format!("{DOCS_BASE_URL}").blue().underline());
+        println!(
+            "View all documentation: {}",
+            DOCS_BASE_URL.blue().underline()
+        );
         return Ok(());
     }
 
@@ -1310,7 +1329,9 @@ fn show_docs(topic: Option<&str>, list: bool) -> Result<()> {
             }
             #[cfg(target_os = "windows")]
             {
-                std::process::Command::new("cmd").args(&["/C", "start", &url]).spawn()?;
+                std::process::Command::new("cmd")
+                    .args(&["/C", "start", &url])
+                    .spawn()?;
                 println!("{}", "✓ Opened in your default browser".green());
             }
             #[cfg(not(any(target_os = "macos", target_os = "linux", target_os = "windows")))]
@@ -1340,8 +1361,16 @@ fn show_docs(topic: Option<&str>, list: bool) -> Result<()> {
         }
         println!();
         println!("Usage:");
-        println!("  {} {}        - View this help", "crucible docs".cyan(), "--list".yellow());
-        println!("  {} {}   - Open specific topic", "crucible docs".cyan(), "<topic>".yellow());
+        println!(
+            "  {} {}        - View this help",
+            "crucible docs".cyan(),
+            "--list".yellow()
+        );
+        println!(
+            "  {} {}   - Open specific topic",
+            "crucible docs".cyan(),
+            "<topic>".yellow()
+        );
         println!();
         println!("Opening documentation index...");
         println!("{} {}", "URL:".dimmed(), url.blue().underline());
@@ -1360,7 +1389,9 @@ fn show_docs(topic: Option<&str>, list: bool) -> Result<()> {
         }
         #[cfg(target_os = "windows")]
         {
-            std::process::Command::new("cmd").args(&["/C", "start", &url]).spawn()?;
+            std::process::Command::new("cmd")
+                .args(&["/C", "start", &url])
+                .spawn()?;
             println!("{}", "✓ Opened in your default browser".green());
         }
         #[cfg(not(any(target_os = "macos", target_os = "linux", target_os = "windows")))]

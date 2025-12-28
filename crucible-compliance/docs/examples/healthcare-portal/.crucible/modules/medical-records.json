@@ -1,0 +1,238 @@
+{
+  "module": "medical-records",
+  "version": "1.0.0",
+  "layer": "domain",
+  "description": "Medical records with highly sensitive PHI data",
+
+  "exports": {
+    "MedicalRecord": {
+      "type": "interface",
+      "description": "Complete medical record - highly sensitive PHI",
+      "properties": {
+        "id": {
+          "type": "string",
+          "required": true,
+          "annotations": []
+        },
+        "patientId": {
+          "type": "string",
+          "required": true,
+          "annotations": []
+        },
+        "recordDate": {
+          "type": "Date",
+          "required": true,
+          "annotations": ["@phi"]
+        },
+        "chiefComplaint": {
+          "type": "string",
+          "description": "Primary reason for visit",
+          "annotations": ["@phi", "@encrypted"]
+        },
+        "diagnosis": {
+          "type": "Array<Diagnosis>",
+          "description": "Medical diagnoses - highly sensitive",
+          "annotations": ["@phi", "@encrypted"]
+        },
+        "medications": {
+          "type": "Array<Medication>",
+          "description": "Current and prescribed medications",
+          "annotations": ["@phi", "@encrypted"]
+        },
+        "labResults": {
+          "type": "Array<LabResult>",
+          "description": "Laboratory test results",
+          "annotations": ["@phi", "@encrypted"]
+        },
+        "vitalSigns": {
+          "type": "VitalSigns",
+          "description": "Patient vital signs",
+          "annotations": ["@phi", "@encrypted"]
+        },
+        "notes": {
+          "type": "string",
+          "description": "Clinical notes",
+          "annotations": ["@phi", "@encrypted"]
+        },
+        "providerId": {
+          "type": "string",
+          "description": "Treating provider ID",
+          "annotations": []
+        }
+      }
+    },
+
+    "Diagnosis": {
+      "type": "interface",
+      "properties": {
+        "icdCode": {
+          "type": "string",
+          "description": "ICD-10 diagnosis code",
+          "annotations": ["@phi"]
+        },
+        "description": {
+          "type": "string",
+          "annotations": ["@phi", "@encrypted"]
+        },
+        "diagnosisDate": {
+          "type": "Date",
+          "annotations": ["@phi"]
+        },
+        "status": {
+          "type": "string",
+          "annotations": ["@phi"]
+        }
+      }
+    },
+
+    "Medication": {
+      "type": "interface",
+      "properties": {
+        "name": {
+          "type": "string",
+          "annotations": ["@phi", "@encrypted"]
+        },
+        "dosage": {
+          "type": "string",
+          "annotations": ["@phi", "@encrypted"]
+        },
+        "frequency": {
+          "type": "string",
+          "annotations": ["@phi"]
+        },
+        "prescribedDate": {
+          "type": "Date",
+          "annotations": ["@phi"]
+        },
+        "prescriberId": {
+          "type": "string",
+          "annotations": []
+        }
+      }
+    },
+
+    "LabResult": {
+      "type": "interface",
+      "properties": {
+        "testName": {
+          "type": "string",
+          "annotations": ["@phi"]
+        },
+        "value": {
+          "type": "string",
+          "annotations": ["@phi", "@encrypted"]
+        },
+        "unit": {
+          "type": "string",
+          "annotations": []
+        },
+        "referenceRange": {
+          "type": "string",
+          "annotations": []
+        },
+        "collectionDate": {
+          "type": "Date",
+          "annotations": ["@phi"]
+        },
+        "status": {
+          "type": "string",
+          "annotations": []
+        }
+      }
+    },
+
+    "VitalSigns": {
+      "type": "interface",
+      "properties": {
+        "bloodPressure": {
+          "type": "string",
+          "annotations": ["@phi"]
+        },
+        "heartRate": {
+          "type": "number",
+          "annotations": ["@phi"]
+        },
+        "temperature": {
+          "type": "number",
+          "annotations": ["@phi"]
+        },
+        "weight": {
+          "type": "number",
+          "annotations": ["@phi"]
+        },
+        "height": {
+          "type": "number",
+          "annotations": ["@phi"]
+        },
+        "recordedAt": {
+          "type": "Date",
+          "annotations": ["@phi"]
+        }
+      }
+    },
+
+    "MedicalRecordService": {
+      "type": "class",
+      "description": "Service for medical record operations with strict access controls",
+      "methods": {
+        "getByPatientId": {
+          "inputs": [
+            {"name": "patientId", "type": "string"},
+            {"name": "userId", "type": "string"}
+          ],
+          "returns": {"type": "Promise", "inner": "Array<MedicalRecord>"},
+          "throws": ["UnauthorizedError", "PatientNotFoundError"],
+          "effects": ["database.read", "audit.log"],
+          "annotations": ["@phi-access", "@requires-auth"],
+          "description": "Get all medical records for a patient with audit trail"
+        },
+        "getById": {
+          "inputs": [
+            {"name": "recordId", "type": "string"},
+            {"name": "userId", "type": "string"}
+          ],
+          "returns": {"type": "Promise", "inner": "MedicalRecord"},
+          "throws": ["UnauthorizedError", "RecordNotFoundError"],
+          "effects": ["database.read", "audit.log"],
+          "annotations": ["@phi-access", "@requires-auth"]
+        },
+        "create": {
+          "inputs": [
+            {"name": "record", "type": "CreateMedicalRecordInput"},
+            {"name": "userId", "type": "string"}
+          ],
+          "returns": {"type": "Promise", "inner": "MedicalRecord"},
+          "throws": ["ValidationError", "UnauthorizedError"],
+          "effects": ["database.write", "audit.log"],
+          "annotations": ["@phi-access", "@requires-auth"]
+        },
+        "addDiagnosis": {
+          "inputs": [
+            {"name": "recordId", "type": "string"},
+            {"name": "diagnosis", "type": "Diagnosis"},
+            {"name": "userId", "type": "string"}
+          ],
+          "returns": {"type": "Promise", "inner": "MedicalRecord"},
+          "effects": ["database.write", "audit.log"],
+          "annotations": ["@phi-access", "@requires-auth"]
+        },
+        "addLabResult": {
+          "inputs": [
+            {"name": "recordId", "type": "string"},
+            {"name": "labResult", "type": "LabResult"},
+            {"name": "userId", "type": "string"}
+          ],
+          "returns": {"type": "Promise", "inner": "MedicalRecord"},
+          "effects": ["database.write", "audit.log"],
+          "annotations": ["@phi-access", "@requires-auth"]
+        }
+      }
+    }
+  },
+
+  "dependencies": {
+    "patient": "^1.0.0",
+    "auth": "^1.0.0",
+    "audit": "^1.0.0"
+  }
+}

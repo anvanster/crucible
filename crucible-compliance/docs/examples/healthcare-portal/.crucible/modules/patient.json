@@ -1,0 +1,191 @@
+{
+  "module": "patient",
+  "version": "1.0.0",
+  "layer": "domain",
+  "description": "Patient domain model with HIPAA-compliant PHI handling",
+
+  "exports": {
+    "Patient": {
+      "type": "interface",
+      "description": "Core patient entity with properly annotated PHI fields",
+      "properties": {
+        "id": {
+          "type": "string",
+          "required": true,
+          "description": "Internal UUID - safe for logging and external references",
+          "annotations": []
+        },
+        "medicalRecordNumber": {
+          "type": "string",
+          "required": true,
+          "description": "Medical record number (MRN) - PHI identifier",
+          "annotations": ["@phi", "@encrypted"]
+        },
+        "firstName": {
+          "type": "string",
+          "required": true,
+          "description": "Patient first name - PHI",
+          "annotations": ["@phi", "@encrypted"]
+        },
+        "lastName": {
+          "type": "string",
+          "required": true,
+          "description": "Patient last name - PHI",
+          "annotations": ["@phi", "@encrypted"]
+        },
+        "dateOfBirth": {
+          "type": "Date",
+          "required": true,
+          "description": "Date of birth - PHI date",
+          "annotations": ["@phi", "@encrypted"]
+        },
+        "ssn": {
+          "type": "string",
+          "required": false,
+          "description": "Social Security Number - highly sensitive PHI",
+          "annotations": ["@phi", "@encrypted", "@restricted"]
+        },
+        "email": {
+          "type": "string",
+          "required": false,
+          "description": "Contact email - PHI",
+          "annotations": ["@phi", "@encrypted"]
+        },
+        "phone": {
+          "type": "string",
+          "required": false,
+          "description": "Contact phone - PHI",
+          "annotations": ["@phi", "@encrypted"]
+        },
+        "address": {
+          "type": "Address",
+          "required": false,
+          "description": "Physical address - PHI location data",
+          "annotations": ["@phi", "@encrypted"]
+        },
+        "createdAt": {
+          "type": "Date",
+          "required": true,
+          "description": "Record creation timestamp - system date, not PHI",
+          "annotations": []
+        },
+        "updatedAt": {
+          "type": "Date",
+          "required": true,
+          "description": "Record update timestamp - system date, not PHI",
+          "annotations": []
+        }
+      }
+    },
+
+    "Address": {
+      "type": "interface",
+      "description": "Address component - all fields are PHI",
+      "properties": {
+        "street": {
+          "type": "string",
+          "annotations": ["@phi", "@encrypted"]
+        },
+        "city": {
+          "type": "string",
+          "annotations": ["@phi", "@encrypted"]
+        },
+        "state": {
+          "type": "string",
+          "annotations": ["@phi"]
+        },
+        "zipCode": {
+          "type": "string",
+          "annotations": ["@phi", "@encrypted"]
+        }
+      }
+    },
+
+    "PatientService": {
+      "type": "class",
+      "description": "Service for patient operations with HIPAA-compliant access patterns",
+      "methods": {
+        "findById": {
+          "inputs": [
+            {"name": "id", "type": "string"},
+            {"name": "userId", "type": "string"}
+          ],
+          "returns": {"type": "Promise", "inner": "Patient"},
+          "throws": ["PatientNotFoundError", "UnauthorizedError"],
+          "effects": ["database.read", "audit.log"],
+          "annotations": ["@phi-access", "@requires-auth"],
+          "description": "Retrieve patient by internal ID with audit logging"
+        },
+        "findByMRN": {
+          "inputs": [
+            {"name": "mrn", "type": "string"},
+            {"name": "userId", "type": "string"}
+          ],
+          "returns": {"type": "Promise", "inner": "Patient"},
+          "throws": ["PatientNotFoundError", "UnauthorizedError"],
+          "effects": ["database.read", "audit.log"],
+          "annotations": ["@phi-access", "@requires-auth"],
+          "description": "Retrieve patient by Medical Record Number with audit logging"
+        },
+        "create": {
+          "inputs": [
+            {"name": "data", "type": "CreatePatientInput"},
+            {"name": "userId", "type": "string"}
+          ],
+          "returns": {"type": "Promise", "inner": "Patient"},
+          "throws": ["ValidationError", "DuplicatePatientError"],
+          "effects": ["database.write", "audit.log"],
+          "annotations": ["@phi-access", "@requires-auth"],
+          "description": "Create new patient record with audit trail"
+        },
+        "update": {
+          "inputs": [
+            {"name": "id", "type": "string"},
+            {"name": "data", "type": "UpdatePatientInput"},
+            {"name": "userId", "type": "string"}
+          ],
+          "returns": {"type": "Promise", "inner": "Patient"},
+          "throws": ["PatientNotFoundError", "ValidationError", "UnauthorizedError"],
+          "effects": ["database.write", "audit.log"],
+          "annotations": ["@phi-access", "@requires-auth"],
+          "description": "Update patient record with change tracking"
+        },
+        "search": {
+          "inputs": [
+            {"name": "query", "type": "PatientSearchQuery"},
+            {"name": "userId", "type": "string"}
+          ],
+          "returns": {"type": "Promise", "inner": "Array<PatientSummary>"},
+          "effects": ["database.read", "audit.log"],
+          "annotations": ["@phi-access", "@requires-auth"],
+          "description": "Search patients with minimum necessary data returned"
+        }
+      }
+    },
+
+    "PatientSummary": {
+      "type": "interface",
+      "description": "Minimal patient info for search results - applies minimum necessary principle",
+      "properties": {
+        "id": {
+          "type": "string",
+          "annotations": []
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Formatted name for display",
+          "annotations": ["@phi"]
+        },
+        "dateOfBirth": {
+          "type": "Date",
+          "annotations": ["@phi"]
+        }
+      }
+    }
+  },
+
+  "dependencies": {
+    "auth": "^1.0.0",
+    "audit": "^1.0.0"
+  }
+}

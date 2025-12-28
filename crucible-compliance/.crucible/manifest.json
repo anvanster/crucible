@@ -1,0 +1,22 @@
+{
+  "version": "0.1.0",
+  "project": {
+    "name": "crucible-compliance",
+    "language": "rust",
+    "architecture_pattern": "modular"
+  },
+  "modules": [
+    "types",
+    "error",
+    "framework",
+    "loader",
+    "validator",
+    "reporter"
+  ],
+  "strict_validation": true,
+  "metadata": {
+    "author": "Andrey Vasilevsky",
+    "repository": "private",
+    "created": "2025-01-01T00:00:00Z"
+  }
+}

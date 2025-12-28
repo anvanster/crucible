@@ -14,14 +14,8 @@ readme.workspace = true
 include = [
     "src/**/*",
     "Cargo.toml",
-    ".claude/commands/*.md",
-    "docs/README.md",
-    "docs/QUICKSTART.md",
-    "docs/schema-reference.md",
-    "docs/type-system.md",
-    "docs/common-mistakes.md",
-    "docs/cli-reference.md",
-    "docs/examples/**/*",
+    ".claude/commands/**/*",
+    "docs/**/*",
 ]
 
 [[bin]]

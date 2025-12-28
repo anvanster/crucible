@@ -160,7 +160,7 @@ impl Generator {
                     output.push_str("    timestamp: new Date(),\n");
                     if let Some(payload) = &export.payload {
                         output.push_str("    payload: {\n");
-                        for (field_name, _) in payload {
+                        for field_name in payload.keys() {
                             output.push_str(&format!("      {field_name},\n"));
                         }
                         output.push_str("    },\n");

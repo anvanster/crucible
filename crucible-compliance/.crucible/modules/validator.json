@@ -1,0 +1,136 @@
+{
+  "module": "validator",
+  "version": "0.1.0",
+  "description": "Compliance validation engine for checking architecture against frameworks",
+  "exports": {
+    "Violation": {
+      "type": "type",
+      "description": "A compliance violation found during validation",
+      "properties": {
+        "rule_id": {
+          "type": "string",
+          "required": true,
+          "description": "The rule that was violated"
+        },
+        "severity": {
+          "type": "Severity",
+          "required": true,
+          "description": "Severity of the violation"
+        },
+        "description": {
+          "type": "string",
+          "required": true,
+          "description": "Description of the violation"
+        },
+        "location": {
+          "type": "string",
+          "required": true,
+          "description": "Location in the architecture (module.export.method)"
+        },
+        "issue": {
+          "type": "string",
+          "required": true,
+          "description": "The specific issue found"
+        },
+        "suggestion": {
+          "type": "string",
+          "required": false,
+          "description": "Suggestion for fixing the violation"
+        }
+      }
+    },
+    "ValidationReport": {
+      "type": "class",
+      "description": "Report containing all validation results",
+      "properties": {
+        "framework_name": {
+          "type": "string",
+          "required": true
+        },
+        "framework_version": {
+          "type": "string",
+          "required": true
+        },
+        "violations": {
+          "type": "Array<Violation>",
+          "required": true
+        },
+        "rules_checked": {
+          "type": "number",
+          "required": true
+        },
+        "modules_validated": {
+          "type": "number",
+          "required": true
+        }
+      },
+      "methods": {
+        "new": {
+          "inputs": [
+            {"name": "framework_name", "type": "string"},
+            {"name": "framework_version", "type": "string"}
+          ],
+          "returns": {"type": "ValidationReport"},
+          "effects": []
+        },
+        "passed": {
+          "inputs": [],
+          "returns": {"type": "boolean"},
+          "effects": [],
+          "description": "Check if validation passed (no errors)"
+        },
+        "errors": {
+          "inputs": [],
+          "returns": {"type": "Array<Violation>"},
+          "effects": []
+        },
+        "warnings": {
+          "inputs": [],
+          "returns": {"type": "Array<Violation>"},
+          "effects": []
+        },
+        "violation_count": {
+          "inputs": [],
+          "returns": {"type": "number"},
+          "effects": []
+        },
+        "error_count": {
+          "inputs": [],
+          "returns": {"type": "number"},
+          "effects": []
+        },
+        "warning_count": {
+          "inputs": [],
+          "returns": {"type": "number"},
+          "effects": []
+        }
+      }
+    },
+    "ComplianceValidator": {
+      "type": "class",
+      "description": "The compliance validator engine",
+      "methods": {
+        "new": {
+          "inputs": [
+            {"name": "framework", "type": "Framework"}
+          ],
+          "returns": {"type": "ComplianceValidator"},
+          "effects": []
+        },
+        "validate": {
+          "inputs": [
+            {"name": "project", "type": "Project"}
+          ],
+          "returns": {"type": "Result<ValidationReport, ComplianceError>"},
+          "effects": [],
+          "description": "Validate a project against the compliance framework"
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "types": "^0.1.0",
+    "framework": "^0.1.0",
+    "error": "^0.1.0"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "module": "error",
+  "version": "0.1.0",
+  "description": "Error types for compliance validation operations",
+  "exports": {
+    "ComplianceError": {
+      "type": "enum",
+      "description": "Errors that can occur during compliance operations",
+      "values": [
+        "FrameworkLoadError",
+        "InvalidFramework",
+        "FrameworkNotFound",
+        "ParseError",
+        "IoError",
+        "JsonError",
+        "CoreError",
+        "RuleError"
+      ]
+    },
+    "ComplianceResult": {
+      "type": "type",
+      "description": "Result type alias for compliance operations",
+      "properties": {
+        "inner": {
+          "type": "Result<T, ComplianceError>",
+          "required": true
+        }
+      }
+    }
+  },
+  "dependencies": {}
+}

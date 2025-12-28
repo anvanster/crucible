@@ -302,7 +302,11 @@ fn test_event_type_valid() {
     let validator = Validator::new(project);
     let result = validator.validate();
 
-    assert!(result.valid, "Event type should be valid: {:?}", result.errors);
+    assert!(
+        result.valid,
+        "Event type should be valid: {:?}",
+        result.errors
+    );
 }
 
 #[test]
@@ -340,7 +344,10 @@ fn test_event_with_methods_warns() {
     let result = validator.validate();
 
     // Should have a warning about event having methods
-    assert!(!result.warnings.is_empty(), "Should warn about event with methods");
+    assert!(
+        !result.warnings.is_empty(),
+        "Should warn about event with methods"
+    );
     assert!(result.warnings.iter().any(|w| w.rule == "event-structure"));
 }
 
@@ -372,8 +379,14 @@ fn test_event_payload_type_validation() {
     let validator = Validator::new(project);
     let result = validator.validate();
 
-    assert!(!result.valid, "Event with non-existent payload type should fail");
-    assert!(result.errors.iter().any(|e| e.rule == "all-types-must-exist"));
+    assert!(
+        !result.valid,
+        "Event with non-existent payload type should fail"
+    );
+    assert!(result
+        .errors
+        .iter()
+        .any(|e| e.rule == "all-types-must-exist"));
 }
 
 // =============================================================================
@@ -417,7 +430,11 @@ fn test_trait_type_valid() {
     let validator = Validator::new(project);
     let result = validator.validate();
 
-    assert!(result.valid, "Trait type should be valid: {:?}", result.errors);
+    assert!(
+        result.valid,
+        "Trait type should be valid: {:?}",
+        result.errors
+    );
 }
 
 #[test]
@@ -447,7 +464,10 @@ fn test_trait_without_methods_warns() {
     let result = validator.validate();
 
     // Should have a warning about trait without methods
-    assert!(!result.warnings.is_empty(), "Should warn about trait without methods");
+    assert!(
+        !result.warnings.is_empty(),
+        "Should warn about trait without methods"
+    );
     assert!(result.warnings.iter().any(|w| w.rule == "trait-structure"));
 }
 
@@ -486,7 +506,10 @@ fn test_trait_with_properties_warns() {
     let result = validator.validate();
 
     // Should have a warning about trait with properties
-    assert!(!result.warnings.is_empty(), "Should warn about trait with properties");
+    assert!(
+        !result.warnings.is_empty(),
+        "Should warn about trait with properties"
+    );
     assert!(result.warnings.iter().any(|w| w.rule == "trait-structure"));
 }
 
@@ -561,6 +584,9 @@ fn test_non_event_with_payload_errors() {
     let result = validator.validate();
 
     // Should have an error about non-event with payload
-    assert!(!result.valid, "Non-event with payload should fail validation");
+    assert!(
+        !result.valid,
+        "Non-event with payload should fail validation"
+    );
     assert!(result.errors.iter().any(|e| e.rule == "export-structure"));
 }

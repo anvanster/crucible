@@ -36,7 +36,12 @@ pub struct ValidationIssue {
 
 impl ValidationIssue {
     /// Create a new validation issue with basic information
-    pub fn new(rule: String, severity: Severity, message: String, location: Option<String>) -> Self {
+    pub fn new(
+        rule: String,
+        severity: Severity,
+        message: String,
+        location: Option<String>,
+    ) -> Self {
         Self {
             rule,
             severity,
@@ -450,7 +455,9 @@ impl Validator {
                      Use 'crucible graph' to visualize the dependency structure."
                         .to_string(),
                 )
-                .with_doc_link("https://github.com/anvanster/crucible#circular-dependencies".to_string()),
+                .with_doc_link(
+                    "https://github.com/anvanster/crucible#circular-dependencies".to_string(),
+                ),
             );
         }
 
@@ -549,7 +556,8 @@ impl Validator {
                         for param in &method.inputs {
                             if !self.is_type_available(&param.param_type, &available_types) {
                                 // Try to find similar type names for suggestion
-                                let similar_types = self.find_similar_types(&param.param_type, &available_types);
+                                let similar_types =
+                                    self.find_similar_types(&param.param_type, &available_types);
                                 let mut issue = ValidationIssue::new(
                                     "all-types-must-exist".to_string(),
                                     Severity::Error,
@@ -589,7 +597,8 @@ impl Validator {
                                 method.returns.return_type.clone()
                             };
 
-                            let similar_types = self.find_similar_types(&type_desc, &available_types);
+                            let similar_types =
+                                self.find_similar_types(&type_desc, &available_types);
                             let mut issue = ValidationIssue::new(
                                 "all-types-must-exist".to_string(),
                                 Severity::Error,
@@ -765,8 +774,7 @@ impl Validator {
                                                 )),
                                             )
                                             .with_suggestion(format!(
-                                                "Ensure '{target_method}' is defined as a method in the '{}' export.",
-                                                export_name
+                                                "Ensure '{target_method}' is defined as a method in the '{export_name}' export.",
                                             ))
                                             .with_doc_link("https://github.com/anvanster/crucible/blob/main/docs/schema-reference.md#method-calls".to_string()),
                                         );
@@ -817,8 +825,7 @@ impl Validator {
                                                 )),
                                             )
                                             .with_suggestion(format!(
-                                                "Ensure '{target_method}' is defined as a method in export '{}' of module '{}'.",
-                                                target_export, target_module
+                                                "Ensure '{target_method}' is defined as a method in export '{target_export}' of module '{target_module}'.",
                                             ))
                                             .with_doc_link("https://github.com/anvanster/crucible/blob/main/docs/schema-reference.md#methods".to_string()),
                                         );
@@ -988,12 +995,13 @@ impl Validator {
                 match export.export_type {
                     ExportType::Event => {
                         // Events should have payload, not methods
-                        if export.methods.is_some() && export.methods.as_ref().unwrap().len() > 0 {
+                        if export.methods.is_some() && !export.methods.as_ref().unwrap().is_empty()
+                        {
                             issues.push(
                                 ValidationIssue::new(
                                     "event-structure".to_string(),
                                     Severity::Warning,
-                                    format!("Event '{}' has methods defined. Events should define payload, not methods.", export_name),
+                                    format!("Event '{export_name}' has methods defined. Events should define payload, not methods."),
                                     Some(format!("{}.{}", module.module, export_name)),
                                 )
                                 .with_suggestion(
@@ -1030,12 +1038,14 @@ impl Validator {
                     }
                     ExportType::Trait => {
                         // Traits should have methods, not properties
-                        if export.properties.is_some() && export.properties.as_ref().unwrap().len() > 0 {
+                        if export.properties.is_some()
+                            && !export.properties.as_ref().unwrap().is_empty()
+                        {
                             issues.push(
                                 ValidationIssue::new(
                                     "trait-structure".to_string(),
                                     Severity::Warning,
-                                    format!("Trait '{}' has properties defined. Traits should only define methods.", export_name),
+                                    format!("Trait '{export_name}' has properties defined. Traits should only define methods."),
                                     Some(format!("{}.{}", module.module, export_name)),
                                 )
                                 .with_suggestion(
@@ -1052,7 +1062,7 @@ impl Validator {
                                 ValidationIssue::new(
                                     "trait-structure".to_string(),
                                     Severity::Warning,
-                                    format!("Trait '{}' has no methods defined. Traits should define at least one method.", export_name),
+                                    format!("Trait '{export_name}' has no methods defined. Traits should define at least one method."),
                                     Some(format!("{}.{}", module.module, export_name)),
                                 )
                                 .with_suggestion(
@@ -1068,7 +1078,7 @@ impl Validator {
                                 ValidationIssue::new(
                                     "trait-structure".to_string(),
                                     Severity::Error,
-                                    format!("Trait '{}' has payload defined. Payload is only valid for events.", export_name),
+                                    format!("Trait '{export_name}' has payload defined. Payload is only valid for events."),
                                     Some(format!("{}.{}", module.module, export_name)),
                                 )
                                 .with_suggestion(
@@ -1085,10 +1095,7 @@ impl Validator {
                                 ValidationIssue::new(
                                     "export-structure".to_string(),
                                     Severity::Error,
-                                    format!(
-                                        "Export '{}' has payload defined but is not an event type.",
-                                        export_name
-                                    ),
+                                    format!("Export '{export_name}' has payload defined but is not an event type."),
                                     Some(format!("{}.{}", module.module, export_name)),
                                 )
                                 .with_suggestion(
@@ -1131,7 +1138,11 @@ impl Validator {
 
         // Sort by distance (closest first) and take top 3
         candidates.sort_by_key(|(_, dist)| *dist);
-        candidates.into_iter().take(3).map(|(name, _)| name).collect()
+        candidates
+            .into_iter()
+            .take(3)
+            .map(|(name, _)| name)
+            .collect()
     }
 }
 
@@ -1141,8 +1152,8 @@ fn levenshtein_distance(s1: &str, s2: &str) -> usize {
     let len2 = s2.chars().count();
     let mut matrix = vec![vec![0; len2 + 1]; len1 + 1];
 
-    for i in 0..=len1 {
-        matrix[i][0] = i;
+    for (i, row) in matrix.iter_mut().enumerate().take(len1 + 1) {
+        row[0] = i;
     }
     for j in 0..=len2 {
         matrix[0][j] = j;
@@ -1153,7 +1164,7 @@ fn levenshtein_distance(s1: &str, s2: &str) -> usize {
 
     for i in 1..=len1 {
         for j in 1..=len2 {
-            let cost = if s1_chars[i - 1] == s2_chars[j - 1] { 0 } else { 1 };
+            let cost = usize::from(s1_chars[i - 1] != s2_chars[j - 1]);
             matrix[i][j] = std::cmp::min(
                 std::cmp::min(matrix[i - 1][j] + 1, matrix[i][j - 1] + 1),
                 matrix[i - 1][j - 1] + cost,

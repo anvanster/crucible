@@ -1,0 +1,184 @@
+{
+  "compliance_framework": "PCI-DSS",
+  "version": "4.0",
+  "description": "PCI Data Security Standard compliance validation for applications handling payment card data",
+  "requirements": [
+    {
+      "id": "3.4",
+      "category": "Protect Stored Cardholder Data",
+      "subcategory": "Render PAN unreadable"
+    },
+    {
+      "id": "3.5",
+      "category": "Protect Stored Cardholder Data",
+      "subcategory": "Protect cryptographic keys"
+    },
+    {
+      "id": "4.2",
+      "category": "Encrypt Transmission",
+      "subcategory": "Strong cryptography during transmission"
+    },
+    {
+      "id": "6.5",
+      "category": "Secure Development",
+      "subcategory": "Address common coding vulnerabilities"
+    },
+    {
+      "id": "8.2",
+      "category": "Identify and Authenticate Access",
+      "subcategory": "Multi-factor authentication"
+    },
+    {
+      "id": "10.1",
+      "category": "Log and Monitor Access",
+      "subcategory": "Audit trails for system components"
+    },
+    {
+      "id": "10.2",
+      "category": "Log and Monitor Access",
+      "subcategory": "Automated audit trails"
+    },
+    {
+      "id": "10.3",
+      "category": "Log and Monitor Access",
+      "subcategory": "Audit trail entries"
+    }
+  ],
+  "rules": [
+    {
+      "id": "no-pan-in-logs",
+      "requirement_id": "10.3",
+      "severity": "error",
+      "description": "Primary Account Numbers (PAN) must not be logged",
+      "rationale": "PCI-DSS prohibits storage of full PAN in logs. Only first 6 and last 4 digits may be displayed.",
+      "violation_cost": "Fines from $5,000 to $100,000 per month; potential loss of card processing privileges",
+      "validates": {
+        "type": "effect_check",
+        "when_effect": ["logging"],
+        "forbidden_data": ["@pan", "@card-number", "@cardholder-data"]
+      },
+      "examples": {
+        "violation": "logger.info(`Card: ${cardNumber}`)",
+        "compliant": "logger.info(`Card: ${maskPan(cardNumber)}`)"
+      }
+    },
+    {
+      "id": "no-cvv-storage",
+      "requirement_id": "3.4",
+      "severity": "error",
+      "description": "CVV/CVC codes must never be stored",
+      "rationale": "PCI-DSS absolutely prohibits storage of card verification codes after authorization.",
+      "violation_cost": "Immediate compliance failure; potential card brand penalties",
+      "validates": {
+        "type": "storage_check",
+        "when_accessing": ["@cvv", "@cvc", "@security-code"],
+        "forbidden_data": ["@stored"]
+      },
+      "examples": {
+        "violation": "const payment = { cvv: card.cvv }; db.save(payment);",
+        "compliant": "const payment = { lastFour: card.lastFour }; db.save(payment);"
+      }
+    },
+    {
+      "id": "pan-requires-encryption",
+      "requirement_id": "3.4",
+      "severity": "error",
+      "description": "Stored PAN must be encrypted or tokenized",
+      "rationale": "PCI-DSS requires rendering PAN unreadable using encryption, truncation, masking, or hashing.",
+      "validates": {
+        "type": "storage_check",
+        "when_accessing": ["@pan", "@card-number"],
+        "required_annotations": ["@encrypted"]
+      },
+      "examples": {
+        "violation": "pan: { type: 'string' }",
+        "compliant": "pan: { type: 'string', annotations: ['@pan', '@encrypted'] }"
+      }
+    },
+    {
+      "id": "card-data-access-audit",
+      "requirement_id": "10.2",
+      "severity": "error",
+      "description": "All cardholder data access must be audit logged",
+      "rationale": "PCI-DSS requires automated audit trails for all access to cardholder data.",
+      "validates": {
+        "type": "effect_requirement",
+        "when_accessing": ["@cardholder-data-access"],
+        "required_effects": ["audit.log"]
+      },
+      "examples": {
+        "violation": "function getCard(id) { return db.find(id); }",
+        "compliant": "function getCard(id) { auditLog.cardAccess(id); return db.find(id); }"
+      }
+    },
+    {
+      "id": "card-data-requires-auth",
+      "requirement_id": "8.2",
+      "severity": "error",
+      "description": "Cardholder data access requires strong authentication",
+      "rationale": "PCI-DSS requires unique identification and authentication for all access to cardholder data.",
+      "validates": {
+        "type": "data_access_check",
+        "when_accessing": ["@cardholder-data", "@pan"],
+        "required_annotations": ["@requires-auth"]
+      },
+      "examples": {
+        "violation": "app.get('/card/:id', getCard)",
+        "compliant": "app.get('/card/:id', authenticate, authorizeCardAccess, getCard)"
+      }
+    },
+    {
+      "id": "card-transmission-encryption",
+      "requirement_id": "4.2",
+      "severity": "error",
+      "description": "Cardholder data must use encrypted transmission",
+      "rationale": "PCI-DSS requires strong cryptography for transmission of cardholder data over open networks.",
+      "validates": {
+        "type": "effect_check",
+        "when_effect": ["network.request"],
+        "forbidden_data": ["@pan", "@cardholder-data"],
+        "required_annotations": ["@tls", "@encrypted-transport"]
+      },
+      "examples": {
+        "violation": "fetch('http://api.example.com', { body: cardData })",
+        "compliant": "fetch('https://api.example.com', { body: cardData })"
+      }
+    },
+    {
+      "id": "key-protection",
+      "requirement_id": "3.5",
+      "severity": "error",
+      "description": "Cryptographic keys must be protected",
+      "rationale": "PCI-DSS requires protecting encryption keys used to protect cardholder data.",
+      "validates": {
+        "type": "storage_check",
+        "when_accessing": ["@encryption-key", "@private-key"],
+        "required_annotations": ["@key-protected", "@hsm"]
+      }
+    },
+    {
+      "id": "admin-access-mfa",
+      "requirement_id": "8.2",
+      "severity": "warning",
+      "description": "Administrative access should require multi-factor authentication",
+      "rationale": "PCI-DSS 4.0 requires MFA for all access into the cardholder data environment.",
+      "validates": {
+        "type": "data_access_check",
+        "when_accessing": ["@admin-access", "@cardholder-environment"],
+        "required_annotations": ["@mfa-required"]
+      }
+    },
+    {
+      "id": "input-validation",
+      "requirement_id": "6.5",
+      "severity": "warning",
+      "description": "Payment forms should validate input",
+      "rationale": "PCI-DSS requires addressing common coding vulnerabilities including injection flaws.",
+      "validates": {
+        "type": "data_access_check",
+        "when_accessing": ["@user-input", "@payment-form"],
+        "required_annotations": ["@validated", "@sanitized"]
+      }
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "module": "framework",
+  "version": "0.1.0",
+  "description": "Compliance framework wrapper with rule indexing and lookup",
+  "exports": {
+    "Framework": {
+      "type": "class",
+      "description": "A loaded and validated compliance framework with indexed rules",
+      "properties": {
+        "definition": {
+          "type": "ComplianceFramework",
+          "required": true,
+          "description": "The underlying framework definition from crucible-core"
+        }
+      },
+      "methods": {
+        "new": {
+          "inputs": [
+            {"name": "definition", "type": "ComplianceFramework"}
+          ],
+          "returns": {"type": "Framework"},
+          "effects": []
+        },
+        "name": {
+          "inputs": [],
+          "returns": {"type": "string"},
+          "effects": []
+        },
+        "version": {
+          "inputs": [],
+          "returns": {"type": "string"},
+          "effects": []
+        },
+        "get_rule": {
+          "inputs": [
+            {"name": "rule_id", "type": "string"}
+          ],
+          "returns": {"type": "Option<ComplianceRule>"},
+          "effects": []
+        },
+        "rules": {
+          "inputs": [],
+          "returns": {"type": "Array<ComplianceRule>"},
+          "effects": []
+        },
+        "rules_by_severity": {
+          "inputs": [
+            {"name": "severity", "type": "Severity"}
+          ],
+          "returns": {"type": "Array<ComplianceRule>"},
+          "effects": []
+        },
+        "error_rules": {
+          "inputs": [],
+          "returns": {"type": "Array<ComplianceRule>"},
+          "effects": []
+        },
+        "warning_rules": {
+          "inputs": [],
+          "returns": {"type": "Array<ComplianceRule>"},
+          "effects": []
+        },
+        "rule_count": {
+          "inputs": [],
+          "returns": {"type": "number"},
+          "effects": []
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "types": "^0.1.0"
+  }
+}

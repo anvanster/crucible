@@ -1,0 +1,187 @@
+{
+  "compliance_framework": "SOC2",
+  "version": "2017",
+  "description": "SOC 2 Type II compliance validation based on AICPA Trust Services Criteria",
+  "requirements": [
+    {
+      "id": "CC6.1",
+      "category": "Logical and Physical Access Controls",
+      "subcategory": "Security software, infrastructure, and architectures"
+    },
+    {
+      "id": "CC6.2",
+      "category": "Logical and Physical Access Controls",
+      "subcategory": "Registration and authorization"
+    },
+    {
+      "id": "CC6.3",
+      "category": "Logical and Physical Access Controls",
+      "subcategory": "Authentication mechanisms"
+    },
+    {
+      "id": "CC6.6",
+      "category": "Logical and Physical Access Controls",
+      "subcategory": "Threats from internal and external sources"
+    },
+    {
+      "id": "CC7.1",
+      "category": "System Operations",
+      "subcategory": "Detection and monitoring"
+    },
+    {
+      "id": "CC7.2",
+      "category": "System Operations",
+      "subcategory": "Monitoring system components"
+    },
+    {
+      "id": "CC8.1",
+      "category": "Change Management",
+      "subcategory": "Changes to infrastructure and software"
+    },
+    {
+      "id": "P3.1",
+      "category": "Privacy",
+      "subcategory": "Collection of personal information"
+    },
+    {
+      "id": "P6.1",
+      "category": "Privacy",
+      "subcategory": "Disclosure and notification"
+    }
+  ],
+  "rules": [
+    {
+      "id": "no-pii-in-logs",
+      "requirement_id": "P3.1",
+      "severity": "error",
+      "description": "Personally Identifiable Information must not be logged without consent",
+      "rationale": "SOC 2 Privacy criteria requires protection of personal information throughout its lifecycle.",
+      "validates": {
+        "type": "effect_check",
+        "when_effect": ["logging"],
+        "forbidden_data": ["@pii", "@personal-data"]
+      },
+      "examples": {
+        "violation": "logger.info(`User email: ${user.email}`)",
+        "compliant": "logger.info(`User ID: ${user.anonymizedId}`)"
+      }
+    },
+    {
+      "id": "sensitive-data-audit",
+      "requirement_id": "CC7.1",
+      "severity": "error",
+      "description": "Access to sensitive data must be logged for monitoring",
+      "rationale": "SOC 2 requires detection and monitoring procedures for security events.",
+      "validates": {
+        "type": "effect_requirement",
+        "when_accessing": ["@sensitive-data-access", "@pii-access"],
+        "required_effects": ["audit.log"]
+      },
+      "examples": {
+        "violation": "function getUserData(id) { return db.find(id); }",
+        "compliant": "function getUserData(id) { auditLog.access(id, 'user-data'); return db.find(id); }"
+      }
+    },
+    {
+      "id": "access-requires-authentication",
+      "requirement_id": "CC6.3",
+      "severity": "error",
+      "description": "Sensitive data access requires authentication",
+      "rationale": "SOC 2 requires authentication mechanisms for access to information assets.",
+      "validates": {
+        "type": "data_access_check",
+        "when_accessing": ["@sensitive-data", "@pii", "@confidential"],
+        "required_annotations": ["@requires-auth"]
+      },
+      "examples": {
+        "violation": "app.get('/users/:id', getUser)",
+        "compliant": "app.get('/users/:id', authenticate, getUser)"
+      }
+    },
+    {
+      "id": "data-encryption-at-rest",
+      "requirement_id": "CC6.1",
+      "severity": "error",
+      "description": "Sensitive data at rest must be encrypted",
+      "rationale": "SOC 2 requires logical access security measures for stored data.",
+      "validates": {
+        "type": "storage_check",
+        "when_accessing": ["@pii", "@confidential", "@sensitive-data"],
+        "required_annotations": ["@encrypted"]
+      }
+    },
+    {
+      "id": "data-encryption-in-transit",
+      "requirement_id": "CC6.6",
+      "severity": "error",
+      "description": "Sensitive data must be encrypted during transmission",
+      "rationale": "SOC 2 requires protection against threats from external sources during data transmission.",
+      "validates": {
+        "type": "effect_check",
+        "when_effect": ["network.request"],
+        "forbidden_data": ["@pii", "@confidential"],
+        "required_annotations": ["@encrypted-transport", "@tls"]
+      }
+    },
+    {
+      "id": "authorization-check",
+      "requirement_id": "CC6.2",
+      "severity": "error",
+      "description": "Access to protected resources requires authorization",
+      "rationale": "SOC 2 requires registration and authorization of users before granting access.",
+      "validates": {
+        "type": "data_access_check",
+        "when_accessing": ["@protected-resource", "@admin-only"],
+        "required_annotations": ["@requires-authorization", "@rbac"]
+      }
+    },
+    {
+      "id": "security-event-logging",
+      "requirement_id": "CC7.2",
+      "severity": "warning",
+      "description": "Security-relevant events should be logged",
+      "rationale": "SOC 2 requires monitoring system components for anomalies and security events.",
+      "validates": {
+        "type": "effect_requirement",
+        "when_accessing": ["@security-event", "@authentication"],
+        "required_effects": ["audit.log", "logging"]
+      }
+    },
+    {
+      "id": "change-tracking",
+      "requirement_id": "CC8.1",
+      "severity": "warning",
+      "description": "System changes should be tracked and auditable",
+      "rationale": "SOC 2 requires managed changes to infrastructure and software.",
+      "validates": {
+        "type": "effect_requirement",
+        "when_accessing": ["@configuration-change", "@system-change"],
+        "required_effects": ["audit.log"]
+      }
+    },
+    {
+      "id": "data-consent-tracking",
+      "requirement_id": "P3.1",
+      "severity": "warning",
+      "description": "Personal data collection should track consent",
+      "rationale": "SOC 2 Privacy requires consent or other lawful basis for collecting personal information.",
+      "validates": {
+        "type": "data_access_check",
+        "when_accessing": ["@pii-collection", "@personal-data-collection"],
+        "required_annotations": ["@consent-tracked", "@lawful-basis"]
+      }
+    },
+    {
+      "id": "data-breach-notification",
+      "requirement_id": "P6.1",
+      "severity": "warning",
+      "description": "Systems handling PII should support breach notification",
+      "rationale": "SOC 2 Privacy requires disclosure and notification mechanisms for personal information.",
+      "validates": {
+        "type": "data_access_check",
+        "when_accessing": ["@pii", "@personal-data"],
+        "required_annotations": ["@breach-notifiable"]
+      }
+    }
+  ]
+}

@@ -1,0 +1,206 @@
+{
+  "module": "audit",
+  "version": "1.0.0",
+  "layer": "infrastructure",
+  "description": "HIPAA-compliant audit logging for all PHI access",
+
+  "exports": {
+    "AuditEntry": {
+      "type": "interface",
+      "description": "Immutable audit log entry for HIPAA compliance",
+      "properties": {
+        "id": {
+          "type": "string",
+          "required": true,
+          "annotations": []
+        },
+        "timestamp": {
+          "type": "Date",
+          "required": true,
+          "annotations": []
+        },
+        "action": {
+          "type": "AuditAction",
+          "required": true,
+          "annotations": []
+        },
+        "userId": {
+          "type": "string",
+          "required": true,
+          "description": "User who performed the action",
+          "annotations": []
+        },
+        "resourceType": {
+          "type": "string",
+          "required": true,
+          "description": "Type of resource accessed (patient, medical_record, etc.)",
+          "annotations": []
+        },
+        "resourceId": {
+          "type": "string",
+          "required": true,
+          "description": "ID of the resource accessed",
+          "annotations": []
+        },
+        "patientId": {
+          "type": "string",
+          "description": "Patient ID if PHI was accessed",
+          "annotations": []
+        },
+        "ipAddress": {
+          "type": "string",
+          "annotations": ["@pii"]
+        },
+        "userAgent": {
+          "type": "string",
+          "annotations": []
+        },
+        "sessionId": {
+          "type": "string",
+          "annotations": []
+        },
+        "success": {
+          "type": "boolean",
+          "required": true,
+          "annotations": []
+        },
+        "failureReason": {
+          "type": "string",
+          "description": "Reason for failure if success is false",
+          "annotations": []
+        },
+        "metadata": {
+          "type": "object",
+          "description": "Additional context (must not contain PHI)",
+          "annotations": []
+        }
+      }
+    },
+
+    "AuditAction": {
+      "type": "enum",
+      "values": [
+        "view",
+        "create",
+        "update",
+        "delete",
+        "export",
+        "print",
+        "login",
+        "logout",
+        "login_failed",
+        "permission_denied",
+        "search"
+      ]
+    },
+
+    "AuditLogger": {
+      "type": "class",
+      "description": "Audit logging service - all PHI access must be logged here",
+      "methods": {
+        "log": {
+          "inputs": [
+            {"name": "entry", "type": "CreateAuditEntryInput"}
+          ],
+          "returns": {"type": "Promise", "inner": "AuditEntry"},
+          "throws": ["AuditLogError"],
+          "effects": ["database.write"],
+          "annotations": [],
+          "description": "Create an immutable audit entry"
+        },
+        "logAccess": {
+          "inputs": [
+            {"name": "userId", "type": "string"},
+            {"name": "resourceType", "type": "string"},
+            {"name": "resourceId", "type": "string"},
+            {"name": "action", "type": "AuditAction"},
+            {"name": "context", "type": "AuditContext"}
+          ],
+          "returns": {"type": "Promise", "inner": "AuditEntry"},
+          "effects": ["database.write"],
+          "annotations": [],
+          "description": "Convenience method for logging resource access"
+        },
+        "logPHIAccess": {
+          "inputs": [
+            {"name": "userId", "type": "string"},
+            {"name": "patientId", "type": "string"},
+            {"name": "resourceType", "type": "string"},
+            {"name": "resourceId", "type": "string"},
+            {"name": "action", "type": "AuditAction"},
+            {"name": "context", "type": "AuditContext"}
+          ],
+          "returns": {"type": "Promise", "inner": "AuditEntry"},
+          "effects": ["database.write"],
+          "annotations": [],
+          "description": "Log PHI access with patient ID for HIPAA compliance"
+        },
+        "logLoginAttempt": {
+          "inputs": [
+            {"name": "email", "type": "string"},
+            {"name": "success", "type": "boolean"},
+            {"name": "failureReason", "type": "string"},
+            {"name": "context", "type": "AuditContext"}
+          ],
+          "returns": {"type": "Promise", "inner": "AuditEntry"},
+          "effects": ["database.write"],
+          "annotations": [],
+          "description": "Log login attempts for security monitoring"
+        },
+        "query": {
+          "inputs": [
+            {"name": "filters", "type": "AuditQueryFilters"},
+            {"name": "pagination", "type": "PaginationParams"}
+          ],
+          "returns": {"type": "Promise", "inner": "PaginatedResult<AuditEntry>"},
+          "throws": ["UnauthorizedError"],
+          "effects": ["database.read"],
+          "annotations": ["@requires-auth"],
+          "description": "Query audit logs (admin only)"
+        },
+        "getByPatient": {
+          "inputs": [
+            {"name": "patientId", "type": "string"},
+            {"name": "dateRange", "type": "DateRange"}
+          ],
+          "returns": {"type": "Promise", "inner": "Array<AuditEntry>"},
+          "throws": ["UnauthorizedError"],
+          "effects": ["database.read", "audit.log"],
+          "annotations": ["@requires-auth"],
+          "description": "Get all audit entries for a patient (for breach investigation)"
+        },
+        "exportForAudit": {
+          "inputs": [
+            {"name": "dateRange", "type": "DateRange"},
+            {"name": "format", "type": "ExportFormat"}
+          ],
+          "returns": {"type": "Promise", "inner": "AuditExport"},
+          "throws": ["UnauthorizedError"],
+          "effects": ["database.read", "audit.log"],
+          "annotations": ["@requires-auth"],
+          "description": "Export audit logs for compliance audit"
+        }
+      }
+    },
+
+    "AuditContext": {
+      "type": "interface",
+      "properties": {
+        "ipAddress": {
+          "type": "string",
+          "annotations": []
+        },
+        "userAgent": {
+          "type": "string",
+          "annotations": []
+        },
+        "sessionId": {
+          "type": "string",
+          "annotations": []
+        }
+      }
+    }
+  },
+
+  "dependencies": {}
+}

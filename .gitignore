@@ -1,6 +1,8 @@
 .codemender/
 logs/
 docs-integration/
+docs-internal/
+
 # Rust
 target/
 Cargo.lock
@@ -20,6 +22,3 @@ Thumbs.db
 # Test outputs
 test-output/
 generated/
-
-# Private compliance crate (has separate git repo)
-crucible-compliance/

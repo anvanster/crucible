@@ -1,0 +1,134 @@
+{
+  "module": "appointments",
+  "version": "1.0.0",
+  "layer": "domain",
+  "description": "Appointment scheduling with HIPAA-compliant patient references",
+
+  "exports": {
+    "Appointment": {
+      "type": "interface",
+      "properties": {
+        "id": {
+          "type": "string",
+          "required": true,
+          "annotations": []
+        },
+        "patientId": {
+          "type": "string",
+          "required": true,
+          "description": "Reference to patient - not PHI by itself",
+          "annotations": []
+        },
+        "providerId": {
+          "type": "string",
+          "required": true,
+          "annotations": []
+        },
+        "scheduledAt": {
+          "type": "Date",
+          "required": true,
+          "description": "Appointment date/time - PHI when combined with patient",
+          "annotations": ["@phi"]
+        },
+        "duration": {
+          "type": "number",
+          "description": "Duration in minutes",
+          "annotations": []
+        },
+        "type": {
+          "type": "AppointmentType",
+          "required": true,
+          "annotations": []
+        },
+        "reason": {
+          "type": "string",
+          "description": "Reason for visit - may contain PHI",
+          "annotations": ["@phi", "@encrypted"]
+        },
+        "notes": {
+          "type": "string",
+          "description": "Appointment notes - may contain PHI",
+          "annotations": ["@phi", "@encrypted"]
+        },
+        "status": {
+          "type": "AppointmentStatus",
+          "annotations": []
+        },
+        "createdAt": {
+          "type": "Date",
+          "annotations": []
+        }
+      }
+    },
+
+    "AppointmentType": {
+      "type": "enum",
+      "values": ["checkup", "followup", "consultation", "procedure", "emergency"]
+    },
+
+    "AppointmentStatus": {
+      "type": "enum",
+      "values": ["scheduled", "confirmed", "checked_in", "in_progress", "completed", "cancelled", "no_show"]
+    },
+
+    "AppointmentService": {
+      "type": "class",
+      "methods": {
+        "schedule": {
+          "inputs": [
+            {"name": "data", "type": "ScheduleAppointmentInput"},
+            {"name": "userId", "type": "string"}
+          ],
+          "returns": {"type": "Promise", "inner": "Appointment"},
+          "throws": ["ValidationError", "ConflictError"],
+          "effects": ["database.write", "audit.log"],
+          "annotations": ["@phi-access", "@requires-auth"]
+        },
+        "getByPatient": {
+          "inputs": [
+            {"name": "patientId", "type": "string"},
+            {"name": "userId", "type": "string"}
+          ],
+          "returns": {"type": "Promise", "inner": "Array<Appointment>"},
+          "effects": ["database.read", "audit.log"],
+          "annotations": ["@phi-access", "@requires-auth"]
+        },
+        "getByProvider": {
+          "inputs": [
+            {"name": "providerId", "type": "string"},
+            {"name": "date", "type": "Date"},
+            {"name": "userId", "type": "string"}
+          ],
+          "returns": {"type": "Promise", "inner": "Array<Appointment>"},
+          "effects": ["database.read", "audit.log"],
+          "annotations": ["@phi-access", "@requires-auth"]
+        },
+        "cancel": {
+          "inputs": [
+            {"name": "appointmentId", "type": "string"},
+            {"name": "reason", "type": "string"},
+            {"name": "userId", "type": "string"}
+          ],
+          "returns": {"type": "Promise", "inner": "Appointment"},
+          "effects": ["database.write", "audit.log"],
+          "annotations": ["@phi-access", "@requires-auth"]
+        },
+        "checkIn": {
+          "inputs": [
+            {"name": "appointmentId", "type": "string"},
+            {"name": "userId", "type": "string"}
+          ],
+          "returns": {"type": "Promise", "inner": "Appointment"},
+          "effects": ["database.write", "audit.log"],
+          "annotations": ["@phi-access", "@requires-auth"]
+        }
+      }
+    }
+  },
+
+  "dependencies": {
+    "patient": "^1.0.0",
+    "auth": "^1.0.0",
+    "audit": "^1.0.0"
+  }
+}

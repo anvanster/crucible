@@ -1,0 +1,20 @@
+{
+  "version": "0.1.0",
+  "project": {
+    "name": "healthcare-portal",
+    "language": "typescript",
+    "architecture_pattern": "layered"
+  },
+  "modules": [
+    "patient",
+    "appointments",
+    "medical-records",
+    "auth",
+    "audit"
+  ],
+  "strict_validation": true,
+  "metadata": {
+    "compliance": ["HIPAA"],
+    "description": "Example HIPAA-compliant patient portal demonstrating Crucible compliance validation"
+  }
+}

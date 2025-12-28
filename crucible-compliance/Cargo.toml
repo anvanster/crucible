@@ -1,0 +1,43 @@
+[package]
+name = "crucible-compliance"
+version = "0.1.0"
+edition = "2021"
+authors = ["Andrey Vasilevsky"]
+license-file = "LICENSE"
+description = "HIPAA/PCI-DSS/SOC2 compliance validation for Crucible architecture definitions"
+repository = "https://github.com/anvanster/crucible"
+homepage = "https://github.com/anvanster/crucible"
+documentation = "https://github.com/anvanster/crucible/blob/main/crucible-compliance/README.md"
+readme = "README.md"
+keywords = ["compliance", "hipaa", "pci-dss", "soc2", "architecture"]
+categories = ["development-tools", "command-line-utilities"]
+include = [
+    "src/**/*",
+    "Cargo.toml",
+    "LICENSE",
+    "LICENSE_FAQ.md",
+    "README.md",
+    "CHANGELOG.md",
+    "frameworks/**/*",
+    "docs/**/*",
+]
+
+# Exclude from parent workspace - different license (BSL 1.1)
+[workspace]
+
+[[bin]]
+name = "crucible-comply"
+path = "src/main.rs"
+
+[dependencies]
+crucible-core = "0.1.10"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "2.0"
+anyhow = "1.0"
+walkdir = "2.0"
+clap = { version = "4.5", features = ["derive"] }
+chrono = "0.4"
+
+[dev-dependencies]
+tempfile = "3.0"

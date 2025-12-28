@@ -1,0 +1,790 @@
+{
+  "compliance_framework": "HIPAA",
+  "version": "2.0.0",
+  "description": "Comprehensive HIPAA Security Rule compliance validation for healthcare applications handling Protected Health Information (PHI). Covers Administrative, Physical, and Technical Safeguards per 45 CFR Part 164.",
+  "requirements": [
+    {
+      "id": "164.308(a)(1)",
+      "category": "Administrative Safeguards",
+      "subcategory": "Security Management Process",
+      "description": "Implement policies and procedures to prevent, detect, contain, and correct security violations"
+    },
+    {
+      "id": "164.308(a)(3)",
+      "category": "Administrative Safeguards",
+      "subcategory": "Workforce Security",
+      "description": "Implement policies and procedures to ensure workforce members have appropriate access"
+    },
+    {
+      "id": "164.308(a)(4)",
+      "category": "Administrative Safeguards",
+      "subcategory": "Information Access Management",
+      "description": "Implement policies and procedures for authorizing access to ePHI"
+    },
+    {
+      "id": "164.308(a)(5)",
+      "category": "Administrative Safeguards",
+      "subcategory": "Security Awareness and Training",
+      "description": "Implement security awareness and training program for workforce"
+    },
+    {
+      "id": "164.308(a)(6)",
+      "category": "Administrative Safeguards",
+      "subcategory": "Security Incident Procedures",
+      "description": "Implement policies and procedures to address security incidents"
+    },
+    {
+      "id": "164.308(a)(7)",
+      "category": "Administrative Safeguards",
+      "subcategory": "Contingency Plan",
+      "description": "Establish policies and procedures for responding to emergencies"
+    },
+    {
+      "id": "164.312(a)(1)",
+      "category": "Technical Safeguards",
+      "subcategory": "Access Control",
+      "description": "Implement technical policies and procedures for electronic information systems"
+    },
+    {
+      "id": "164.312(a)(2)(i)",
+      "category": "Technical Safeguards",
+      "subcategory": "Unique User Identification",
+      "description": "Assign a unique name and/or number for identifying and tracking user identity"
+    },
+    {
+      "id": "164.312(a)(2)(ii)",
+      "category": "Technical Safeguards",
+      "subcategory": "Emergency Access Procedure",
+      "description": "Establish procedures for obtaining necessary ePHI during an emergency"
+    },
+    {
+      "id": "164.312(a)(2)(iii)",
+      "category": "Technical Safeguards",
+      "subcategory": "Automatic Logoff",
+      "description": "Implement procedures that terminate electronic sessions after inactivity"
+    },
+    {
+      "id": "164.312(a)(2)(iv)",
+      "category": "Technical Safeguards",
+      "subcategory": "Encryption and Decryption",
+      "description": "Implement mechanism to encrypt and decrypt ePHI"
+    },
+    {
+      "id": "164.312(b)",
+      "category": "Technical Safeguards",
+      "subcategory": "Audit Controls",
+      "description": "Implement mechanisms to record and examine activity in systems containing ePHI"
+    },
+    {
+      "id": "164.312(c)(1)",
+      "category": "Technical Safeguards",
+      "subcategory": "Integrity Controls",
+      "description": "Implement policies and procedures to protect ePHI from improper alteration or destruction"
+    },
+    {
+      "id": "164.312(c)(2)",
+      "category": "Technical Safeguards",
+      "subcategory": "Mechanism to Authenticate ePHI",
+      "description": "Implement mechanisms to corroborate that ePHI has not been altered or destroyed"
+    },
+    {
+      "id": "164.312(d)",
+      "category": "Technical Safeguards",
+      "subcategory": "Person or Entity Authentication",
+      "description": "Implement procedures to verify identity of persons or entities seeking access to ePHI"
+    },
+    {
+      "id": "164.312(e)(1)",
+      "category": "Technical Safeguards",
+      "subcategory": "Transmission Security",
+      "description": "Implement technical security measures to guard against unauthorized access during transmission"
+    },
+    {
+      "id": "164.312(e)(2)(i)",
+      "category": "Technical Safeguards",
+      "subcategory": "Integrity Controls (Transmission)",
+      "description": "Implement security measures to ensure transmitted ePHI is not improperly modified"
+    },
+    {
+      "id": "164.312(e)(2)(ii)",
+      "category": "Technical Safeguards",
+      "subcategory": "Encryption (Transmission)",
+      "description": "Implement mechanism to encrypt ePHI during transmission"
+    },
+    {
+      "id": "164.314(a)",
+      "category": "Organizational Requirements",
+      "subcategory": "Business Associate Contracts",
+      "description": "Contracts with business associates must include required security provisions"
+    },
+    {
+      "id": "164.316(b)(1)",
+      "category": "Documentation",
+      "subcategory": "Documentation Requirements",
+      "description": "Maintain policies and procedures in written form"
+    }
+  ],
+  "rules": [
+    {
+      "id": "no-phi-in-logs",
+      "requirement_id": "164.312(b)",
+      "severity": "error",
+      "description": "PHI data must not be logged without encryption or redaction",
+      "rationale": "HIPAA requires that PHI is protected in all contexts, including log files. Unencrypted PHI in logs creates unauthorized disclosure risk.",
+      "violation_cost": "$100-$50,000 per violation, up to $1.5M annually",
+      "validates": {
+        "type": "effect_check",
+        "when_effect": ["logging", "console.log", "console.error", "console.warn", "debug"],
+        "forbidden_data": ["@phi", "@pii", "@ephi"]
+      },
+      "examples": {
+        "violation": "logger.info(`Patient SSN: ${patient.ssn}`)",
+        "compliant": "logger.info(`Patient ID: ${patient.anonymizedId}`)"
+      }
+    },
+    {
+      "id": "no-phi-in-error-messages",
+      "requirement_id": "164.312(b)",
+      "severity": "error",
+      "description": "PHI must not be included in error messages or exceptions",
+      "rationale": "Error messages may be exposed to end users or logged, risking PHI disclosure.",
+      "validates": {
+        "type": "effect_check",
+        "when_effect": ["throw", "error.response", "error.message"],
+        "forbidden_data": ["@phi", "@pii", "@ephi"]
+      }
+    },
+    {
+      "id": "no-phi-in-urls",
+      "requirement_id": "164.312(e)(1)",
+      "severity": "error",
+      "description": "PHI must not be included in URLs or query parameters",
+      "rationale": "URLs are logged by web servers, proxies, and browsers, creating unauthorized disclosure risk.",
+      "validates": {
+        "type": "effect_check",
+        "when_effect": ["url.param", "query.param", "route.param"],
+        "forbidden_data": ["@phi", "@pii", "@ephi"]
+      }
+    },
+    {
+      "id": "no-phi-in-local-storage",
+      "requirement_id": "164.312(a)(2)(iv)",
+      "severity": "error",
+      "description": "PHI must not be stored in browser local storage without encryption",
+      "rationale": "Local storage is accessible to JavaScript and persists across sessions, risking unauthorized access.",
+      "validates": {
+        "type": "effect_check",
+        "when_effect": ["localStorage.setItem", "sessionStorage.setItem", "client.storage"],
+        "forbidden_data": ["@phi", "@ephi"],
+        "unless_annotations": ["@encrypted"]
+      }
+    },
+    {
+      "id": "no-phi-in-cookies",
+      "requirement_id": "164.312(e)(1)",
+      "severity": "error",
+      "description": "PHI must not be stored in cookies without encryption and secure flags",
+      "rationale": "Cookies can be intercepted or accessed by JavaScript, risking PHI exposure.",
+      "validates": {
+        "type": "effect_check",
+        "when_effect": ["cookie.set", "response.cookie"],
+        "forbidden_data": ["@phi", "@ephi"],
+        "unless_annotations": ["@encrypted"]
+      }
+    },
+    {
+      "id": "no-phi-in-cache",
+      "requirement_id": "164.312(a)(2)(iv)",
+      "severity": "error",
+      "description": "PHI must not be stored in unencrypted caches",
+      "rationale": "Cached data may persist and be accessible to unauthorized parties.",
+      "validates": {
+        "type": "effect_check",
+        "when_effect": ["cache.set", "redis.set", "memcached.set"],
+        "forbidden_data": ["@phi", "@ephi"],
+        "unless_annotations": ["@encrypted"]
+      }
+    },
+    {
+      "id": "phi-access-requires-audit",
+      "requirement_id": "164.312(b)",
+      "severity": "error",
+      "description": "All PHI access must be audit logged",
+      "rationale": "HIPAA requires audit trails for all PHI access to detect unauthorized access and support breach investigations.",
+      "violation_cost": "$100-$50,000 per violation",
+      "validates": {
+        "type": "effect_requirement",
+        "when_accessing": ["@phi-access"],
+        "required_effects": ["audit.log"]
+      },
+      "examples": {
+        "violation": "function getPatientRecord(id) { return db.find(id); }",
+        "compliant": "function getPatientRecord(id) { auditLog.access(id); return db.find(id); }"
+      }
+    },
+    {
+      "id": "phi-modification-requires-audit",
+      "requirement_id": "164.312(b)",
+      "severity": "error",
+      "description": "All PHI modifications must be audit logged",
+      "rationale": "Changes to PHI must be tracked for accountability and breach investigation.",
+      "validates": {
+        "type": "effect_requirement",
+        "when_accessing": ["@phi-modify"],
+        "required_effects": ["audit.log"]
+      }
+    },
+    {
+      "id": "phi-disclosure-requires-audit",
+      "requirement_id": "164.312(b)",
+      "severity": "error",
+      "description": "All PHI disclosures must be audit logged",
+      "rationale": "HIPAA requires tracking of all PHI disclosures for the accounting of disclosures requirement.",
+      "validates": {
+        "type": "effect_requirement",
+        "when_accessing": ["@phi-disclosure"],
+        "required_effects": ["audit.log"]
+      }
+    },
+    {
+      "id": "phi-requires-authentication",
+      "requirement_id": "164.312(d)",
+      "severity": "error",
+      "description": "PHI access requires user authentication",
+      "rationale": "HIPAA mandates verification of user identity before granting access to PHI.",
+      "validates": {
+        "type": "data_access_check",
+        "when_accessing": ["@phi"],
+        "required_annotations": ["@requires-auth"]
+      },
+      "examples": {
+        "violation": "app.get('/patient/:id', getPatient)",
+        "compliant": "app.get('/patient/:id', authenticate, getPatient)"
+      }
+    },
+    {
+      "id": "phi-requires-authorization",
+      "requirement_id": "164.308(a)(4)",
+      "severity": "error",
+      "description": "PHI access requires role-based authorization",
+      "rationale": "Access to PHI must be limited based on user roles and job function.",
+      "validates": {
+        "type": "data_access_check",
+        "when_accessing": ["@phi"],
+        "required_annotations": ["@requires-role"]
+      }
+    },
+    {
+      "id": "phi-storage-encryption",
+      "requirement_id": "164.312(a)(2)(iv)",
+      "severity": "error",
+      "description": "PHI at rest must be encrypted",
+      "rationale": "HIPAA requires encryption of ePHI to protect against unauthorized access.",
+      "validates": {
+        "type": "storage_check",
+        "when_accessing": ["@phi"],
+        "required_annotations": ["@encrypted"]
+      },
+      "examples": {
+        "violation": "ssn: { type: 'string' }",
+        "compliant": "ssn: { type: 'string', annotations: ['@phi', '@encrypted'] }"
+      }
+    },
+    {
+      "id": "phi-transmission-encryption",
+      "requirement_id": "164.312(e)(2)(ii)",
+      "severity": "error",
+      "description": "PHI in transit must use encrypted channels (TLS 1.2+)",
+      "rationale": "HIPAA requires protection of ePHI during transmission over networks.",
+      "validates": {
+        "type": "data_access_check",
+        "when_accessing": ["@phi"],
+        "required_annotations": ["@https-only"]
+      }
+    },
+    {
+      "id": "phi-email-encryption",
+      "requirement_id": "164.312(e)(2)(ii)",
+      "severity": "error",
+      "description": "PHI sent via email must be encrypted",
+      "rationale": "Email transmission of PHI requires encryption to prevent interception.",
+      "validates": {
+        "type": "effect_check",
+        "when_effect": ["email.send", "mail.send", "notification.email"],
+        "forbidden_data": ["@phi", "@ephi"],
+        "unless_annotations": ["@encrypted-email"]
+      }
+    },
+    {
+      "id": "unique-user-identification",
+      "requirement_id": "164.312(a)(2)(i)",
+      "severity": "warning",
+      "description": "Users accessing PHI must have unique identifiers",
+      "rationale": "Unique identification enables tracking and accountability for PHI access.",
+      "validates": {
+        "type": "data_access_check",
+        "when_accessing": ["@phi-access"],
+        "required_annotations": ["@user-identified"]
+      }
+    },
+    {
+      "id": "session-timeout",
+      "requirement_id": "164.312(a)(2)(iii)",
+      "severity": "error",
+      "description": "Sessions with PHI access must have automatic timeout",
+      "rationale": "Inactive sessions with PHI access must be terminated to prevent unauthorized access.",
+      "validates": {
+        "type": "data_access_check",
+        "when_accessing": ["@phi-access"],
+        "required_annotations": ["@session-timeout"]
+      }
+    },
+    {
+      "id": "session-timeout-duration",
+      "requirement_id": "164.312(a)(2)(iii)",
+      "severity": "warning",
+      "description": "PHI session timeout should be 15 minutes or less",
+      "rationale": "Industry best practice recommends session timeout of 15 minutes for PHI access.",
+      "validates": {
+        "type": "data_access_check",
+        "when_accessing": ["@phi-access"],
+        "recommended_annotations": ["@timeout-15min"]
+      }
+    },
+    {
+      "id": "failed-login-monitoring",
+      "requirement_id": "164.308(a)(5)",
+      "severity": "error",
+      "description": "Failed login attempts must be monitored and logged",
+      "rationale": "HIPAA requires procedures for monitoring log-in attempts and reporting discrepancies.",
+      "validates": {
+        "type": "effect_requirement",
+        "when_accessing": ["@authentication"],
+        "required_effects": ["audit.log"]
+      }
+    },
+    {
+      "id": "account-lockout",
+      "requirement_id": "164.312(a)(1)",
+      "severity": "error",
+      "description": "Accounts must lock after failed login attempts",
+      "rationale": "Account lockout prevents brute force attacks against PHI systems.",
+      "validates": {
+        "type": "data_access_check",
+        "when_accessing": ["@authentication"],
+        "required_annotations": ["@account-lockout"]
+      }
+    },
+    {
+      "id": "password-complexity",
+      "requirement_id": "164.312(d)",
+      "severity": "error",
+      "description": "PHI system passwords must meet complexity requirements",
+      "rationale": "Strong passwords are required to protect PHI system access.",
+      "validates": {
+        "type": "data_access_check",
+        "when_accessing": ["@password"],
+        "required_annotations": ["@password-policy"]
+      }
+    },
+    {
+      "id": "password-expiration",
+      "requirement_id": "164.312(d)",
+      "severity": "warning",
+      "description": "PHI system passwords should have expiration policies",
+      "rationale": "Regular password changes reduce risk of compromised credentials.",
+      "validates": {
+        "type": "data_access_check",
+        "when_accessing": ["@password"],
+        "recommended_annotations": ["@password-expiration"]
+      }
+    },
+    {
+      "id": "mfa-required",
+      "requirement_id": "164.312(d)",
+      "severity": "warning",
+      "description": "Multi-factor authentication should be used for PHI access",
+      "rationale": "MFA provides additional security for PHI system access.",
+      "validates": {
+        "type": "data_access_check",
+        "when_accessing": ["@phi-access", "@admin-access"],
+        "recommended_annotations": ["@mfa"]
+      }
+    },
+    {
+      "id": "minimum-necessary-access",
+      "requirement_id": "164.308(a)(4)",
+      "severity": "warning",
+      "description": "PHI access should follow minimum necessary principle",
+      "rationale": "Access to PHI should be limited to the minimum necessary to accomplish the intended purpose.",
+      "validates": {
+        "type": "data_access_check",
+        "when_accessing": ["@phi"],
+        "warn_if_all_fields": true,
+        "recommend_fields": "Consider accessing only specific fields needed rather than entire PHI records"
+      }
+    },
+    {
+      "id": "phi-field-level-access",
+      "requirement_id": "164.308(a)(4)",
+      "severity": "warning",
+      "description": "Consider implementing field-level access control for PHI",
+      "rationale": "Field-level controls enable more granular minimum necessary enforcement.",
+      "validates": {
+        "type": "data_access_check",
+        "when_accessing": ["@phi-sensitive"],
+        "recommended_annotations": ["@field-level-access"]
+      }
+    },
+    {
+      "id": "phi-integrity-verification",
+      "requirement_id": "164.312(c)(2)",
+      "severity": "warning",
+      "description": "PHI modifications should include integrity verification",
+      "rationale": "Mechanisms must verify that PHI has not been altered or destroyed improperly.",
+      "validates": {
+        "type": "effect_requirement",
+        "when_accessing": ["@phi-modify"],
+        "required_effects": ["integrity.check"]
+      }
+    },
+    {
+      "id": "phi-version-control",
+      "requirement_id": "164.312(c)(1)",
+      "severity": "warning",
+      "description": "PHI modifications should maintain version history",
+      "rationale": "Version control enables recovery from improper alterations.",
+      "validates": {
+        "type": "effect_requirement",
+        "when_accessing": ["@phi-modify"],
+        "recommended_effects": ["version.create"]
+      }
+    },
+    {
+      "id": "phi-deletion-authorization",
+      "requirement_id": "164.312(c)(1)",
+      "severity": "error",
+      "description": "PHI deletion requires explicit authorization",
+      "rationale": "Improper destruction of PHI must be prevented through authorization controls.",
+      "validates": {
+        "type": "data_access_check",
+        "when_accessing": ["@phi-delete"],
+        "required_annotations": ["@delete-authorized"]
+      }
+    },
+    {
+      "id": "phi-soft-delete",
+      "requirement_id": "164.312(c)(1)",
+      "severity": "warning",
+      "description": "PHI deletion should use soft delete with retention period",
+      "rationale": "Soft deletion allows recovery and meets retention requirements.",
+      "validates": {
+        "type": "data_access_check",
+        "when_accessing": ["@phi-delete"],
+        "recommended_annotations": ["@soft-delete"]
+      }
+    },
+    {
+      "id": "phi-retention-period",
+      "requirement_id": "164.316(b)(1)",
+      "severity": "warning",
+      "description": "PHI should have defined retention periods",
+      "rationale": "HIPAA requires retention of records for 6 years from creation or last effective date.",
+      "validates": {
+        "type": "storage_check",
+        "when_accessing": ["@phi"],
+        "recommended_annotations": ["@retention-6y"]
+      }
+    },
+    {
+      "id": "emergency-access-procedure",
+      "requirement_id": "164.312(a)(2)(ii)",
+      "severity": "warning",
+      "description": "PHI systems should have emergency access procedures",
+      "rationale": "Procedures for obtaining necessary ePHI during an emergency must be established.",
+      "validates": {
+        "type": "data_access_check",
+        "when_accessing": ["@phi-emergency"],
+        "required_annotations": ["@break-glass"]
+      }
+    },
+    {
+      "id": "emergency-access-audit",
+      "requirement_id": "164.312(b)",
+      "severity": "error",
+      "description": "Emergency PHI access must be audit logged with justification",
+      "rationale": "Emergency access events require detailed audit trails.",
+      "validates": {
+        "type": "effect_requirement",
+        "when_accessing": ["@break-glass"],
+        "required_effects": ["audit.log"]
+      }
+    },
+    {
+      "id": "security-incident-logging",
+      "requirement_id": "164.308(a)(6)",
+      "severity": "error",
+      "description": "Security incidents involving PHI must be logged",
+      "rationale": "Security incident procedures require documentation of incidents.",
+      "validates": {
+        "type": "effect_requirement",
+        "when_accessing": ["@security-incident"],
+        "required_effects": ["incident.log"]
+      }
+    },
+    {
+      "id": "breach-notification",
+      "requirement_id": "164.308(a)(6)",
+      "severity": "error",
+      "description": "PHI breaches must trigger notification procedures",
+      "rationale": "HIPAA Breach Notification Rule requires notification within 60 days.",
+      "validates": {
+        "type": "effect_requirement",
+        "when_accessing": ["@breach-confirmed"],
+        "required_effects": ["breach.notify"]
+      }
+    },
+    {
+      "id": "access-termination",
+      "requirement_id": "164.308(a)(3)",
+      "severity": "error",
+      "description": "PHI access must be terminated when no longer needed",
+      "rationale": "Access to PHI must be terminated when workforce member no longer requires it.",
+      "validates": {
+        "type": "data_access_check",
+        "when_accessing": ["@user-termination"],
+        "required_annotations": ["@access-terminated"]
+      }
+    },
+    {
+      "id": "access-review",
+      "requirement_id": "164.308(a)(4)",
+      "severity": "warning",
+      "description": "PHI access rights should be periodically reviewed",
+      "rationale": "Regular access reviews ensure appropriate access levels are maintained.",
+      "validates": {
+        "type": "data_access_check",
+        "when_accessing": ["@phi-admin"],
+        "recommended_annotations": ["@access-review"]
+      }
+    },
+    {
+      "id": "workstation-security",
+      "requirement_id": "164.312(a)(1)",
+      "severity": "warning",
+      "description": "PHI access from workstations should include security controls",
+      "rationale": "Workstations accessing PHI must implement appropriate security measures.",
+      "validates": {
+        "type": "data_access_check",
+        "when_accessing": ["@workstation-access"],
+        "recommended_annotations": ["@device-authenticated"]
+      }
+    },
+    {
+      "id": "mobile-device-security",
+      "requirement_id": "164.312(a)(1)",
+      "severity": "error",
+      "description": "PHI access from mobile devices must be secured",
+      "rationale": "Mobile devices accessing PHI require additional security controls.",
+      "validates": {
+        "type": "data_access_check",
+        "when_accessing": ["@mobile-access"],
+        "required_annotations": ["@mobile-secured"]
+      }
+    },
+    {
+      "id": "remote-access-security",
+      "requirement_id": "164.312(e)(1)",
+      "severity": "error",
+      "description": "Remote PHI access must use VPN or equivalent security",
+      "rationale": "Remote access to PHI requires encrypted connections.",
+      "validates": {
+        "type": "data_access_check",
+        "when_accessing": ["@remote-access"],
+        "required_annotations": ["@vpn-required"]
+      }
+    },
+    {
+      "id": "business-associate-data",
+      "requirement_id": "164.314(a)",
+      "severity": "error",
+      "description": "PHI shared with business associates must be tracked",
+      "rationale": "HIPAA requires BAAs and tracking of PHI disclosures to business associates.",
+      "validates": {
+        "type": "effect_requirement",
+        "when_accessing": ["@ba-disclosure"],
+        "required_effects": ["disclosure.log"]
+      }
+    },
+    {
+      "id": "subcontractor-security",
+      "requirement_id": "164.314(a)",
+      "severity": "warning",
+      "description": "PHI access by subcontractors should be controlled",
+      "rationale": "Business associates must ensure subcontractors meet HIPAA requirements.",
+      "validates": {
+        "type": "data_access_check",
+        "when_accessing": ["@subcontractor-access"],
+        "required_annotations": ["@baa-signed"]
+      }
+    },
+    {
+      "id": "phi-export-control",
+      "requirement_id": "164.312(e)(1)",
+      "severity": "error",
+      "description": "PHI exports must be controlled and encrypted",
+      "rationale": "Bulk exports of PHI require additional security controls.",
+      "validates": {
+        "type": "data_access_check",
+        "when_accessing": ["@phi-export"],
+        "required_annotations": ["@export-authorized"]
+      }
+    },
+    {
+      "id": "phi-print-control",
+      "requirement_id": "164.312(a)(1)",
+      "severity": "warning",
+      "description": "PHI printing should be controlled and logged",
+      "rationale": "Printed PHI creates physical security risks.",
+      "validates": {
+        "type": "effect_check",
+        "when_effect": ["print", "document.print"],
+        "when_accessing": ["@phi"],
+        "recommended_effects": ["audit.log"]
+      }
+    },
+    {
+      "id": "phi-copy-restriction",
+      "requirement_id": "164.312(a)(1)",
+      "severity": "warning",
+      "description": "PHI copying should be restricted and logged",
+      "rationale": "Copying PHI increases risk of unauthorized disclosure.",
+      "validates": {
+        "type": "effect_check",
+        "when_effect": ["clipboard.copy", "data.duplicate"],
+        "when_accessing": ["@phi-sensitive"],
+        "recommended_effects": ["audit.log"]
+      }
+    },
+    {
+      "id": "contingency-backup",
+      "requirement_id": "164.308(a)(7)",
+      "severity": "warning",
+      "description": "PHI systems should have backup procedures",
+      "rationale": "Data backup plan is required for emergency operations.",
+      "validates": {
+        "type": "data_access_check",
+        "when_accessing": ["@phi-critical"],
+        "required_annotations": ["@backup-enabled"]
+      }
+    },
+    {
+      "id": "contingency-recovery",
+      "requirement_id": "164.308(a)(7)",
+      "severity": "warning",
+      "description": "PHI systems should have recovery procedures",
+      "rationale": "Disaster recovery plan is required to restore PHI access.",
+      "validates": {
+        "type": "data_access_check",
+        "when_accessing": ["@phi-critical"],
+        "required_annotations": ["@recovery-plan"]
+      }
+    },
+    {
+      "id": "anti-malware",
+      "requirement_id": "164.308(a)(5)",
+      "severity": "warning",
+      "description": "PHI systems should have malware protection",
+      "rationale": "Protection from malicious software is a security best practice.",
+      "validates": {
+        "type": "data_access_check",
+        "when_accessing": ["@file-upload"],
+        "recommended_annotations": ["@malware-scan"]
+      }
+    },
+    {
+      "id": "input-validation",
+      "requirement_id": "164.312(c)(1)",
+      "severity": "error",
+      "description": "PHI input must be validated to prevent injection attacks",
+      "rationale": "Input validation protects PHI integrity from malicious input.",
+      "validates": {
+        "type": "data_access_check",
+        "when_accessing": ["@phi-input"],
+        "required_annotations": ["@validated"]
+      }
+    },
+    {
+      "id": "sql-injection-prevention",
+      "requirement_id": "164.312(c)(1)",
+      "severity": "error",
+      "description": "PHI database queries must prevent SQL injection",
+      "rationale": "SQL injection can lead to unauthorized PHI access or modification.",
+      "validates": {
+        "type": "data_access_check",
+        "when_accessing": ["@phi-query"],
+        "required_annotations": ["@parameterized"]
+      }
+    },
+    {
+      "id": "xss-prevention",
+      "requirement_id": "164.312(c)(1)",
+      "severity": "error",
+      "description": "PHI display must prevent cross-site scripting",
+      "rationale": "XSS attacks can lead to PHI theft or session hijacking.",
+      "validates": {
+        "type": "data_access_check",
+        "when_accessing": ["@phi-display"],
+        "required_annotations": ["@xss-protected"]
+      }
+    },
+    {
+      "id": "api-rate-limiting",
+      "requirement_id": "164.312(a)(1)",
+      "severity": "warning",
+      "description": "PHI APIs should implement rate limiting",
+      "rationale": "Rate limiting prevents bulk data extraction attacks.",
+      "validates": {
+        "type": "data_access_check",
+        "when_accessing": ["@phi-api"],
+        "recommended_annotations": ["@rate-limited"]
+      }
+    },
+    {
+      "id": "encryption-key-management",
+      "requirement_id": "164.312(a)(2)(iv)",
+      "severity": "error",
+      "description": "PHI encryption keys must be properly managed",
+      "rationale": "Encryption is only effective with proper key management.",
+      "validates": {
+        "type": "data_access_check",
+        "when_accessing": ["@encryption-key"],
+        "required_annotations": ["@key-managed"]
+      }
+    },
+    {
+      "id": "key-rotation",
+      "requirement_id": "164.312(a)(2)(iv)",
+      "severity": "warning",
+      "description": "PHI encryption keys should be rotated regularly",
+      "rationale": "Regular key rotation limits exposure from compromised keys.",
+      "validates": {
+        "type": "data_access_check",
+        "when_accessing": ["@phi-encrypted"],
+        "recommended_annotations": ["@key-rotation"]
+      }
+    },
+    {
+      "id": "secure-key-storage",
+      "requirement_id": "164.312(a)(2)(iv)",
+      "severity": "error",
+      "description": "Encryption keys must not be stored with PHI data",
+      "rationale": "Keys stored with encrypted data defeat encryption protection.",
+      "validates": {
+        "type": "storage_check",
+        "when_accessing": ["@encryption-key"],
+        "forbidden_colocation": ["@phi"]
+      }
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "module": "loader",
+  "version": "0.1.0",
+  "description": "Framework loader for compliance definitions from filesystem",
+  "exports": {
+    "FrameworkLoader": {
+      "type": "class",
+      "description": "Loads compliance frameworks from JSON files",
+      "methods": {
+        "new": {
+          "inputs": [],
+          "returns": {"type": "FrameworkLoader"},
+          "effects": []
+        },
+        "load_file": {
+          "inputs": [
+            {"name": "path", "type": "Path"}
+          ],
+          "returns": {"type": "Result<Framework, ComplianceError>"},
+          "effects": ["file.read"],
+          "annotations": ["@may-fail"]
+        },
+        "load_directory": {
+          "inputs": [
+            {"name": "dir", "type": "Path"}
+          ],
+          "returns": {"type": "Result<Array<string>, ComplianceError>"},
+          "effects": ["file.read"],
+          "annotations": ["@may-fail"]
+        },
+        "load_from_project": {
+          "inputs": [
+            {"name": "project_root", "type": "Path"}
+          ],
+          "returns": {"type": "Result<Array<string>, ComplianceError>"},
+          "effects": ["file.read"],
+          "annotations": ["@may-fail"]
+        },
+        "get": {
+          "inputs": [
+            {"name": "name", "type": "string"}
+          ],
+          "returns": {"type": "Option<Framework>"},
+          "effects": []
+        },
+        "all": {
+          "inputs": [],
+          "returns": {"type": "Array<Framework>"},
+          "effects": [],
+          "description": "Returns iterator over all loaded frameworks"
+        },
+        "names": {
+          "inputs": [],
+          "returns": {"type": "Array<string>"},
+          "effects": []
+        },
+        "has": {
+          "inputs": [
+            {"name": "name", "type": "string"}
+          ],
+          "returns": {"type": "boolean"},
+          "effects": []
+        },
+        "count": {
+          "inputs": [],
+          "returns": {"type": "number"},
+          "effects": []
+        },
+        "clear": {
+          "inputs": [],
+          "returns": {"type": "void"},
+          "effects": ["state.write"]
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "types": "^0.1.0",
+    "framework": "^0.1.0",
+    "error": "^0.1.0"
+  }
+}
