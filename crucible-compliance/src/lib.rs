@@ -1,3 +1,6 @@
+// Copyright 2024-2026 Andrey Vasilevsky <anvanster@gmail.com>
+// SPDX-License-Identifier: Apache-2.0
+
 //! Crucible Compliance - HIPAA/PCI-DSS/SOC2 validation for architecture definitions
 //!
 //! This crate provides compliance validation capabilities for Crucible projects,

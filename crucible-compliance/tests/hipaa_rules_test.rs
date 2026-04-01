@@ -1,3 +1,6 @@
+// Copyright 2024-2026 Andrey Vasilevsky <anvanster@gmail.com>
+// SPDX-License-Identifier: Apache-2.0
+
 //! Comprehensive tests for all 57 HIPAA compliance rules
 //!
 //! This test file ensures every HIPAA rule in the framework is properly validated.

@@ -1,3 +1,6 @@
+// Copyright 2024-2026 Andrey Vasilevsky <anvanster@gmail.com>
+// SPDX-License-Identifier: Apache-2.0
+
 //! Bidirectional sync between code and architecture
 
 use crate::claude::rust_parser::{DiscoveredModule, RustParser};

@@ -1,3 +1,6 @@
+// Copyright 2024-2026 Andrey Vasilevsky <anvanster@gmail.com>
+// SPDX-License-Identifier: Apache-2.0
+
 //! Test to validate the architecture definitions for Stage 5 performance features
 
 use crucible_core::{Parser, Validator};

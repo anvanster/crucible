@@ -1,3 +1,6 @@
+// Copyright 2024-2026 Andrey Vasilevsky <anvanster@gmail.com>
+// SPDX-License-Identifier: Apache-2.0
+
 use crucible_core::{Parser, Validator};
 use std::fs;
 use tempfile::tempdir;

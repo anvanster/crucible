@@ -1,3 +1,6 @@
+// Copyright 2024-2026 Andrey Vasilevsky <anvanster@gmail.com>
+// SPDX-License-Identifier: Apache-2.0
+
 //! Basic Rust code parser for architecture discovery
 
 use crate::error::{CrucibleError, Result};

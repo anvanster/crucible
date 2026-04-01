@@ -1,3 +1,6 @@
+// Copyright 2024-2026 Andrey Vasilevsky <anvanster@gmail.com>
+// SPDX-License-Identifier: Apache-2.0
+
 //! Performance benchmark to verify Stage 5 improvements
 
 use crucible_core::claude::config::IntegrationConfig;
